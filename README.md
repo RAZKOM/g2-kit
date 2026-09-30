@@ -86,6 +86,8 @@ the components look drawn: `Download ━━━━━━━━──────�
 | ![](docs/img/sim-dashboard.png) | ![](docs/img/sim-detail.png) | ![](docs/img/sim-carousel.png) |
 | **Time picker in edit mode** | **Keyboard tile + firmware text** | **Tic-tac-toe** |
 | ![](docs/img/sim-time-picker.png) | ![](docs/img/sim-keyboard.png) | ![](docs/img/sim-game.png) |
+| **Text components inline (no image sends)** | **A text slider per text box** | **Keyboard, symbols beside (2 tiles)** |
+| ![](docs/img/sim-text-inline.png) | ![](docs/img/sim-text-sliders.png) | ![](docs/img/sim-keyboard-side.png) |
 
 ## The idea: skeleton input + image UI
 
@@ -149,7 +151,7 @@ No quantisation, framebuffer, PNG or send-locking code: `g2.draw` renders, diffs
 | `g2-kit/bridge` | `connect()` / `G2` (incl. `g2.modal()` to hand gestures to a prompt), `ImageQueue` (serial, coalescing, rebuild-aware, typed errors), `PageBuilder` (validated layouts), 9 `layouts` presets, `g2.textArea()`, event normaliser, retained `Surface`. The SDK is a peer dependency, imported only inside `connect()`. |
 | `g2-kit/input` | Skeleton presets, `PagedList` (> 20 items through a native list), `HybridSkeleton`, `FocusRing` with edit mode, `HoldToConfirm`, `TapConfirm`, `promptText` (`const name = await promptText(g2, { label: 'Name' })`: keyboard page, resolves the text or null). |
 | `g2-kit/charts` | Bar, line, sparkline, KPI, gauge, grouped/stacked bars, pie/donut, progress rings, heatmap, calendar heatmap, funnel, bullet, timeline, legend; waffle, scatter, histogram, box plot, candlestick. |
-| `g2-kit/widgets` | Configurable keyboard (`keyboardLayout`, `KeyboardState`, `typingCost`), carousel, buttons, toggle, segmented, slider, roller, time/date pickers, checklist, status and grid keyboards, progress, big text, toast, modal, tabs, dots, scroll indicator, status bar, HUD frame, ticker, clock, timer ring, compass, turn arrow, grid board, score HUD; table, card, badge, spinner, weather glyph, rating, dice, health bar, sprite sheets. |
+| `g2-kit/widgets` | Configurable keyboard (`keyboardLayout`, `KeyboardState`, `typingCost`); text components (`TextSpinner`, `TextProgress`, `TextSlider`, `TextMenu`, `TextToggle`); carousel, buttons, toggle, segmented, slider, roller, time/date pickers, checklist, status and grid keyboards, progress, big text, toast, modal, tabs, dots, scroll indicator, status bar, HUD frame, ticker, clock, timer ring, compass, turn arrow, grid board, score HUD; table, card, badge, spinner, weather glyph, rating, dice, health bar, sprite sheets. |
 | `g2-kit/icons` | 56 vector icons tuned for 8, 12 and 16 px, incl. 10 weather conditions. |
 
 Every component has the same contract and is a pure function of its props:
@@ -172,6 +174,8 @@ Component.renderToTile(props, size?, theme?)  // convenience: a fresh tile
 | Text content | ≤ 999 UTF-8 bytes on create/rebuild | docs (1000 chars), simulator (999 bytes) |
 | Menu | ≤ 10 items, non-zero unique IDs, names ≤ 32 bytes; omitting it on rebuild clears it | SDK |
 | Image sends | never concurrent; ~300–370 ms each on G2 (~450 ms for dense tiles) | measured (`hub-bench`) |
+| Text updates | ~60 ms each on G2; ≤ 2000 characters | measured (`hub-bench`); community notes |
+| Text font | one proportional firmware font; ASCII/Latin-1, arrows, box drawing, blocks, some shapes; no emoji | community notes (`unsupportedTextChars`) |
 
 `PageBuilder` rejects violations with a `PageLayoutError` that names every broken rule, e.g.
 `[IMAGE_SIZE] image 'chart': image is 300×144; must be 20–288 × 20–144 px`.
@@ -233,14 +237,16 @@ Three ways, from least to most setup:
 
 ## Verification status in one paragraph
 
-Everything is unit-tested in Node (255 tests: golden buffers, round-trips, queue ordering/coalescing,
-layout validation, the event truth table, a smoke + PNG-hash snapshot per gallery sample, an ink budget). All examples
-run in **evenhub-simulator 0.9.5**, driven through its automation API. On **real G2 glasses**, the
-calibration card displays correctly: four spanned PNG tiles, all six theme levels distinct, level 1 visible,
-every font readable, and brightness levelling off around 8–10 as in the simulator. One hardware issue is known:
-after a page rebuild to four full-size images, the right lens sometimes stayed empty until the glasses
-restarted, so `G2.show()` avoids rebuilds it doesn't need. Touch timing, swipe throughput and phone render
-time on hardware are still open; see STATUS.md.
+Everything is unit-tested in Node (276 tests: golden buffers, round-trips, queue ordering/coalescing,
+layout validation, the event truth table, a smoke + PNG-hash snapshot per gallery sample, an ink budget, text
+component output). All examples run in **evenhub-simulator 0.9.5**, driven through its automation API. On
+**real G2 glasses**: the calibration card displays correctly (all six theme levels distinct, level 1 visible,
+every font readable, brightness levelling off around 8–10 as in the simulator); image sends were measured
+(~350 ms per tile, ~200 ms of it fixed, no failures in 900+ sends; png, png4, gray8 and gray4 all display);
+text updates take ~60 ms; and the text components read well, glyphs included, with every swipe arriving. One
+hardware issue is known: after a page rebuild to four full-size images, the right lens sometimes stayed empty
+until the glasses restarted, so `G2.show()` avoids rebuilds it doesn't need. Long-press timing, swipe
+throughput under load and phone render time are still open; see STATUS.md.
 
 ## Credits
 
