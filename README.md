@@ -20,7 +20,7 @@ example apps running in your browser (on-screen gesture buttons stand in for the
 | **Input controls** (14) | `g2-kit/widgets` | `Keyboard` (QWERTY / QWERTZ / AZERTY / ABC, configurable, see below) · `Carousel` · `Button` · `ButtonRow` · `Toggle` · `SegmentedControl` · `Slider` · `Roller` · `TimePicker` · `DatePicker` · `Checklist` · `StatusKeyboard` · `GridKeyboard` (ABC / T9) · `Rating` |
 | **Text, feedback & chrome** (14) | `g2-kit/widgets` | `BigText` · `ProgressBar` · `Toast` · `Modal` · `Tabs` · `PaginationDots` · `ScrollIndicator` · `StatusBar` · `HudFrame` · `Ticker` · `Table` · `Card` · `Badge` · `Spinner` |
 | **Data faces** (5) | `g2-kit/widgets` | `AnalogClock` · `TimerRing` · `CompassStrip` · `TurnArrow` · `WeatherGlyph` |
-| **Text components** (3) | `g2-kit/widgets` | `TextSpinner` · `TextProgress` · `TextSlider`: strings for firmware text containers, no image send (see below) |
+| **Text components** (5) | `g2-kit/widgets` | `TextSpinner` · `TextProgress` · `TextSlider` · `TextMenu` · `TextToggle`: strings for firmware text containers, no image send (see below) |
 | **Game kit** (4) | `g2-kit/widgets` | `GridBoard` (word games, Sudoku, 2048, tic-tac-toe) · `ScoreHud` · `Dice` · `HealthBar`, plus `SpriteSheet` / `drawSprite` |
 | **Icons** (56) | `g2-kit/icons` | Vector icons for 8 / 12 / 16 px, incl. 10 weather conditions |
 | **Layouts** (9) | `g2-kit/bridge` | `textBoxes` · `twoTilesWithList` · `twoTilesWithControl` · `dashboardQuad` · `heroSidebar` · `fullScreen` · `menuPage` · `textWithTile` · `textWithSpan` |
@@ -72,8 +72,12 @@ status.set('title', 'Syncing').draw('spin', TextSpinner, { frame }).draw('bar', 
 ```
 
 Or one per container, e.g. a settings page of sliders with `layouts.textBoxes`. Keep each box to the lines it
-fits (~27 px per line plus padding): an overflowing box scrolls, and the capture box then eats swipes. Firmware
-font only: no grey levels or shapes. Try both with `npm run dev:text`.
+fits (~27 px per line plus padding): an overflowing box scrolls, and the capture box then eats swipes.
+
+The firmware font has no grey levels or sizes and is proportional, but it draws box drawing, blocks and shapes, so
+the components look drawn: `Download ━━━━━━━━──────────── 40%`, `▶ Volume ━━━━●─────── 40`, `▶ Wi-Fi  ● On`.
+`glyphs: 'ascii'` falls back to `[####----]`. `unsupportedTextChars(text)` lists characters the glasses can't draw
+(emoji, `…`, `•`), and `g2.textArea` warns about them. Try it with `npm run dev:text`.
 
 ### Running in the simulator
 

@@ -230,18 +230,39 @@ exports[`outline surface > toast-error: less ink, inside its rect, PNG snapshot 
 
 exports[`outline surface > toggle-on: less ink, inside its rect, PNG snapshot 1`] = `"961ca92938a97b53"`;
 
-exports[`text components (firmware text) > text-progress (TextProgress) 1`] = `"Download [########------------] 40%"`;
+exports[`text components (firmware text) > text-menu (TextMenu) 1`] = `
+"▷ Resume
+▶ New game
+▷ Settings
+▷ Quit"
+`;
 
-exports[`text components (firmware text) > text-progress-count (TextProgress) 1`] = `"Reps [=======...] 7/10"`;
+exports[`text components (firmware text) > text-menu-checks (TextMenu) 1`] = `
+"▷ ○ Bread  ▲
+▶ ○ Coffee
+▷ ● Basil  ▼"
+`;
 
-exports[`text components (firmware text) > text-slider (TextSlider) 1`] = `"  Brightness [=======o----] 60"`;
+exports[`text components (firmware text) > text-progress (TextProgress) 1`] = `"Download ━━━━━━━━──────────── 40%"`;
 
-exports[`text components (firmware text) > text-slider-editing (TextSlider) 1`] = `"> Temp < =====o------ > 21 C"`;
+exports[`text components (firmware text) > text-progress-ascii (TextProgress) 1`] = `"Download [########------------] 40%"`;
 
-exports[`text components (firmware text) > text-slider-focused (TextSlider) 1`] = `"> Volume [====o-------] 35"`;
+exports[`text components (firmware text) > text-progress-blocks (TextProgress) 1`] = `"█████▏────── 43%"`;
 
-exports[`text components (firmware text) > text-spinner (TextSpinner) 1`] = `"/ Syncing"`;
+exports[`text components (firmware text) > text-progress-count (TextProgress) 1`] = `"Reps ━━━━━━━─── 7/10"`;
 
-exports[`text components (firmware text) > text-spinner-bar (TextSpinner) 1`] = `"[  = ]"`;
+exports[`text components (firmware text) > text-slider (TextSlider) 1`] = `"▷ Brightness ━━━━━━━●──── 60"`;
 
-exports[`text components (firmware text) > text-spinner-dots (TextSpinner) 1`] = `"... Loading"`;
+exports[`text components (firmware text) > text-slider-editing (TextSlider) 1`] = `"▶ Temp ◀ ━━━━━●────── ▶ 21°C"`;
+
+exports[`text components (firmware text) > text-slider-focused (TextSlider) 1`] = `"▶ Volume ━━━━●─────── 35"`;
+
+exports[`text components (firmware text) > text-spinner (TextSpinner) 1`] = `"↗ Syncing"`;
+
+exports[`text components (firmware text) > text-spinner-ascii (TextSpinner) 1`] = `"/ Syncing"`;
+
+exports[`text components (firmware text) > text-spinner-triangle (TextSpinner) 1`] = `"▶ Loading"`;
+
+exports[`text components (firmware text) > text-toggle (TextToggle) 1`] = `"▶ Wi-Fi  ● On"`;
+
+exports[`text components (firmware text) > text-toggle-off (TextToggle) 1`] = `"▷ Alerts  ○ Off"`;

@@ -12,8 +12,10 @@
  *
  * A text update took ~60 ms on G2 glasses vs ~260 ms for an image send (STATUS.md).
  */
-import type { TextComponent } from '../core/textComponent.js'
-import { MAX_TEXT_BYTES } from './pageBuilder.js'
+import { unsupportedTextChars, type TextComponent } from '../core/textComponent.js'
+
+/** `textContainerUpgrade` accepts up to 2000 characters (create/rebuild: 1000; see PageBuilder). */
+export const MAX_TEXT_UPDATE_CHARS = 2000
 
 export type TextLayout = (parts: Readonly<Record<string, string>>, order: readonly string[]) => string
 
@@ -23,7 +25,8 @@ export class TextArea {
   private scheduled = false
   private inFlight: Promise<void> | null = null
   private again = false
-  private warned = false
+  private warnedLength = false
+  private warnedChars = new Set<string>()
 
   /**
    * @param send   sends the whole content (e.g. `G2.setText`); resolves true on success
@@ -76,9 +79,14 @@ export class TextArea {
     }
     const next = this.content
     if (next === this.shown) return Promise.resolve()
-    if (!this.warned && new TextEncoder().encode(next).length > MAX_TEXT_BYTES) {
-      this.warned = true
-      console.warn(`[g2-kit] text area content is over ${MAX_TEXT_BYTES} bytes; the firmware may cut it`)
+    if (!this.warnedLength && [...next].length > MAX_TEXT_UPDATE_CHARS) {
+      this.warnedLength = true
+      console.warn(`[g2-kit] text area content is over ${MAX_TEXT_UPDATE_CHARS} characters; the firmware may cut it`)
+    }
+    const bad = unsupportedTextChars(next).filter((c) => !this.warnedChars.has(c))
+    if (bad.length) {
+      bad.forEach((c) => this.warnedChars.add(c))
+      console.warn(`[g2-kit] the G2 font cannot draw ${bad.map((c) => JSON.stringify(c)).join(' ')} (see unsupportedTextChars)`)
     }
     this.inFlight = this.send(next)
       .then((ok) => {

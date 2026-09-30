@@ -71,6 +71,9 @@ npm run bench
 - Firmware text containers must fit their text (~27 px per line plus 2 × padding). One that overflows scrolls,
   shows a scroll bar, and if it is the capture container the firmware spends swipes on scrolling: gestures get
   lost (seen in the simulator with `textBoxes`).
+- The firmware font draws ASCII/Latin-1, arrows, box drawing, blocks and some shapes, but no emoji and not `…`
+  or `•`: check strings with `unsupportedTextChars` (core). Text updates take up to 2000 characters, create /
+  rebuild 1000.
 
 ## Working with the user
 

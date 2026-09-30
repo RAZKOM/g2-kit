@@ -744,12 +744,12 @@ describe('TextArea / g2.textArea', () => {
       await new Promise<void>((r) => (release = r))
       return true
     }, ' ')
-    area.set('title', 'Upload').draw('bar', TextProgress, { value: 0.5, width: 4 })
+    area.set('title', 'Upload').draw('bar', TextProgress, { value: 0.5, width: 4, glyphs: 'ascii' })
     await Promise.resolve()
     expect(sent).toEqual(['Upload\n[##--] 50%'])
     // Three changes while the first update is in flight: one follow-up with the latest.
-    area.draw('bar', TextProgress, { value: 0.75, width: 4 })
-    area.draw('bar', TextProgress, { value: 1, width: 4 })
+    area.draw('bar', TextProgress, { value: 0.75, width: 4, glyphs: 'ascii' })
+    area.draw('bar', TextProgress, { value: 1, width: 4, glyphs: 'ascii' })
     area.set('title', 'Done')
     await Promise.resolve()
     release!()
@@ -775,8 +775,8 @@ describe('TextArea / g2.textArea', () => {
     const page = layouts.textBoxes({ boxes: [{ name: 'status', h: 60 }, { name: 'volume', h: 40 }], tile: { w: 288, h: 144 } })
     await g2.show(page)
     calls.length = 0
-    g2.textArea('status').draw('spin', TextSpinner, { frame: 1, label: 'Syncing' })
-    g2.textArea(page.boxes.volume).draw('v', TextSlider, { label: 'Volume', value: 40, focused: true, width: 6 })
+    g2.textArea('status').draw('spin', TextSpinner, { frame: 1, label: 'Syncing', glyphs: 'ascii' })
+    g2.textArea(page.boxes.volume).draw('v', TextSlider, { label: 'Volume', value: 40, focused: true, width: 6, glyphs: 'ascii' })
     await g2.settle()
     expect(calls).toEqual(['text:status:/ Syncing', 'text:volume:> Volume [==o---] 40'])
     expect(g2.textArea('status')).toBe(g2.textArea('status'))

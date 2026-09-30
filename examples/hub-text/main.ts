@@ -108,7 +108,7 @@ function drawSettings(): void {
   const done = ring.is('done')
   // One line per box: a box that overflows scrolls, and the capture box would then eat swipes.
   const hint = ring.editing ? 'swipe: change   tap: keep   hold: undo' : done ? 'tap: back' : 'swipe: move   tap: edit'
-  g2.textArea(settingsPage.boxes.head).set('t', `${done ? '>' : ' '} Done      ${hint}`)
+  g2.textArea(settingsPage.boxes.head).set('t', `${done ? '▶' : '▷'} Done      ${hint}`)
   for (const s of SLIDERS)
     g2.textArea(settingsPage.boxes[s.id]).draw('s', TextSlider, { label: s.label, value: values[s.id], min: s.min, max: s.max, width: 10, focused: ring.is(s.id) && !ring.editing, editing: ring.is(s.id) && ring.editing })
   g2.draw('tile', BarChart, { data: [{ label: 'Vol', value: values.volume }, { label: 'Bri', value: values.brightness }, { label: 'Spd', value: values.speed * 20 }], max: 100, valueLabels: false })

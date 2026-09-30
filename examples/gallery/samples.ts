@@ -365,12 +365,18 @@ export interface TextSample {
 const ts = <P,>(id: string, title: string, component: TextComponent<P>, props: P, note?: string): TextSample => ({ id, title, component, props, note })
 
 export const TEXT_SAMPLES: TextSample[] = [
-  ts('text-spinner', 'Text spinner: line', W.TextSpinner, { frame: 1, label: 'Syncing' }, 'Frames | / - \\; one text update per frame.'),
-  ts('text-spinner-dots', 'Text spinner: dots', W.TextSpinner, { frame: 2, style: 'dots', label: 'Loading' }),
-  ts('text-spinner-bar', 'Text spinner: bouncing bar', W.TextSpinner, { frame: 2, style: 'bar' }),
+  ts('text-spinner', 'Text spinner: arrows', W.TextSpinner, { frame: 1, label: 'Syncing' }, 'Frames ↑ ↗ → ↘ ↓ ↙ ← ↖; one text update per frame.'),
+  ts('text-spinner-triangle', 'Text spinner: triangle', W.TextSpinner, { frame: 1, style: 'triangle', label: 'Loading' }),
+  ts('text-spinner-ascii', 'Text spinner: ASCII', W.TextSpinner, { frame: 1, glyphs: 'ascii', label: 'Syncing' }),
   ts('text-progress', 'Text progress bar', W.TextProgress, { value: 0.4, label: 'Download' }),
-  ts('text-progress-count', 'Text progress: count, custom characters', W.TextProgress, { value: 7, max: 10, width: 10, valueText: '7/10', chars: { done: '=', todo: '.' }, label: 'Reps' }),
+  ts('text-progress-blocks', 'Text progress: blocks, eighth-cell precision', W.TextProgress, { value: 0.43, blocks: true, width: 12 }),
+  ts('text-progress-count', 'Text progress: count', W.TextProgress, { value: 7, max: 10, width: 10, valueText: '7/10', label: 'Reps' }),
+  ts('text-progress-ascii', 'Text progress: ASCII', W.TextProgress, { value: 0.4, label: 'Download', glyphs: 'ascii' }),
   ts('text-slider', 'Text slider', W.TextSlider, { label: 'Brightness', value: 60 }),
   ts('text-slider-focused', 'Text slider: focused', W.TextSlider, { label: 'Volume', value: 35, focused: true }),
-  ts('text-slider-editing', 'Text slider: edit mode', W.TextSlider, { label: 'Temp', value: 21, min: 16, max: 28, editing: true, format: (v: number) => `${v} C` }),
+  ts('text-slider-editing', 'Text slider: edit mode', W.TextSlider, { label: 'Temp', value: 21, min: 16, max: 28, editing: true, format: (v: number) => `${v}°C` }),
+  ts('text-menu', 'Text menu', W.TextMenu, { items: ['Resume', 'New game', 'Settings', 'Quit'], focus: 1 }, 'The "fake buttons" pattern: a menu with no image.'),
+  ts('text-menu-checks', 'Text menu: checks, 3 of 6 visible', W.TextMenu, { items: ['Milk', 'Eggs', 'Bread', 'Coffee', 'Basil', 'Tomatoes'], focus: 3, checked: [true, true, false, false, true, false], visible: 3 }),
+  ts('text-toggle', 'Text toggle: on, focused', W.TextToggle, { on: true, label: 'Wi-Fi', focused: true }),
+  ts('text-toggle-off', 'Text toggle: off', W.TextToggle, { on: false, label: 'Alerts' }),
 ]

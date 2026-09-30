@@ -5,6 +5,12 @@ may change APIs.
 
 ## Unreleased
 
+- Text components use the glyphs the G2 font draws: `━ ─` progress lines (or `█` blocks with eighth-cell
+  precision, `blocks: true`), `━━━●───` sliders with `▶ / ▷` focus and `◀ ▶` edit markers, arrow / triangle /
+  pulse spinners. `glyphs: 'ascii'` keeps the plain versions. New `TextMenu` (a `▶` cursor over items, optional
+  `● / ○` checks, a scrolling window with `▲ ▼`) and `TextToggle` (`● On` / `○ Off`).
+- `unsupportedTextChars(text)` (core) lists characters the G2 firmware font cannot draw; `g2.textArea` warns
+  once per character, and about text updates over 2000 characters (`MAX_TEXT_UPDATE_CHARS`).
 - Text components (`g2-kit/core` `defineTextComponent`, `g2-kit/widgets` `TextSpinner`, `TextProgress`,
   `TextSlider`): props → string for firmware text containers, no image send (~60 ms per update on G2 vs
   ~260 ms for an image). `G2.textArea(container)` (`TextArea` in `g2-kit/bridge`) composes plain-text and

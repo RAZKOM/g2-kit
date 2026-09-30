@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
-import { Framebuffer, INK_BUDGET, TILE, createTheme, encodePreviewPng, inkRatio, outlineTheme } from '../src/core/index.js'
+import { Framebuffer, INK_BUDGET, TILE, createTheme, encodePreviewPng, inkRatio, outlineTheme, unsupportedTextChars } from '../src/core/index.js'
 import { formatNumber, heatStep, niceScale } from '../src/charts/index.js'
 import { GridKeyboardState, dateColumns, daysInMonth, marqueeFrames, timeColumns } from '../src/widgets/index.js'
 import * as W from '../src/widgets/index.js'
@@ -278,20 +278,38 @@ describe('text components (firmware text)', () => {
   for (const s of TEXT_SAMPLES) {
     it(`${s.id} (${s.component.name})`, () => {
       const out = s.component.render(s.props)
-      // Printable ASCII only (any firmware font has it), one line, well under the 999-byte text limit.
-      expect(out).toMatch(/^[\x20-\x7e]+$/)
-      expect(out.length).toBeLessThan(80)
+      // Only characters the G2 firmware font draws; short lines, far under the 2000-character update limit.
+      expect(unsupportedTextChars(out)).toEqual([])
+      for (const line of out.split('\n')) expect([...line].length).toBeLessThan(60)
       expect(s.component.render(s.props)).toBe(out)
       expect(out).toMatchSnapshot()
     })
   }
 
-  it('spinner frames wrap; progress clamps; slider marks focus and edit mode by characters', () => {
-    expect([0, 1, 2, 3, 4, -1].map((frame) => W.renderTextSpinner({ frame }))).toEqual(['|', '/', '-', '\\', '|', '\\'])
-    expect(W.renderTextProgress({ value: 1.5, width: 4 })).toBe('[####] 100%')
-    expect(W.renderTextProgress({ value: -1, width: 4, valueText: false })).toBe('[----]')
-    expect(W.renderTextSlider({ value: 0, width: 4 })).toBe('  [o---] 0')
-    expect(W.renderTextSlider({ value: 100, width: 4, focused: true })).toBe('> [===o] 100')
-    expect(W.renderTextSlider({ value: 50, width: 5, editing: true, label: 'V' })).toBe('> V < ==o-- > 50')
+  it('unsupportedTextChars knows the firmware font', () => {
+    expect(unsupportedTextChars('Hi ━─█▏● ○▶▷◀ ↑↗ ★ ♥ ° ½ ｘ\n')).toEqual([])
+    expect(unsupportedTextChars('… • 😀 µ ✓')).toEqual(['…', '•', '😀', 'µ', '✓'])
+  })
+
+  it('spinner frames wrap; progress clamps and fills by eighths; slider marks focus and edit mode', () => {
+    expect([0, 1, 2, 3, 4, -1].map((frame) => W.renderTextSpinner({ frame, glyphs: 'ascii' }))).toEqual(['|', '/', '-', '\\', '|', '\\'])
+    expect(W.renderTextSpinner({ frame: 2 })).toBe('→')
+    expect(W.renderTextProgress({ value: 1.5, width: 4 })).toBe('━━━━ 100%')
+    expect(W.renderTextProgress({ value: -1, width: 4, valueText: false, glyphs: 'ascii' })).toBe('[----]')
+    expect(W.renderTextProgress({ value: 0.5625, width: 2, blocks: true, valueText: false })).toBe('█▏')
+    expect(W.renderTextProgress({ value: 0.25, width: 4, blocks: true, valueText: false })).toBe('█───')
+    expect(W.renderTextSlider({ value: 0, width: 4, glyphs: 'ascii' })).toBe('  [o---] 0')
+    expect(W.renderTextSlider({ value: 100, width: 4, focused: true })).toBe('▶ ━━━● 100')
+    expect(W.renderTextSlider({ value: 50, width: 5, editing: true, label: 'V' })).toBe('▶ V ◀ ━━●── ▶ 50')
+    expect(W.renderTextSlider({ value: 50, width: 5, editing: true, label: 'V', glyphs: 'ascii' })).toBe('> V < ==o-- > 50')
+  })
+
+  it('menu: focus marker, checks, a window that follows focus; toggle', () => {
+    expect(W.renderTextMenu({ items: ['A', 'B'], focus: 0 })).toBe('▶ A\n▷ B')
+    const win = W.renderTextMenu({ items: ['a', 'b', 'c', 'd', 'e'], focus: 4, visible: 2 }).split('\n')
+    expect(win).toEqual(['▷ d  ▲', '▶ e'])
+    expect(W.renderTextMenu({ items: ['a', 'b', 'c'], focus: 0, visible: 2, checked: [true, false, false], glyphs: 'ascii' })).toBe('> [x] a\n  [ ] b  v')
+    expect(W.renderTextToggle({ on: true, label: 'Wi-Fi', focused: true })).toBe('▶ Wi-Fi  ● On')
+    expect(W.renderTextToggle({ on: false, glyphs: 'ascii' })).toBe('  [ ] Off')
   })
 })
