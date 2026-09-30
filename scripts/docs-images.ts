@@ -1,6 +1,5 @@
 /**
  * Regenerates the README images in docs/img/ (compressed PNG):
- *  - one catalogue image per gallery group, every sample labelled with its component name
  *  - the legend samples
  *  - simulator screenshots from examples/output/sim/ (run `npm run sim:check` first),
  *    flattened onto black
@@ -11,8 +10,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { deflateSync, inflateSync } from 'node:zlib'
-import { Framebuffer, SIMULATOR_CURVE, TILE, assemblePng, drawText, encodePreviewPng, font8x12, strokeRect } from '../src/core/index.js'
-import { SAMPLES, type Sample } from '../examples/gallery/samples.js'
+import { Framebuffer, SIMULATOR_CURVE, TILE, assemblePng, encodePreviewPng } from '../src/core/index.js'
+import { SAMPLES } from '../examples/gallery/samples.js'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const out = join(root, 'docs', 'img')
@@ -23,46 +22,6 @@ const write = (name: string, fb: Framebuffer, scale = 2) => {
   console.log(`docs/img/${name}`)
 }
 
-/** Pack samples into rows of at most `width` px, each captioned. */
-function sheet(samples: Sample[], width = 900): Framebuffer {
-  const pad = 10
-  const capH = font8x12.glyphH + 6
-  let x = pad
-  let y = pad
-  let rowH = 0
-  const placed: Array<{ fb: Framebuffer; label: string; x: number; y: number }> = []
-  for (const s of samples) {
-    const fb = s.component.renderToTile(s.props, s.size ?? s.component.size ?? TILE)
-    if (x + fb.width + pad > width) {
-      x = pad
-      y += rowH + capH + pad
-      rowH = 0
-    }
-    placed.push({ fb, label: s.component.name, x, y })
-    x += fb.width + pad
-    rowH = Math.max(rowH, fb.height)
-  }
-  const img = new Framebuffer(width, y + rowH + capH + pad)
-  for (const p of placed) {
-    img.blit(p.fb, p.x, p.y)
-    strokeRect(img, p.x - 1, p.y - 1, p.fb.width + 2, p.fb.height + 2, 1, 1)
-    drawText(img, p.label, p.x, p.y + p.fb.height + 4, { font: font8x12, level: 5 })
-  }
-  return img
-}
-
-// One image per group, one sample per component (the first), so each image is a menu of what exists.
-const groups: Record<string, Sample['group'][]> = {
-  'catalog-charts.png': ['charts'],
-  'catalog-controls.png': ['controls'],
-  'catalog-chrome.png': ['text & chrome'],
-  'catalog-faces-game.png': ['data faces', 'game'],
-}
-for (const [file, gs] of Object.entries(groups)) {
-  const seen = new Set<string>()
-  const picked = SAMPLES.filter((s) => gs.includes(s.group) && !seen.has(s.component.name) && seen.add(s.component.name))
-  write(file, sheet(picked))
-}
 for (const id of ['legend-series', 'legend-marks']) {
   const s = SAMPLES.find((x) => x.id === id)!
   write(`${id}.png`, s.component.renderToTile(s.props, s.size ?? TILE))

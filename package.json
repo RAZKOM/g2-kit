@@ -63,11 +63,12 @@
     "sim:check": "tsx scripts/simcheck.ts",
     "dev:calibrate": "vite examples/hub-calibrate",
     "dev:quickstart": "vite examples/hub-quickstart",
-    "docs:images": "tsx scripts/docs-images.ts",
+    "docs:images": "tsx scripts/docs-images.ts && tsx scripts/showcase.ts docs/img/showcase.png",
     "build:site": "tsx scripts/build-site.ts",
     "preview:site": "vite preview --outDir site --port 5190",
     "sim": "node ./node_modules/@evenrealities/evenhub-simulator/bin/index.js",
-    "dev:lens": "vite examples/hub-lens"
+    "dev:lens": "vite examples/hub-lens",
+    "showcase": "tsx scripts/showcase.ts"
   },
   "peerDependencies": {
     "@evenrealities/even_hub_sdk": ">=0.0.15"

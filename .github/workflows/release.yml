@@ -4,6 +4,8 @@ name: Release
 # no token) with provenance. The very first version must be published by hand;
 # then add this workflow as a Trusted Publisher on npmjs.com (package →
 # Settings → Trusted Publisher → GitHub Actions, workflow file: release.yml).
+# The owner and repo there are case-sensitive: use RAZKOM / g2-kit exactly as on GitHub.
+# A mismatch shows up as "404 Not Found - PUT https://registry.npmjs.org/g2-kit".
 on:
   push:
     tags: ["v*"]

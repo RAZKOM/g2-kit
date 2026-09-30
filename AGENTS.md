@@ -1,0 +1,76 @@
+# AGENTS.md
+
+Guide for coding agents working on g2-kit. Read this, then STATUS.md (what is verified) and ROADMAP.md
+(what to do next). Background: NOTES.md (origins), DESIGN.md (visual rules), INPUT.md (events and input).
+
+## What this is
+
+`g2-kit` (npm, MIT, unofficial): drawn UI for Even Realities G2 Hub plugins. Components draw on the phone into a
+4-bit `Framebuffer`; tiles (≤ 288×144, ≤ 4 per page) are sent with `updateImageRawData`; one invisible
+capturing container (the "skeleton": a blank text container or a native list) receives gestures.
+Repo: github.com/RAZKOM/g2-kit · demo site: razkom.github.io/g2-kit · owner: RAZKOM.
+
+## Layout
+
+| Path | What |
+|---|---|
+| `src/core` | Framebuffer, primitives, paints/patterns, encodings, fonts (5×7, 8×12, 16×24, 7-seg), text, theme, PNG/Gray4 encoders, tiles, `defineComponent`. No DOM, no deps. |
+| `src/bridge` | `G2` (app object), `connect()`, `ImageQueue`, `PageBuilder` (validation), `layouts` (7 presets), events normaliser, `Surface`. **Only `bridge/sdk.ts` touches the SDK**, via dynamic `import()`. |
+| `src/input` | Skeletons, `PagedList`, `HybridSkeleton`, `FocusRing` (edit mode), `TapConfirm`, `HoldToConfirm`. |
+| `src/charts`, `src/widgets` | Components. `src/icons`: vector icons. |
+| `test/` | Vitest. `components.test.ts` smoke-tests + PNG-hash-snapshots every gallery sample. `sdk-types.test.ts` checks the real SDK against `SdkModule` (compile time). |
+| `examples/gallery/samples.ts` | Every component with sample props: drives the gallery, the site, the showcase and the tests. |
+| `examples/hub-*` | Plugin examples (Vite). `shared/phone.ts`: phone mirror, keyboard/button mock host, error display. |
+| `scripts/` | `simcheck.ts` (drive the simulator), `bench.ts`, `build-site.ts`, `docs-images.ts`, `showcase.ts`. |
+
+## Commands
+
+```
+npm test                 # 216 tests
+npm run typecheck
+npm run gallery          # examples/output/ (PNGs, index.html, contact-sheet.png)
+npm run docs:images      # regenerate docs/img/ incl. showcase.png (run sim:check first for sim-*.png)
+npm run build:site       # site/ (gallery + in-browser demos), then npm run preview:site
+npm run dev:<name>       # quickstart | dashboard | picker | game | calibrate | lens
+npm run sim -- <url>     # launch evenhub-simulator (npx evenhub-simulator does not resolve here)
+npm run sim:check -- hub-dashboard   # headless: replay gestures via the simulator's automation API
+npm run bench
+```
+
+## Conventions (keep these)
+
+- Component contract: `export const X = defineComponent<XProps>('X', recommendedSize, renderX)`; export
+  `X`, `renderX`, `XProps` from the package index. Pure function of props; drawing clipped to `rect`.
+- Levels only through `theme.levels` (`off/faint/dim/mid/bright/full` = 0/2/4/6/8/15). On G2 glasses and the
+  simulator, brightness levels off around 8–10, so never rely on 9 vs 15.
+- Encode meaning by shape as well as brightness (filled/ring/strike, outline vs fill, focus = 2 px frame).
+- Every new component gets a gallery sample in `examples/gallery/samples.ts` (tests pick it up) and a line in
+  the README table and CHANGELOG. Look at it: `npm run gallery`, then the contact sheet.
+- Respect platform limits (PageBuilder enforces them): images 20–288 × 20–144, ≤ 4 images + ≤ 8 others,
+  exactly one capture, zOrder all-or-none unique, list ≤ 20 items, text ≤ 999 bytes, menu ≤ 10.
+- Prefer switching views inside one layout: `G2.show()` skips identical-layout rebuilds. A rebuild to four
+  full-size images once left the right lens empty on real glasses (STATUS.md).
+- One gesture should cost one tile send (~100 ms each). Put swipe-reactive UI on its own tile.
+- Honesty rule: never mark anything "verified on glasses" unless the user tested it on hardware. Levels:
+  unit / gallery / simulator / glasses (STATUS.md).
+- Published PNGs (docs, site) use `deflate`; tiles sent to the glasses stay uncompressed (SDK compresses).
+
+## Gotchas learned the hard way
+
+- Vite dev servers must pre-bundle the SDK (`optimizeDeps.include` in `examples/vite.shared.ts`), or the
+  dynamic import can 504 and the page hangs on "Connecting…".
+- `hub-lens` must force rebuilds (`g2.show(page, { rebuild: 'always' })`), since `show()` now skips them.
+- Simulator 0.9.5 does not enforce the 288×144 image limit; hardware may. Don't trust oversized tiles.
+- Simulator screenshots are RGBA with level 0 transparent; `docs-images.ts` flattens them onto black.
+- awesome-lint on Windows: run `npx awesome-lint README.md` (no-arg form misreads the path).
+
+## Working with the user
+
+- Windows + PowerShell (pwsh). Give commands that work in pwsh; one command per code block.
+- Commit, push and release only when asked; otherwise give the commands.
+- Release: update CHANGELOG (`## x.y.z (date)`), commit, `npm version patch|minor`,
+  `git push --follow-tags` → `.github/workflows/release.yml` publishes via npm trusted publishing (OIDC,
+  provenance). The trusted-publisher owner on npmjs.com is case-sensitive: `RAZKOM`.
+- Pushing `main` redeploys the demo site (`pages.yml`); README images are committed files
+  (`npm run docs:images`).
+- The user tests on real G2 glasses by sideloading dev servers: `npx evenhub qr --port <port>`.

@@ -8,32 +8,24 @@ firmware doesn't provide, rendered on the phone into 4-bit greyscale image tiles
 **[Live demo and full gallery →](https://razkom.github.io/g2-kit/)** Every component with its props, plus the
 example apps running in your browser (on-screen gesture buttons stand in for the touchpad).
 
-![The quickstart running in evenhub-simulator 0.9.5](docs/img/sim-quickstart.png)
+![All 55 g2-kit components, previewed with the brightness curve measured in evenhub-simulator](docs/img/showcase.png)
 
 ## What's in the box
 
-55 components, each a pure function of its props that draws into a 4-bit tile. Previews use the brightness
-curve measured in evenhub-simulator 0.9.5.
+55 components, each a pure function of its props (`X.render(fb, rect, props)`, `X.renderToTile(props)`) plus 56 icons.
 
-**Charts**: bar, line, sparkline, KPI, gauge, grouped/stacked bars, pie/donut, progress rings, heatmap,
-calendar heatmap, funnel, bullet, timeline, waffle, scatter, histogram, box plot, candlestick, legend.
+| Category | Import | Components |
+|---|---|---|
+| **Charts** (19) | `g2-kit/charts` | `BarChart` · `LineChart` · `Sparkline` · `Kpi` · `Gauge` · `MultiBarChart` (grouped / stacked) · `PieChart` (pie / donut) · `ProgressRings` · `Heatmap` · `CalendarHeatmap` · `Funnel` · `BulletChart` · `Timeline` · `WaffleChart` · `ScatterChart` · `Histogram` · `BoxPlot` · `CandlestickChart` · `Legend` |
+| **Input controls** (13) | `g2-kit/widgets` | `Carousel` · `Button` · `ButtonRow` · `Toggle` · `SegmentedControl` · `Slider` · `Roller` · `TimePicker` · `DatePicker` · `Checklist` · `StatusKeyboard` · `GridKeyboard` (ABC / T9) · `Rating` |
+| **Text, feedback & chrome** (14) | `g2-kit/widgets` | `BigText` · `ProgressBar` · `Toast` · `Modal` · `Tabs` · `PaginationDots` · `ScrollIndicator` · `StatusBar` · `HudFrame` · `Ticker` · `Table` · `Card` · `Badge` · `Spinner` |
+| **Data faces** (5) | `g2-kit/widgets` | `AnalogClock` · `TimerRing` · `CompassStrip` · `TurnArrow` · `WeatherGlyph` |
+| **Game kit** (4) | `g2-kit/widgets` | `GridBoard` (word games, Sudoku, 2048, tic-tac-toe) · `ScoreHud` · `Dice` · `HealthBar`, plus `SpriteSheet` / `drawSprite` |
+| **Icons** (56) | `g2-kit/icons` | Vector icons for 8 / 12 / 16 px, incl. 10 weather conditions |
+| **Layouts** (7) | `g2-kit/bridge` | `twoTilesWithList` · `twoTilesWithControl` · `dashboardQuad` · `heroSidebar` · `fullScreen` · `menuPage` · `textWithTile` |
+| **Input** | `g2-kit/input` | `blankTextSkeleton` · `listSkeleton` · `PagedList` · `HybridSkeleton` · `FocusRing` (with edit mode) · `TapConfirm` · `HoldToConfirm` |
 
-![Charts](docs/img/catalog-charts.png)
-
-**Input controls**, driven by swipes and taps through a focus ring: carousel, buttons, toggle, segmented
-control, slider, roller, time and date pickers, checklist, status keyboard, ABC/T9 keyboard, rating.
-
-![Input controls](docs/img/catalog-controls.png)
-
-**Text, feedback and chrome**: progress, big text, toast, modal, tabs, pagination dots, scroll indicator,
-status bar, HUD frames, ticker, table, card, badge, spinner.
-
-![Text, feedback and chrome](docs/img/catalog-chrome.png)
-
-**Data faces and game kit**: analog clock, timer ring, compass, turn arrow, weather, grid board (word games,
-Sudoku, 2048, tic-tac-toe), score HUD, dice, health bar, sprites. Plus 56 icons.
-
-![Data faces and game kit](docs/img/catalog-faces-game.png)
+Previews use the brightness curve measured in evenhub-simulator 0.9.5, which matched G2 glasses by eye.
 
 ### Running in the simulator
 
@@ -94,6 +86,8 @@ g2.on('select', (e) => {
 
 No quantisation, framebuffer, PNG or send-locking code: `g2.draw` renders, diffs and queues; the
 `ImageQueue` serialises and coalesces sends. Double-tap shows the exit prompt by default.
+
+![The quickstart running in evenhub-simulator 0.9.5](docs/img/sim-quickstart.png)
 
 ## Packages
 
@@ -179,6 +173,8 @@ Three ways, from least to most setup:
 - [INPUT.md](INPUT.md): skeletons, focus rings, edit mode, confirmation, the event truth table and what is unverified.
 - [STATUS.md](STATUS.md): what is done and how each part was verified (unit / gallery / simulator / glasses).
 - [NOTES.md](NOTES.md): what was taken from WordLens and what changed.
+- [ROADMAP.md](ROADMAP.md): next steps, planned components and features.
+- [AGENTS.md](AGENTS.md): conventions and commands for contributors and coding agents.
 
 ## Verification status in one paragraph
 

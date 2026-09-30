@@ -3,6 +3,12 @@
 All notable changes to g2-kit. This project follows [semver](https://semver.org/); until 1.0, minor versions
 may change APIs.
 
+## Unreleased
+
+- README: one poster of all components (`docs/img/showcase.png`, `npm run showcase`) and a single component
+  table instead of four category images.
+- AGENTS.md / CLAUDE.md (guide for coding agents) and ROADMAP.md (next steps).
+
 ## 0.1.1 (2026-09-29)
 
 - Fix: `connect({ sdk })` with the real `@evenrealities/even_hub_sdk` module failed to typecheck
@@ -84,14 +90,6 @@ First release.
   images are compressed (tiles sent to the glasses stay uncompressed; the SDK compresses in transit).
 - GitHub Actions: CI (typecheck, tests, build), Pages, and tag-triggered npm release with provenance.
 
-## Roadmap (not in 0.1.0)
+## Roadmap
 
-P2 items from the original catalogue still open:
-
-- Charts: Gantt strip, polar / radar, two-column sankey / flow bars.
-- Controls: radial / pie menu, grid picker with snake-order focus, stepper with confirm.
-- Data faces: mini-map (route polyline + position), stopwatch / lap list, teleprompter page,
-  heart-rate zone bands.
-- Game kit: playing cards, clicker "big button" with press feedback.
-- Real-glasses pass: retune default levels, measure long-press timing and swipe throughput, verify
-  raw Gray8 / Gray4 image formats.
+See [ROADMAP.md](ROADMAP.md).
