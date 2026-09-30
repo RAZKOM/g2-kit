@@ -333,7 +333,7 @@ export interface TickerProps {
 }
 
 /**
- * Ticker / marquee. WARNING: every frame costs one image send (~100 ms), so a
+ * Ticker / marquee. WARNING: every frame costs one image send (~350 ms on glasses), so a
  * ticker ties up the image path; keep it short or step by whole words.
  */
 export function renderTicker(fb: Framebuffer, rect: Rect, p: TickerProps, theme: Theme): void {

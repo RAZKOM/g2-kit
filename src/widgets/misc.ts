@@ -124,7 +124,7 @@ export interface SpinnerProps {
 }
 
 /**
- * Busy indicator with 2–4 frames. Each frame is one image send (~100 ms):
+ * Busy indicator with 2–4 frames. Each frame is one image send (~350 ms on glasses):
  * advance it at most every 250–500 ms, and prefer a static "Loading…" state.
  */
 export function renderSpinner(fb: Framebuffer, rect: Rect, p: SpinnerProps, theme: Theme): void {

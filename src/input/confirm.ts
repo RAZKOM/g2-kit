@@ -7,7 +7,7 @@
  * mid-press still delivers the release; how long after touch-down the
  * LONG_PRESS event fires, and whether the ring can refresh fast enough while
  * held, is UNVERIFIED on hardware. Each progress redraw costs one image send
- * (~100 ms), so progress ticks at 100 ms at best.
+ * (~350 ms on glasses), so progress ticks about three times a second at best.
  *
  * TapConfirm: tap arms ("tap again to confirm"), a second tap within
  * `timeoutMs` confirms. Works everywhere; the safe default.

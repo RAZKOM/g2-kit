@@ -274,7 +274,7 @@ export const SAMPLES: Sample[] = [
   s('status-bar', 'Status bar', 'text & chrome', 'P1', W.StatusBar, { time: '09:41', battery: 0.72, signal: 3, slots: [{ icon: 'bell', text: '2' }, { icon: 'music' }], title: 'Home' }),
   s('hud-brackets', 'HUD frame: brackets', 'text & chrome', 'P1', W.HudFrame, { title: 'Target', style: 'brackets' }),
   s('hud-notched', 'HUD frame: notched + bar title', 'text & chrome', 'P1', W.HudFrame, { title: 'System', style: 'notched', titleStyle: 'bar' }),
-  s('ticker', 'Ticker (one frame)', 'text & chrome', 'P1', W.Ticker, { text: 'AAPL 232.1 +1.2%   MSFT 511.9 -0.4%   NVDA 184.2 +2.9%', offset: 40 }, undefined, 'Each frame is one image send (~100 ms).'),
+  s('ticker', 'Ticker (one frame)', 'text & chrome', 'P1', W.Ticker, { text: 'AAPL 232.1 +1.2%   MSFT 511.9 -0.4%   NVDA 184.2 +2.9%', offset: 40 }, undefined, 'Each frame is one image send (~350 ms on glasses).'),
 
   // ── data faces P1 ──
   s('clock', 'Analog clock', 'data faces', 'P1', W.AnalogClock, { hours: 10, minutes: 8, seconds: 36 }),

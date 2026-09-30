@@ -79,7 +79,7 @@ captures input, and image containers are not interactive. So g2-kit splits every
  │ phone into 4-bit framebuffers  │     │ (or a native list)             │
  └───────────────┬────────────────┘     └───────────────┬────────────────┘
                  │ changed tiles only                   │ swipe / tap / double-tap / hold / select
-                 │ (~100 ms per send)                   ▼
+                 │ (~350 ms per send)                   ▼
         ┌────────┴─────────────────────────────────────────────┐
         │ CONTROLLER (your code + FocusRing): event → state →  │
         │ component props → redraw only the tiles that changed │
@@ -150,7 +150,7 @@ Component.renderToTile(props, size?, theme?)  // convenience: a fresh tile
 | Native list | ≤ 20 items, ≤ 63 UTF-8 bytes each | docs (64 chars), simulator (63 bytes) |
 | Text content | ≤ 999 UTF-8 bytes on create/rebuild | docs (1000 chars), simulator (999 bytes) |
 | Menu | ≤ 10 items, non-zero unique IDs, names ≤ 32 bytes; omitting it on rebuild clears it | SDK |
-| Image sends | never concurrent; ~100 ms each | docs |
+| Image sends | never concurrent; ~300–370 ms each on G2 (~450 ms for dense tiles) | measured (`hub-bench`) |
 
 `PageBuilder` rejects violations with a `PageLayoutError` that names every broken rule, e.g.
 `[IMAGE_SIZE] image 'chart': image is 300×144; must be 20–288 × 20–144 px`.

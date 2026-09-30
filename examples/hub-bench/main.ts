@@ -16,6 +16,7 @@
 import { defineComponent, drawText, encodeTile, fillRectPaint, font16x24, font8x12, strokeRect, type Framebuffer } from 'g2-kit/core'
 import { ImageQueue, layouts, type ImageTarget } from 'g2-kit/bridge'
 import { start } from '../shared/phone'
+import { shareResults } from '../shared/results'
 
 const { g2, mirror, mock } = await start()
 
@@ -209,7 +210,7 @@ function summary(): string {
 $('next').onclick = () => void runNext()
 $('all').onclick = () => void runAll()
 $('reset').onclick = () => reset()
-$('copy').onclick = () => void navigator.clipboard?.writeText(summary())
+$<HTMLButtonElement>('copy').onclick = () => void shareResults('hub-bench', summary(), $<HTMLButtonElement>('copy'))
 for (const el of [framesInput, gapsInput, contentSelect]) el.addEventListener('change', () => reset())
 
 g2.on('tap', () => void runNext())

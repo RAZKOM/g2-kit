@@ -7,7 +7,8 @@ prepare the example, then ask the user to run it (`npm run dev:<name>` + `npx ev
 
 | # | Question | How |
 |---|---|---|
-| H1 | Image send speed after Even App v2.3.2 ("2× faster image updates"): can `gapMs` drop below 100 ms without frames getting stuck? | **Ready to run:** `npm run dev:bench` (port 5188) sends N frames per `gapMs` value (default 150/100/75/50/25/0), shows `updateImageRawData` round trip and frames/s on the phone page; record "tile shows N/N" per run and paste "Copy results" back. Then consider `gapMs: 'auto'` (see F4). |
+| H1 | ~~Image send speed: can `gapMs` drop below 100 ms without frames getting stuck?~~ | **Answered 2026-09-30** (STATUS.md): sends take ~300–370 ms (dense tiles ~450 ms), gap 0 left no frame stuck on simple tiles, 0 failures. Follow-ups: H1b, F4. |
+| H1b | What drives the ~350 ms send: bytes after compression, tile size, or format? | Extend `hub-bench` with tile size (288×144 vs smaller), `format` (png / gray4, overlaps H6) and the outline surface; rerun the dense runs recording N/N. |
 | H2 | Do images larger than 288×144 work on hardware? (Glyph uses 576×72, 144×288, 426×288 tiles; the SDK types say 20–288 × 20–144; the simulator doesn't enforce limits.) | Add a hub-lens step that builds an oversized image page with `PageBuilder.build({ allowOversize })` (new escape hatch, off by default) and records what shows. If hardware accepts them, open up new tile layouts. |
 | H3 | Swipe throughput: does every fast swipe arrive while tiles are sending? | `hub-picker` carousel; count events vs swipes (add a counter to the phone page). |
 | H4 | Long-press timing: delay from touch to `hold`; is `HoldToConfirm` progress smooth? | New widget from F3 in `hub-picker`; log timestamps on the phone page. |
@@ -22,7 +23,7 @@ prepare the example, then ask the user to run it (`npm run dev:<name>` + `npx ev
 | F1 | ~~**Ink metric**~~ | Done: `inkRatio`, `INK_BUDGET`; gallery, bench and a budget test with listed exceptions. |
 | F2 | ~~**Outline surface option**~~ | Done: `theme.surface: 'outline'` / `outlineTheme`, `drawBlock`; 13 samples, 30 % → 14 % ink; "Filled vs outline" in the gallery. Not yet looked at on glasses. |
 | F3 | ~~**`promptText(g2, opts)`**~~ | Done: `promptText` + `g2.modal`; hub-picker's keys screen uses it (simulator-checked). |
-| F4 | **Adaptive send pacing** | Measure send round-trip in `ImageQueue` (stats: last/median ms); `gapMs: 'auto'` once H1 says what is safe. |
+| F4 | **Send pacing from H1** | The gap barely matters next to a ~350 ms round trip, and gap 0 left no frame stuck: lower the default `gapMs` (100 → 0–25) after one more check with dense tiles. Add send round-trip stats to `ImageQueue` (last / median ms) so apps can see their frame budget. |
 | F5 | **View stack within one layout** | `g2.views`: push/pop named views that share a layout (no rebuilds), each with its own mounts and gesture handler. The dashboard example is the pattern to generalise. |
 | F6 | **Throttled animation helper** | `g2.animate(fn, { maxFps })` that schedules frames within the send budget (spinner, ticker, hold ring, countdown). |
 | F7 | **Contrast lint (debug)** | Opt-in check in `drawText`: warn when the glyph level minus the level underneath is below a threshold. For app-drawn screens. |

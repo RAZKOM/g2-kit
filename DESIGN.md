@@ -186,6 +186,8 @@ can host a 2×2 dashboard, one chart spanning all four, a keyboard, or a board w
 
 ## 10. Frame budget
 
-Each image send takes ~100 ms and sends never overlap. Design so that one gesture changes one tile: put the
+Each image send takes **~300–370 ms** on G2 glasses (measured with `hub-bench`; ~450 ms for a tile full of
+patterns), so a screen gets 2–3 image updates per second, and sends never overlap. Design so that one gesture changes one tile: put the
 thing that reacts to swipes (a carousel, a cursor) on its own tile, and let `G2`/`Surface` skip tiles whose
-pixels did not change. A ticker or spinner costs one send per frame; use them sparingly.
+pixels did not change. A gesture that changes two tiles takes ~0.7 s to show. A ticker or spinner costs one
+send per frame (2–3 frames/s at best); use them sparingly. Dark, sparse tiles send faster than dense ones.

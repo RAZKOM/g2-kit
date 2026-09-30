@@ -2,8 +2,9 @@
  * The only path to `updateImageRawData`, and where page rebuilds run, so an
  * image send and a rebuild never overlap. Generalised from WordLens.
  *
- *  - One task in flight at a time; ≥ gapMs between image sends (the SDK holds
- *    the image path ~100 ms per send; that is the frame budget).
+ *  - One task in flight at a time; ≥ gapMs between image sends. On G2 glasses a
+ *    send itself takes ~300–370 ms (measured with examples/hub-bench), and that
+ *    round trip is the frame budget; the gap adds little on top.
  *  - Coalescing: a newer frame for a container replaces its pending one, and
  *    frames render lazily at send time, so only the latest state is sent.
  *  - Rebuild-aware: an `op` (page create/rebuild) drops image frames queued

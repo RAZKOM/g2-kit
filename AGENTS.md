@@ -52,7 +52,7 @@ npm run bench
   exactly one capture, zOrder all-or-none unique, list ≤ 20 items, text ≤ 999 bytes, menu ≤ 10.
 - Prefer switching views inside one layout: `G2.show()` skips identical-layout rebuilds. A rebuild to four
   full-size images once left the right lens empty on real glasses (STATUS.md).
-- One gesture should cost one tile send (~100 ms each). Put swipe-reactive UI on its own tile.
+- One gesture should cost one tile send (~350 ms each on glasses, measured; STATUS.md). Put swipe-reactive UI on its own tile.
 - Honesty rule: never mark anything "verified on glasses" unless the user tested it on hardware. Levels:
   unit / gallery / simulator / glasses (STATUS.md).
 - Published PNGs (docs, site) use `deflate`; tiles sent to the glasses stay uncompressed (SDK compresses).

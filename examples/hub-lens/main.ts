@@ -8,6 +8,7 @@ import { Framebuffer, defineComponent, drawText, font16x24, font8x12, strokeRect
 import { PageBuilder, layouts, type Page } from 'g2-kit/bridge'
 import { blankTextSkeleton } from 'g2-kit/input'
 import { start } from '../shared/phone'
+import { shareResults } from '../shared/results'
 
 const { g2, mirror } = await start({ doubleTapExits: true })
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -143,7 +144,7 @@ async function next(): Promise<void> {
 nextBtn.onclick = () => void next()
 copyBtn.onclick = () => {
   summary()
-  void navigator.clipboard?.writeText(out.textContent ?? '')
+  void shareResults('hub-lens', out.textContent ?? '', copyBtn)
 }
 g2.on('tap', () => void next())
 

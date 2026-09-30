@@ -31,7 +31,8 @@ What is done and how each part was verified.
 | Host 8-bit → gray4 conversion is linear `round(v/17)` | | | ✓ measured (`hub-ramp`) | – |
 | Brightness curve (levels ~9–15 identical) | | | ✓ measured (`hub-calibrate`, `hub-ramp`) | ✓ same shape by eye (levels off ~8–10) |
 | Default theme levels (0/2/4/6/8/15) | ✓ | ✓ | ✓ distinct | ✓ distinct by eye; level 1 visible |
-| ImageQueue: serial, coalescing, rebuild drop, retry, typed errors | ✓ | | ✓ (no overlapping sends, correct order) | – |
+| ImageQueue: serial, coalescing, rebuild drop, retry, typed errors | ✓ | | ✓ (no overlapping sends, correct order) | ✓ 360 sends in `hub-bench`, 0 failed, 0 retried |
+| Image send time (one 288×144 PNG tile) | | | ~10 ms (no BLE, not meaningful) | ✓ measured: median 300–370 ms (simple tile), 430–500 ms (dense pattern); ~2–3 frames/s |
 | PageBuilder validation (all rules) | ✓ | | layouts accepted by the simulator | – |
 | All 6 layout presets | ✓ | | twoTilesWithList, twoTilesWithControl, dashboardQuad, fullScreen ✓; heroSidebar, menuPage unit only | fullScreen ✓ |
 | Event normalisation | ✓ every truth-table row | | ✓ list tap, list swipe (no event), text swipes, tap, double-tap, long press, release | WordLens reports |
@@ -61,8 +62,32 @@ What is done and how each part was verified.
 4. Render time per tile in the phone WebView (shown on every example page).
 5. Raw Gray8 / packed Gray4 image data (`format`), which would skip PNG encoding.
 6. ~~Font readability~~: all four text rows on the card read comfortably.
-7. Image send speed: `updateImageRawData` round trip and whether `gapMs` < 100 ms leaves frames stuck
-   (`npm run dev:bench`, ROADMAP H1).
+7. ~~Image send speed~~: measured 2026-09-30, see "Image send speed on glasses" below.
+   Still open: whether the busy-pattern runs ended on N/N (not recorded), and what drives the send time
+   (bytes after the SDK's compression? tile size? format?).
+
+## Image send speed on glasses (H1, 2026-09-30)
+
+`hub-bench` on the user's G2 glasses, 30 frames per run, one 288×144 tile (8-bit PNG, 41 684 bytes before the
+SDK compresses it), timing each `updateImageRawData` from call to result:
+
+| `gapMs` | frames/s, simple tile | send median / p95, simple | frames/s, dense pattern | send median / p95, dense |
+|---|---|---|---|---|
+| 150 | 2.1 | 337 / 420 ms | 1.7 | 476 / 618 ms |
+| 100 (default) | 2.4 | 300 / 387 ms | 1.8 | 467 / 669 ms |
+| 75 | 2.5 | 324 / 410 ms | 1.8 | 496 / 584 ms |
+| 50 | 2.6 | 334 / 460 ms | 2.0 | 462 / 580 ms |
+| 25 | 2.7 | 344 / 433 ms | 2.2 | 426 / 545 ms |
+| 0 | 2.8 | 372 / 401 ms | 2.0 | 487 / 577 ms |
+
+- A send takes **~300–370 ms**, not the ~100 ms the platform docs suggested; the round trip dominates, so the
+  gap barely matters (gap 0 is ~15 % faster than the default 100 ms).
+- No failures or retries in 360 sends. With the simple tile every run ended on the last frame (30/30), down to
+  gap 0: no stuck frames. The dense-pattern runs did not record N/N.
+- Content matters: a dense pattern takes ~40 % longer than a mostly black tile, although the PNG bytes are the
+  same size, so the SDK's compression (or the transfer after it) sets the time. Fewer lit pixels, e.g. the
+  outline surface, should also mean faster sends (not measured).
+- Encoding on the phone is 1–3 ms per tile; rendering is not the bottleneck.
 
 ## Known hardware issue: one lens after a rebuild
 

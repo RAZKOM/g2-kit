@@ -1,7 +1,7 @@
 /**
  * Tile spanning: draw one logical framebuffer (e.g. 576×288) and split it into
  * ≤ 4 image tiles of ≤ 288×144. Tracks what was last sent per tile so only
- * changed tiles are re-sent (each send costs ~100 ms).
+ * changed tiles are re-sent (each send costs ~350 ms on glasses).
  */
 import { TILE_H, TILE_W } from './component.js'
 import { Framebuffer } from './framebuffer.js'

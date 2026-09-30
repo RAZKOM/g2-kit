@@ -3,6 +3,16 @@
 All notable changes to g2-kit. This project follows [semver](https://semver.org/); until 1.0, minor versions
 may change APIs.
 
+## Unreleased
+
+- Docs: image sends measured on G2 glasses with `hub-bench`: ~300–370 ms per 288×144 tile (~450 ms for a
+  dense pattern), not ~100 ms; no failures and no stuck frames down to `gapMs: 0`. STATUS.md has the table;
+  DESIGN.md's frame budget, the README limits and code comments are corrected.
+- Examples: "Copy results" in `hub-bench` and `hub-lens` works on a sideloaded phone. A sideloaded page is
+  plain http on the PC's LAN address, where the clipboard API is missing, so the button did nothing. It now
+  saves the results on the PC through the dev server (`examples/output/results/`), copies with a fallback
+  that works over http, and shows the text in a box to select by hand; the button says what worked.
+
 ## 0.2.0 (2026-09-30)
 
 - Ink metric: `inkRatio(fb, rect?, min?)` (share of lit pixels) and `INK_BUDGET` (0.25) in `g2-kit/core`.

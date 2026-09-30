@@ -64,7 +64,7 @@ Every row is also a unit test (`test/bridge.test.ts`).
 ### Still open
 
 - How long after touch-down `LONG_PRESS_EVENT` fires, and whether `HoldToConfirm` progress (one send per
-  ~100 ms) is smooth enough.
+  ~350 ms on glasses, so ~3 steps per second) is smooth enough.
 - Whether every fast swipe reaches the app when the image path is busy (WordLens says yes for one tile).
 - `foreground` / `background` events: the simulator does not emit status events.
 - Whether hardware accepts raw Gray8 / packed Gray4 image data (`format: 'gray8' | 'gray4'`); the simulator
