@@ -3,7 +3,7 @@
 All notable changes to g2-kit. This project follows [semver](https://semver.org/); until 1.0, minor versions
 may change APIs.
 
-## Unreleased
+## 0.3.0 (2026-09-30)
 
 ### New
 - **Text components**: the firmware-text counterpart of drawn components, for readouts that change often. A text
