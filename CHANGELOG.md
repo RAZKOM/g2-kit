@@ -5,47 +5,48 @@ may change APIs.
 
 ## Unreleased
 
-- Text components use the glyphs the G2 font draws: `━ ─` progress lines (or `█` blocks with eighth-cell
-  precision, `blocks: true`), `━━━●───` sliders with `▶ / ▷` focus and `◀ ▶` edit markers, arrow / triangle /
-  pulse spinners. `glyphs: 'ascii'` keeps the plain versions. New `TextMenu` (a `▶` cursor over items, optional
-  `● / ○` checks, a scrolling window with `▲ ▼`) and `TextToggle` (`● On` / `○ Off`).
-- `unsupportedTextChars(text)` (core) lists characters the G2 firmware font cannot draw; `g2.textArea` warns
-  once per character, and about text updates over 2000 characters (`MAX_TEXT_UPDATE_CHARS`).
-- Text components (`g2-kit/core` `defineTextComponent`, `g2-kit/widgets` `TextSpinner`, `TextProgress`,
-  `TextSlider`): props → string for firmware text containers, no image send (~60 ms per update on G2 vs
-  ~260 ms for an image). `G2.textArea(container)` (`TextArea` in `g2-kit/bridge`) composes plain-text and
-  component slots (one line each, or your own `layout`), sends only changed text and coalesces bursts; it works
-  inline in a page's existing text container or in a container of its own. New layout preset
-  `layouts.textBoxes()`: text containers stacked from the top, optionally above one tile.
-- `G2.settle()` also waits for pending text-area updates.
-- Examples: new `hub-text` (`npm run dev:text`, port 5191; also on the demo site). `hub-bench`'s text sweep adds
-  "text, own box" (a non-capture text container); measured on G2 it updates in 60 ms, the same as the
-  capture container.
+### New
+- **Text components**: the firmware-text counterpart of drawn components, for readouts that change often. A text
+  update took ~60 ms on G2 glasses vs ~260 ms for an image send (4× faster). `defineTextComponent` (core);
+  `TextSpinner`, `TextProgress`, `TextSlider`, `TextMenu` (a `▶` cursor over items, optional `● / ○` checks, a
+  scrolling window with `▲ ▼`) and `TextToggle` (`● On` / `○ Off`) in `g2-kit/widgets`. They use the glyphs the G2
+  font draws (`━ ─ █ ● ▶ ▷ ◀ ↗`; progress can fill by eighths with `blocks: true`); `glyphs: 'ascii'` gives plain
+  versions. Checked on G2 glasses: both styles read well.
+- **`G2.textArea(container)`** (`TextArea` in `g2-kit/bridge`): retained content for a text container. Composes
+  plain-text and component slots (one line each, or your own `layout`), sends only changed text and coalesces
+  bursts. Works inline in a page's existing text container or in a container of its own. `G2.settle()` also
+  waits for pending text updates.
+- **`layouts.textBoxes()`**: text containers stacked from the top (one text component per box), optionally above
+  one tile. Defaults to 4 px padding so a one-line box fits its line (an overflowing capture box would scroll
+  and eat swipes).
+- **`unsupportedTextChars(text)`** (core) lists characters the G2 font cannot draw (emoji, `…`, `•`);
+  `g2.textArea` warns about them and about updates over 2000 characters (`MAX_TEXT_UPDATE_CHARS`).
+- **`theme.surfaceTexture`** (default true): `false` draws outline blocks as plain frames, without the dots in
+  bars and the hatch in progress fills. Outline progress bars then send as fast as filled ones.
 
-- Docs: measured on G2 glasses (STATUS.md): outline bar charts send ~10 % slower than filled with or without
-  textures; outline progress is as fast as filled with `surfaceTexture: false`; a firmware text update takes
-  ~60 ms vs ~260 ms for an image send (~4× faster), so text-only components (ROADMAP F12) are next.
-- `theme.surfaceTexture` (default true): `false` draws outline blocks as plain frames, without the sparse dots
-  in bars and the hatch in progress fills (less picture detail, which costs send time on the glasses).
-- Examples: `hub-bench` sweeps "surface" (bar chart and progress bar: filled, outline, plain outline; H1c) and
-  "text" (an image progress bar vs the same progress as firmware text; H1d).
-- Docs: what sets the image send time on G2 glasses (hub-bench sweeps, STATUS.md): ~200 ms fixed per send plus
-  time for picture detail; bytes and image format barely matter; all four formats display on hardware (H6);
-  the outline bar chart sends ~10 % slower than the filled one. DESIGN.md's frame budget and ink sections
-  say how to design for it.
-- Examples: `hub-bench` sweeps one factor per run: gap, tile size (288×144 → 72×72), image format (png, png4,
-  gray8, gray4) or tile content (blank, simple, dense, bar chart filled vs outline surface), to find what sets
-  the ~350 ms send time (ROADMAP H1b, H6). `sim:check` scenarios can take a query string.
-- `gapMs` (ImageQueue / G2) now defaults to 25 ms instead of 100 ms: on G2 glasses the send itself takes
-  ~350 ms and gaps down to 0 left no frame stuck, simple or dense tiles (hub-bench). About 10 % more frames
-  per second; pass `gapMs: 100` for the old pacing.
-- Docs: image sends measured on G2 glasses with `hub-bench`: ~300–370 ms per 288×144 tile (~450 ms for a
-  dense pattern), not ~100 ms; no failures and no stuck frames down to `gapMs: 0`. STATUS.md has the table;
-  DESIGN.md's frame budget, the README limits and code comments are corrected.
-- Examples: "Copy results" in `hub-bench` and `hub-lens` works on a sideloaded phone. A sideloaded page is
-  plain http on the PC's LAN address, where the clipboard API is missing, so the button did nothing. It now
-  saves the results on the PC through the dev server (`examples/output/results/`), copies with a fallback
-  that works over http, and shows the text in a box to select by hand; the button says what worked.
+### Changed
+- **`gapMs` now defaults to 25 ms** (was 100 ms) in `ImageQueue` / `G2`: on G2 glasses a send itself takes
+  ~350 ms, and gaps down to 0 left no frame stuck. About 10 % more frames per second; pass `gapMs: 100` for the
+  old pacing.
+
+### Measured on G2 glasses (STATUS.md has the tables)
+- An image send takes ~200 ms fixed plus time for picture detail: ~350 ms for a simple 288×144 tile, ~520 ms
+  for a detailed chart, ~540 ms for a dense pattern; not the ~100 ms the platform docs suggested. Bytes and
+  image format barely matter (png, png4, gray8 and gray4 all display correctly; none is faster); smaller tiles
+  help a little. No failures in 900+ sends.
+- Outline bar charts send ~10 % slower than filled ones, with or without textures (the frames are the detail).
+- A text update takes ~60 ms in the capture container and in a container of its own.
+- DESIGN.md's frame budget and ink sections, the README limits and code comments now use these numbers.
+
+### Examples and tooling
+- New `hub-text` (`npm run dev:text`, port 5191; also on the demo site): a spinner and progress bar inline in the
+  page's text, then a settings page with a `TextSlider` per text box.
+- `hub-bench` sweeps one factor per run: gap, tile size, image format, tile content, outline surface, or text vs
+  image (incl. a text container of its own).
+- "Copy results" in `hub-bench` and `hub-lens` works on a sideloaded phone (plain http, where the clipboard API
+  is missing): it saves the results on the PC through the dev server (`examples/output/results/`), copies with
+  a fallback, and shows the text to select by hand.
+- `sim:check` scenarios can take a query string.
 
 ## 0.2.0 (2026-09-30)
 
