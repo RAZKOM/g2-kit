@@ -22,11 +22,11 @@ import { encodeTile, type Framebuffer, type TileFormat } from 'g2-kit/core'
 import { ImageQueue, PageBuilder, type ImageTarget, type Page } from 'g2-kit/bridge'
 import { start } from '../shared/phone'
 import { shareResults } from '../shared/results'
-import { BenchFrame, type Content } from './frame'
+import { BenchFrame, textFrame, type Content } from './frame'
 
 const { g2, mirror, mock } = await start()
 
-type Sweep = 'gap' | 'size' | 'format' | 'content'
+type Sweep = 'gap' | 'size' | 'format' | 'content' | 'surface' | 'text'
 interface Case {
   gap: number
   w: number
@@ -41,9 +41,13 @@ const SWEEPS: Record<Sweep, (gaps: number[]) => Case[]> = {
   size: () => [[288, 144], [288, 72], [144, 144], [144, 72], [72, 72]].map(([w, h]) => ({ ...BASE, w, h })),
   format: () => (['png', 'png4', 'gray8', 'gray4'] as const).map((format) => ({ ...BASE, format })),
   content: () => (['blank', 'simple', 'busy', 'chart', 'chart-outline'] as const).map((content) => ({ ...BASE, content })),
+  // H1c: is the outline surface's extra send time its textures? Filled vs outline vs outline with plain frames.
+  surface: () => (['chart', 'chart-outline', 'chart-outline-plain', 'progress', 'progress-outline', 'progress-outline-plain'] as const).map((content) => ({ ...BASE, content })),
+  // Image progress bar vs the same progress as firmware text (textContainerUpgrade, no image).
+  text: () => (['progress', 'text'] as const).map((content) => ({ ...BASE, content })),
 }
 const label = (c: Case, sweep: Sweep) =>
-  sweep === 'gap' ? `gap ${c.gap} ms` : sweep === 'size' ? `${c.w}×${c.h}` : sweep === 'format' ? c.format : c.content
+  sweep === 'gap' ? `gap ${c.gap} ms` : sweep === 'size' ? `${c.w}×${c.h}` : sweep === 'format' ? c.format : c.content === 'text' ? 'text (no image)' : c.content
 
 interface Run extends Case {
   name: string
@@ -141,6 +145,19 @@ async function runCase(c: Case): Promise<Run> {
     },
   )
   const t0 = performance.now()
+  if (c.content === 'text') {
+    // No image: each frame is a firmware text update, timed the same way.
+    for (let i = 1; i <= n; i++) {
+      if (i > 1 && c.gap) await new Promise((r) => setTimeout(r, c.gap))
+      const s = performance.now()
+      const ok = await g2.host.updateText!({ containerID: TEXT.id, containerName: TEXT.name }, `${name}
+${textFrame(i, n)}`).catch(() => false)
+      run.rts.push(performance.now() - s)
+      if (!ok) run.failed++
+    }
+    run.ms = performance.now() - t0
+    return run
+  }
   for (let i = 1; i <= n; i++) {
     queue.image(target, () => {
       const e0 = performance.now()
@@ -170,8 +187,11 @@ async function runNext(): Promise<void> {
     console.log(`[hub-bench] ${line}, interval ${ms(run.ms / run.frames)} ms, failed ${run.failed}, retried ${run.retried}, ${run.bytes} bytes`)
     render()
     const next = cases()[runs.length]
+    const text = run.content === 'text'
+    // A text run's last frame is in the text container this message replaces: leave it up a moment.
+    if (text) await new Promise((r) => setTimeout(r, 1500))
     await say(`${line}${run.failed ? `, ${run.failed} failed` : ''}
-Does the tile show ${run.frames}/${run.frames} and look right? Record it on the phone.
+${text ? `Did the text count up to ${run.frames}/${run.frames}?` : `Does the tile show ${run.frames}/${run.frames} and look right?`} Record it on the phone.
 ${next === undefined ? 'Sweep done: save the results on the phone. tap: start over' : `tap: run ${label(next, sweep())}`}`)
   } catch (e) {
     mirror.log(`run failed: ${e instanceof Error ? e.message : String(e)}`)

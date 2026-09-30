@@ -143,7 +143,8 @@ the block came out solid, so content on it is punched out (level 0) or drawn lit
 change, ink drops from 30 % to 14 %; `npm run gallery` writes `surface-sheet.png` with both side by side.
 
 Trade-off, measured on the glasses: the outline bar chart sends ~10 % *slower* than the filled one (570 vs
-520 ms), because frames and sparse dots are more detail than solid bars. Choose outline for see-through, filled
+520 ms), because frames and sparse dots are more detail than solid bars. `surfaceTexture: false` drops the dots
+and hatches (plain frames); whether that sends as fast as filled is being measured (ROADMAP H1c). Choose outline for see-through, filled
 for update speed; a screen that updates on every swipe may be better filled.
 
 ## 7. Recommended sizes

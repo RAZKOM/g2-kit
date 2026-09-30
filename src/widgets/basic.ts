@@ -1,5 +1,5 @@
 /** Toggle, progress bar and big text: small P0 widgets. */
-import { drawBlock, isOutline } from '../core/block.js'
+import { drawBlock, isOutline, outlineTexture } from '../core/block.js'
 import { defineComponent } from '../core/component.js'
 import { fillCircle, fillRectPaint, roundRect, strokeCircle, strokeRect } from '../core/draw.js'
 import type { Framebuffer } from '../core/framebuffer.js'
@@ -91,9 +91,14 @@ export function renderProgressBar(fb: Framebuffer, rect: Rect, p: ProgressBarPro
   }
   const bh = Math.min(p.barHeight ?? 16, r.h)
   const by = Math.round(r.y + (r.h - bh) / 2)
-  // The done part: solid, or hatched under the outline surface.
+  // The done part: solid; hatched under the outline surface; a 2 px frame with `surfaceTexture: false`.
   const outline = isOutline(theme)
-  const fillDone = (x: number, y: number, w: number, h: number) => fillRectPaint(fb, x, y, w, h, outline ? { pattern: 'hatch', level: lv.bright } : lv.bright)
+  const texture = outlineTexture(theme)
+  const fillDone = (x: number, y: number, w: number, h: number) => {
+    if (!outline) fb.fillRect(x, y, w, h, lv.bright)
+    else if (texture) fillRectPaint(fb, x, y, w, h, { pattern: 'hatch', level: lv.bright })
+    else strokeRect(fb, x, y, w, h, lv.bright, 2)
+  }
   if (p.segments && p.segments > 1) {
     const n = p.segments
     const gap = 3
@@ -104,7 +109,7 @@ export function renderProgressBar(fb: Framebuffer, rect: Rect, p: ProgressBarPro
       const w = Math.round(r.x + (i + 1) * (sw + gap) - gap) - x
       if (i + 1 <= lit + 1e-9) {
         fillDone(x, by, w, bh)
-        if (outline) strokeRect(fb, x, by, w, bh, lv.bright, 1)
+        if (texture) strokeRect(fb, x, by, w, bh, lv.bright, 1)
       } else if (i < lit) {
         // Partially lit segment: fill proportionally, rest outline.
         strokeRect(fb, x, by, w, bh, lv.dim, 1)

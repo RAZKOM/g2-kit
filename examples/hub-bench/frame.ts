@@ -1,8 +1,31 @@
 /** hub-bench tile content (no DOM, so scripts can render it). */
-import { defineComponent, drawText, fillRectPaint, font16x24, font8x12, outlineTheme, strokeRect } from 'g2-kit/core'
+import { createTheme, defineComponent, drawText, fillRectPaint, font16x24, font8x12, outlineTheme, strokeRect, type Theme } from 'g2-kit/core'
 import { BarChart, type BarChartProps } from 'g2-kit/charts'
+import { ProgressBar } from 'g2-kit/widgets'
 
-export type Content = 'blank' | 'simple' | 'busy' | 'chart' | 'chart-outline'
+export type Content =
+  | 'blank'
+  | 'simple'
+  | 'busy'
+  | 'chart'
+  | 'chart-outline'
+  | 'chart-outline-plain'
+  | 'progress'
+  | 'progress-outline'
+  | 'progress-outline-plain'
+  /** Not an image: the frame is text in the firmware text container (see main.ts). */
+  | 'text'
+
+/** Outline surface without textures (plain frames). */
+const outlinePlain = createTheme({ surface: 'outline', surfaceTexture: false })
+const themeOf = (c: Content): Theme | undefined => (c.endsWith('-plain') ? outlinePlain : c.endsWith('-outline') ? outlineTheme : undefined)
+
+/** The text-only frame: a progress bar and counter in firmware text, no image. */
+export function textFrame(i: number, n: number): string {
+  const cells = 20
+  const done = Math.round((cells * i) / n)
+  return `[${'#'.repeat(done)}${'-'.repeat(cells - done)}] ${i}/${n}`
+}
 
 /** The gallery's bar chart ('bar-vertical'): solid bars, or frames with the outline surface. */
 const CHART: BarChartProps = {
@@ -16,9 +39,14 @@ const CHART: BarChartProps = {
 /** One frame: a counter (big when there is room), and the case's content. */
 export const BenchFrame = defineComponent<{ i: number; n: number; name: string; content: Content }>('BenchFrame', { w: 288, h: 144 }, (fb, r, p) => {
   const counter = `${p.i}/${p.n}`
-  if (p.content === 'chart' || p.content === 'chart-outline') {
+  if (p.content.startsWith('progress')) {
+    // A progress bar (the gallery's 260×40 size) at i/n: filled, outline (hatch), or outline with plain frames.
+    ProgressBar.render(fb, { x: r.x + (r.w - 260) / 2, y: r.y + (r.h - 40) / 2, w: 260, h: 40 }, { value: p.i / p.n, label: 'Download' }, themeOf(p.content))
+    return
+  }
+  if (p.content.startsWith('chart')) {
     // The gallery bar chart, filled or outline, with a small counter in the corner so every frame differs.
-    BarChart.render(fb, r, CHART, p.content === 'chart-outline' ? outlineTheme : undefined)
+    BarChart.render(fb, r, CHART, themeOf(p.content))
     const w = counter.length * font8x12.advance + 6
     fb.fillRect(r.x + r.w - w, r.y, w, font8x12.glyphH + 4, 0)
     drawText(fb, counter, r.x + r.w - 3, r.y + 2, { font: font8x12, level: 15, align: 'right' })

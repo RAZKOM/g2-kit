@@ -71,6 +71,12 @@ export interface Theme {
   smallScale: number
   /** Solid blocks drawn filled (default) or as outlines. */
   surface?: SurfaceStyle
+  /**
+   * Light textures inside outline blocks: sparse dots in bars, hatch in progress fills (default true). Plain
+   * frames have less detail, which may send faster to the glasses (texture and edges cost send time; see
+   * STATUS.md, H1c).
+   */
+  surfaceTexture?: boolean
 }
 
 export const defaultTheme: Theme = {
@@ -100,6 +106,7 @@ export interface ThemeOverrides {
   fonts?: Partial<ThemeFonts>
   smallScale?: number
   surface?: SurfaceStyle
+  surfaceTexture?: boolean
 }
 
 export function createTheme(over: ThemeOverrides = {}, base: Theme = defaultTheme): Theme {

@@ -24,6 +24,11 @@ export function isOutline(theme: Theme): boolean {
   return theme.surface === 'outline'
 }
 
+/** True when outline blocks get their light texture (`theme.surfaceTexture`, default true). */
+export function outlineTexture(theme: Theme): boolean {
+  return isOutline(theme) && theme.surfaceTexture !== false
+}
+
 /**
  * A block at `level`: solid under the default surface, a frame (plus optional
  * texture) under `surface: 'outline'`. Blocks too small for a frame stay solid.
@@ -38,7 +43,7 @@ export function drawBlock(fb: Framebuffer, x: number, y: number, w: number, h: n
     else fb.fillRect(x, y, w, h, level)
     return true
   }
-  if (opts.texture) {
+  if (opts.texture && theme.surfaceTexture !== false) {
     // Texture first, inset by the frame, so the frame's edge stays clean.
     if (r > 0) roundRect(fb, x + bw, y + bw, w - 2 * bw, h - 2 * bw, Math.max(0, r - bw), { fill: { pattern: opts.texture, level } })
     else fillRectPaint(fb, x + bw, y + bw, w - 2 * bw, h - 2 * bw, { pattern: opts.texture, level })

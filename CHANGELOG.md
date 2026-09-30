@@ -5,6 +5,10 @@ may change APIs.
 
 ## Unreleased
 
+- `theme.surfaceTexture` (default true): `false` draws outline blocks as plain frames, without the sparse dots
+  in bars and the hatch in progress fills (less picture detail, which costs send time on the glasses).
+- Examples: `hub-bench` sweeps "surface" (bar chart and progress bar: filled, outline, plain outline; H1c) and
+  "text" (an image progress bar vs the same progress as firmware text; H1d).
 - Docs: what sets the image send time on G2 glasses (hub-bench sweeps, STATUS.md): ~200 ms fixed per send plus
   time for picture detail; bytes and image format barely matter; all four formats display on hardware (H6);
   the outline bar chart sends ~10 % slower than the filled one. DESIGN.md's frame budget and ink sections

@@ -2,7 +2,7 @@
  * Grouped and stacked bars. Series are told apart by fill pattern (solid,
  * hatch, dots, …), not by brightness alone.
  */
-import { drawBlock, isOutline } from '../core/block.js'
+import { drawBlock, isOutline, outlineTexture } from '../core/block.js'
 import { defineComponent } from '../core/component.js'
 import { fillRectPaint, strokeRect } from '../core/draw.js'
 import { seriesStyle, warnSeries } from '../core/encodings.js'
@@ -36,9 +36,13 @@ export function seriesPaint(i: number, theme: Theme, fill?: FillPattern, dim = f
   return pattern === 'solid' ? level : { pattern, level }
 }
 
-/** Under `surface: 'outline'` a solid paint becomes sparse dots (stacked segments keep their 1 px frame). */
-function surfacePaint(paint: Paint, theme: Theme): Paint {
-  return isOutline(theme) && isSolid(paint) ? { pattern: 'sparseDots', level: paint } : paint
+/**
+ * Under `surface: 'outline'` a solid paint becomes sparse dots, or nothing with `surfaceTexture: false`
+ * (stacked segments keep their 1 px frame).
+ */
+function surfacePaint(paint: Paint, theme: Theme): Paint | null {
+  if (!isOutline(theme) || !isSolid(paint)) return paint
+  return outlineTexture(theme) ? { pattern: 'sparseDots', level: paint } : null
 }
 
 export function renderMultiBarChart(fb: Framebuffer, rect: Rect, p: MultiBarChartProps, theme: Theme): void {
@@ -73,7 +77,8 @@ export function renderMultiBarChart(fb: Framebuffer, rect: Rect, p: MultiBarChar
         const v = Math.max(0, s.values[i] ?? 0)
         const h = Math.round(bottom - y(v))
         if (h <= 0) return
-        fillRectPaint(fb, x0, base - h, groupW, h, surfacePaint(seriesPaint(si, theme, s.fill, dim), theme))
+        const paint = surfacePaint(seriesPaint(si, theme, s.fill, dim), theme)
+        if (paint !== null) fillRectPaint(fb, x0, base - h, groupW, h, paint)
         strokeRect(fb, x0, base - h, groupW, h, dim ? lv.mid : lv.full, 1)
         // 1 px gap between segments so the stack reads as parts.
         fb.fillRect(x0, base - h, groupW, 1, 0)

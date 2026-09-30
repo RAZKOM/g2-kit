@@ -152,6 +152,10 @@ describe('ink and surfaces', () => {
     drawBlock(dotted, 0, 0, 9, 9, 8, outlineTheme, { texture: 'sparseDots', double: true })
     expect(inkRatio(dotted)).toBeGreaterThan(inkRatio(frame))
     expect(inkRatio(dotted)).toBeLessThan(1)
+    // surfaceTexture: false leaves just the frame.
+    const plain = new Framebuffer(9, 9)
+    drawBlock(plain, 0, 0, 9, 9, 8, createTheme({ surface: 'outline', surfaceTexture: false }), { texture: 'sparseDots' })
+    expect(plain.equals(frame)).toBe(true)
     // Too small for a frame: stays solid.
     const tiny = new Framebuffer(6, 6)
     expect(drawBlock(tiny, 0, 0, 6, 6, 8, outlineTheme)).toBe(true)
