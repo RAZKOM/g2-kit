@@ -144,8 +144,9 @@ change, ink drops from 30 % to 14 %; `npm run gallery` writes `surface-sheet.png
 
 Trade-off, measured on the glasses: the outline bar chart sends ~10 % *slower* than the filled one (570 vs
 520 ms), because frames and sparse dots are more detail than solid bars. `surfaceTexture: false` drops the dots
-and hatches (plain frames); whether that sends as fast as filled is being measured (ROADMAP H1c). Choose outline for see-through, filled
-for update speed; a screen that updates on every swipe may be better filled.
+and hatches (plain frames): measured, that makes outline progress bars as fast as filled ones (260 ms), but
+outline bar charts stay ~10 % slower either way, since the frames are the extra detail. Choose outline for
+see-through, filled for update speed; a screen that updates on every swipe may be better filled.
 
 ## 7. Recommended sizes
 
@@ -201,3 +202,7 @@ What a send costs (measured, STATUS.md): **~200 ms fixed per send**, plus time f
 ~200 ms, a big counter ~350 ms, a detailed chart or a hatched area ~500–550 ms. Bytes and image format barely
 matter; edges and texture do (the SDK compresses the picture). So: fewer sends first, then fewer edges.
 Solid areas are cheap; patterns, hatching and dithering are the most expensive thing you can draw.
+
+Cheapest of all is no image: updating a firmware text container (`G2.setText`) took ~60 ms on the glasses vs
+~260 ms for the same progress drawn on a tile (10 vs 3.5 updates/s). Put fast-changing readouts (progress,
+counters, status lines) in text when the firmware font is good enough.

@@ -222,7 +222,7 @@ function render(): void {
   body.innerHTML = ''
   runs.forEach((r) => {
     const tr = document.createElement('tr')
-    const cells = [r.name, r.frames, fps(r).toFixed(1), ms(r.ms / r.frames), ms(median(r.rts)), ms(pick(r.rts, 0.95)), ms(pick(r.rts, 1)), `${r.failed}${r.retried ? ` (+${r.retried} retried)` : ''}`, median(r.encode).toFixed(1), r.bytes]
+    const cells = [r.name, r.frames, fps(r).toFixed(1), ms(r.ms / r.frames), ms(median(r.rts)), ms(pick(r.rts, 0.95)), ms(pick(r.rts, 1)), `${r.failed}${r.retried ? ` (+${r.retried} retried)` : ''}`, (r.encode.length ? median(r.encode).toFixed(1) : "-"), r.bytes]
     for (const c of cells) {
       const td = document.createElement('td')
       td.textContent = String(c)
@@ -252,7 +252,7 @@ function summary(): string {
   const head = `hub-bench ${new Date().toISOString().slice(0, 16)} · ${mock ? 'mock host (browser)' : 'glasses'} · ${sweep()} sweep · ${runs[0].frames} frames per run · ${base}`
   const lines = runs.map(
     (r) =>
-      `${r.name.padEnd(14)}: ${fps(r).toFixed(1).padStart(5)} frames/s, interval ${ms(r.ms / r.frames)} ms, send median ${ms(median(r.rts))} / p95 ${ms(pick(r.rts, 0.95))} / max ${ms(pick(r.rts, 1))} ms, failed ${r.failed}, retried ${r.retried}, encode ${median(r.encode).toFixed(1)} ms, ${r.bytes} bytes; tile shows N/N: ${r.seen ?? '?'}`,
+      `${r.name.padEnd(14)}: ${fps(r).toFixed(1).padStart(5)} frames/s, interval ${ms(r.ms / r.frames)} ms, send median ${ms(median(r.rts))} / p95 ${ms(pick(r.rts, 0.95))} / max ${ms(pick(r.rts, 1))} ms, failed ${r.failed}, retried ${r.retried}, encode ${(r.encode.length ? median(r.encode).toFixed(1) : "-")} ms, ${r.bytes} bytes; tile shows N/N: ${r.seen ?? '?'}`,
   )
   return [head, ...lines].join('\n')
 }

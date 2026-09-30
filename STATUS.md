@@ -122,6 +122,27 @@ SDK compresses it), timing each `updateImageRawData` from call to result:
 - Format: keep the default `png`; all four work on hardware (H6), none is faster, and encoding costs
   1–2 ms either way.
 
+## Outline textures and text updates (H1c, H1d, 2026-09-30)
+
+Same glasses, 30 frames per run, gap 25 ms, 288×144 PNG tiles; every run ended on the last frame, 0 failures.
+
+| Case | send median / p95 | frames/s |
+|---|---|---|
+| bar chart, filled | 517 / 718 ms | 1.8 |
+| bar chart, outline (sparse dots in bars) | 570 / 662 ms | 1.7 |
+| bar chart, outline, plain frames (`surfaceTexture: false`) | 570 / 723 ms | 1.6 |
+| progress bar, filled | 259 / 321 ms | 3.5 |
+| progress bar, outline (hatched fill) | 286 / 344 ms | 3.2 |
+| progress bar, outline, plain frames | 260 / 317 ms | 3.4 |
+| progress as an image tile (text sweep) | 259 / 316 ms | 3.5 |
+| **progress as firmware text** (`textContainerUpgrade`, no image) | **61 / 118 ms** | **10.0** |
+
+- **Outline bars cost ~10 % more to send, with or without textures**: the frames themselves are the extra
+  detail. Keeping the dots costs nothing extra, so `surfaceTexture` stays on by default for bars.
+- **Outline progress costs ~10 % more because of its hatch**; with plain frames it sends like the filled bar.
+- **A text update is ~4× faster than an image send** (61 vs 259 ms) and reached 10 updates/s; the text counted
+  up to the last frame. Anything that can be characters is far cheaper as firmware text (ROADMAP F12).
+
 ## Known hardware issue: one lens after a rebuild
 
 Seen on G2 glasses on 2026-09-29 with `examples/hub-lens` (details from the tester):

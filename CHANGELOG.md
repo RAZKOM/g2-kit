@@ -5,6 +5,9 @@ may change APIs.
 
 ## Unreleased
 
+- Docs: measured on G2 glasses (STATUS.md): outline bar charts send ~10 % slower than filled with or without
+  textures; outline progress is as fast as filled with `surfaceTexture: false`; a firmware text update takes
+  ~60 ms vs ~260 ms for an image send (~4× faster), so text-only components (ROADMAP F12) are next.
 - `theme.surfaceTexture` (default true): `false` draws outline blocks as plain frames, without the sparse dots
   in bars and the hatch in progress fills (less picture detail, which costs send time on the glasses).
 - Examples: `hub-bench` sweeps "surface" (bar chart and progress bar: filled, outline, plain outline; H1c) and
