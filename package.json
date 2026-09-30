@@ -1,6 +1,6 @@
 {
   "name": "g2-kit",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Drawn UI for Even Realities G2 Hub plugins: charts, controls and HUD chrome rendered to 4-bit image tiles, driven by a blank input skeleton. Unofficial.",
   "license": "MIT",
   "author": "RAZKOM",
