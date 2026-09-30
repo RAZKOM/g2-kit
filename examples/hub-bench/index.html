@@ -21,22 +21,25 @@
   <body>
     <h1>g2-kit · Send benchmark</h1>
     <p>
-      Measures <code>updateImageRawData</code> on your glasses: for each gap between sends, N numbered frames go to one tile.
-      Tap on the glasses (or “Run next”) to run the next gap. When a run ends, check the tile: it should read N/N.
-      Record that below, then “Copy results”.
+      Measures <code>updateImageRawData</code> on your glasses: each run sends N numbered frames to one tile. A sweep varies
+      one thing per run (gap between sends, tile size, image format, or tile content); the rest stays at gap 25 ms, 288×144,
+      PNG, simple counter. Tap on the glasses (or “Run next”) to run the next case. When a run ends, check the tile: it
+      should read N/N and look right. Record that below, then “Copy results” (it also saves the results on your PC).
     </p>
     <div id="status">Starting…</div>
     <canvas id="mirror"></canvas>
     <div id="stats"></div>
     <div class="form">
       <label>frames per run <input id="frames" type="number" min="5" max="200" value="30" /></label>
-      <label>gaps (ms) <input id="gaps" value="150,100,75,50,25,0" size="18" /></label>
-      <label>tile content
-        <select id="content">
-          <option value="simple">simple (counter)</option>
-          <option value="busy">busy (dense pattern)</option>
+      <label>sweep
+        <select id="sweep">
+          <option value="gap">gap between sends</option>
+          <option value="size">tile size</option>
+          <option value="format">image format</option>
+          <option value="content">tile content</option>
         </select>
       </label>
+      <label id="gapsLabel">gaps (ms) <input id="gaps" value="150,100,75,50,25,0" size="18" /></label>
     </div>
     <div class="pad">
       <button id="next">Run next ▶</button>
@@ -48,7 +51,7 @@
       <table>
         <thead>
           <tr>
-            <th>gap ms</th><th>frames</th><th>frames/s</th><th>interval ms</th><th>rt median</th><th>rt p95</th><th>rt max</th><th>failed</th><th>encode ms</th><th>bytes</th><th style="text-align:left">tile shows N/N?</th>
+            <th>case</th><th>frames</th><th>frames/s</th><th>interval ms</th><th>rt median</th><th>rt p95</th><th>rt max</th><th>failed</th><th>encode ms</th><th>bytes</th><th style="text-align:left">tile shows N/N?</th>
           </tr>
         </thead>
         <tbody id="rows"></tbody>

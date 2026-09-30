@@ -142,6 +142,10 @@ A pressed button stays solid (it is a brief flash). Components call `drawBlock` 
 the block came out solid, so content on it is punched out (level 0) or drawn lit. Across the 13 samples that
 change, ink drops from 30 % to 14 %; `npm run gallery` writes `surface-sheet.png` with both side by side.
 
+Trade-off, measured on the glasses: the outline bar chart sends ~10 % *slower* than the filled one (570 vs
+520 ms), because frames and sparse dots are more detail than solid bars. Choose outline for see-through, filled
+for update speed; a screen that updates on every swipe may be better filled.
+
 ## 7. Recommended sizes
 
 Every component accepts any rect; these are the sizes they are designed and tested at (the default for
@@ -190,4 +194,9 @@ Each image send takes **~300–370 ms** on G2 glasses (measured with `hub-bench`
 patterns), so a screen gets 2–3 image updates per second, and sends never overlap. Design so that one gesture changes one tile: put the
 thing that reacts to swipes (a carousel, a cursor) on its own tile, and let `G2`/`Surface` skip tiles whose
 pixels did not change. A gesture that changes two tiles takes ~0.7 s to show. A ticker or spinner costs one
-send per frame (2–3 frames/s at best); use them sparingly. Dark, sparse tiles send faster than dense ones.
+send per frame (2–3 frames/s at best); use them sparingly.
+
+What a send costs (measured, STATUS.md): **~200 ms fixed per send**, plus time for detail. A blank tile takes
+~200 ms, a big counter ~350 ms, a detailed chart or a hatched area ~500–550 ms. Bytes and image format barely
+matter; edges and texture do (the SDK compresses the picture). So: fewer sends first, then fewer edges.
+Solid areas are cheap; patterns, hatching and dithering are the most expensive thing you can draw.

@@ -19,7 +19,7 @@ const S = (name: string): Step => ({ shot: name })
 const I = (input: Extract<Step, { input: string }>['input']): Step => ({ input })
 const W = (ms: number): Step => ({ wait: ms })
 
-const SCENARIOS: Record<string, { port: number; steps: Step[] }> = {
+const SCENARIOS: Record<string, { port: number; steps: Step[]; query?: string }> = {
   'hub-dashboard': {
     port: 5181,
     steps: [W(3000), S('start'), I('down'), W(1200), S('focus-users'), I('down'), W(1000), I('click'), W(2500), S('detail'), I('click'), W(2500), S('back')],
@@ -58,7 +58,8 @@ const SCENARIOS: Record<string, { port: number; steps: Step[] }> = {
   'hub-ramp': { port: 5185, steps: [W(4000), S('ramp')] },
   'hub-lens': { port: 5187, steps: [W(4000), S('s1'), I('click'), W(1500), S('s2'), I('click'), W(2000), S('s3'), I('click'), W(1500), I('click'), W(3500), S('s5'), I('click'), W(4000), I('click'), W(2500), S('s7'), I('click'), W(5000), S('s8')] },
   // Two runs of the send benchmark (gaps 150 and 100 ms); the console has the numbers ([hub-bench] lines).
-  'hub-bench': { port: 5188, steps: [W(3500), S('start'), I('click'), W(12000), S('run1'), I('click'), W(10000), S('run2')] },
+  // Size sweep, 8 frames per run: 288×144, then 288×72 (a rebuild), then 144×144; the console has the numbers.
+  'hub-bench': { port: 5188, query: '?sweep=size&frames=8', steps: [W(3500), S('start'), I('click'), W(6000), S('run1'), I('click'), W(6000), S('run2'), I('click'), W(6000), S('run3')] },
   // Native list: swipes move the firmware highlight (expect no events), tap reports the index.
   'hub-quickstart': { port: 5186, steps: [W(3500), S('start'), I('down'), W(800), S('list-moved'), I('click'), W(1500), I('up'), W(600), I('click'), W(1500), S('refreshed'), I('down'), W(500), I('down'), W(500), I('down'), W(500), I('down'), W(800), I('click'), W(1500), S('after-exit')] },
 }
@@ -100,7 +101,7 @@ process.on('exit', kill)
 const vite = spawn(process.execPath, [join(root, 'node_modules', 'vite', 'bin', 'vite.js'), join('examples', name)], { cwd: root, stdio: 'ignore' })
 procs.push(vite)
 await waitFor(`http://localhost:${sc.port}/`)
-const sim = spawn(simBinary(), [`http://localhost:${sc.port}`, '--automation-port', '9898', '--no-glow'], { cwd: out, stdio: 'ignore' })
+const sim = spawn(simBinary(), [`http://localhost:${sc.port}/${sc.query ?? ''}`, '--automation-port', '9898', '--no-glow'], { cwd: out, stdio: 'ignore' })
 procs.push(sim)
 await waitFor(`${API}/ping`)
 

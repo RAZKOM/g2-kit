@@ -5,6 +5,16 @@ may change APIs.
 
 ## Unreleased
 
+- Docs: what sets the image send time on G2 glasses (hub-bench sweeps, STATUS.md): ~200 ms fixed per send plus
+  time for picture detail; bytes and image format barely matter; all four formats display on hardware (H6);
+  the outline bar chart sends ~10 % slower than the filled one. DESIGN.md's frame budget and ink sections
+  say how to design for it.
+- Examples: `hub-bench` sweeps one factor per run: gap, tile size (288×144 → 72×72), image format (png, png4,
+  gray8, gray4) or tile content (blank, simple, dense, bar chart filled vs outline surface), to find what sets
+  the ~350 ms send time (ROADMAP H1b, H6). `sim:check` scenarios can take a query string.
+- `gapMs` (ImageQueue / G2) now defaults to 25 ms instead of 100 ms: on G2 glasses the send itself takes
+  ~350 ms and gaps down to 0 left no frame stuck, simple or dense tiles (hub-bench). About 10 % more frames
+  per second; pass `gapMs: 100` for the old pacing.
 - Docs: image sends measured on G2 glasses with `hub-bench`: ~300–370 ms per 288×144 tile (~450 ms for a
   dense pattern), not ~100 ms; no failures and no stuck frames down to `gapMs: 0`. STATUS.md has the table;
   DESIGN.md's frame budget, the README limits and code comments are corrected.

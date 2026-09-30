@@ -203,6 +203,16 @@ describe('ImageQueue', () => {
     expect(sleeps).toEqual([100])
   })
 
+  it('defaults to a 25 ms gap (sends take ~350 ms on glasses; hub-bench)', async () => {
+    let t = 0
+    const sleeps: number[] = []
+    const q = new ImageQueue(async () => 'success', { now: () => t, sleep: async (ms) => void sleeps.push(ms) })
+    q.image(T(1), bytes(1))
+    q.image(T(2), bytes(2))
+    await q.idle()
+    expect(sleeps).toEqual([25])
+  })
+
   it('retries a transient failure once, then reports a typed error', async () => {
     const r = recorder(() => 'sendFailed')
     const errors: ImageSendError[] = []

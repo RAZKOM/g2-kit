@@ -26,7 +26,10 @@ export type Sleep = (ms: number) => Promise<void>
 export type FrameSource = () => Uint8Array | Framebuffer
 
 export interface ImageQueueOptions {
-  /** Minimum gap between image sends (default 100 ms). */
+  /**
+   * Minimum gap between image sends (default 25 ms). The send itself takes ~300–370 ms on G2 glasses and
+   * gaps down to 0 left no frame stuck (hub-bench, STATUS.md); 25 ms keeps a small margin.
+   */
   gapMs?: number
   /** Delay before the single retry of a transient failure (default 300 ms). */
   retryMs?: number
@@ -69,7 +72,7 @@ export class ImageQueue {
   ) {}
 
   private get gapMs(): number {
-    return this.opts.gapMs ?? 100
+    return this.opts.gapMs ?? 25
   }
   private get sleep(): Sleep {
     return this.opts.sleep ?? realSleep

@@ -34,6 +34,7 @@ export interface G2Options extends NormalizeOptions {
   theme?: Theme
   /** Image encoding (default 'png', the proven path). */
   format?: TileFormat
+  /** Minimum gap between image sends (default 25 ms; see `ImageQueueOptions.gapMs`). */
   gapMs?: number
   retryMs?: number
   sleep?: Sleep

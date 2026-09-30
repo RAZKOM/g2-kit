@@ -184,7 +184,7 @@ Three ways, from least to most setup:
 | `hub-game` | Tic-tac-toe: swipe walks empty cells, tap plays | `npm run dev:game` (5183) |
 | `hub-calibrate` | Test card (16 levels, theme levels, patterns, fonts) for tuning a device | `npm run dev:calibrate` (5184) |
 | `hub-lens` | Diagnostic for the one-lens-after-rebuild issue (see STATUS.md); record results per step on the phone | `npm run dev:lens` (5187) |
-| `hub-bench` | Send benchmark: `updateImageRawData` round trip and frames/s at several `gapMs` values; results on the phone | `npm run dev:bench` (5188) |
+| `hub-bench` | Send benchmark: `updateImageRawData` round trip and frames/s, sweeping the gap, tile size, image format or tile content; results saved to the PC | `npm run dev:bench` (5188) |
 | `hub-keyboard` | Every `Keyboard` option: pick a configuration on the phone, type on the glasses; hold switches preset, the page counts gestures per message against `typingCost` | `npm run dev:keyboard` (5189) |
 
 `npm run gallery` renders every component to `examples/output/` (PNG per sample, `index.html`,

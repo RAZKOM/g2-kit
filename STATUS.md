@@ -27,7 +27,7 @@ What is done and how each part was verified.
 | Area | unit | gallery | simulator | glasses |
 |---|---|---|---|---|
 | Framebuffer, primitives (golden buffers), text layout | ✓ | ✓ | ✓ (via examples) | ✓ fonts and patterns (hub-calibrate) |
-| PNG / pack round trips | ✓ | | PNG ✓; raw Gray8 / packed Gray4 accepted | PNG ✓ (hub-calibrate) |
+| PNG / pack round trips | ✓ | | PNG ✓; raw Gray8 / packed Gray4 accepted | ✓ all four formats (png, png4, gray8, gray4) display correctly (hub-bench) |
 | Host 8-bit → gray4 conversion is linear `round(v/17)` | | | ✓ measured (`hub-ramp`) | – |
 | Brightness curve (levels ~9–15 identical) | | | ✓ measured (`hub-calibrate`, `hub-ramp`) | ✓ same shape by eye (levels off ~8–10) |
 | Default theme levels (0/2/4/6/8/15) | ✓ | ✓ | ✓ distinct | ✓ distinct by eye; level 1 visible |
@@ -60,11 +60,10 @@ What is done and how each part was verified.
 2. Long-press timing: how soon `hold` arrives and whether `HoldToConfirm` progress looks smooth.
 3. Swipe throughput while tiles are sending (fast swipes on the carousel).
 4. Render time per tile in the phone WebView (shown on every example page).
-5. Raw Gray8 / packed Gray4 image data (`format`), which would skip PNG encoding.
+5. ~~Raw Gray8 / packed Gray4 image data~~: all four formats display correctly; none is faster (below).
 6. ~~Font readability~~: all four text rows on the card read comfortably.
 7. ~~Image send speed~~: measured 2026-09-30, see "Image send speed on glasses" below.
-   Still open: whether the busy-pattern runs ended on N/N (not recorded), and what drives the send time
-   (bytes after the SDK's compression? tile size? format?).
+   What drives the send time was measured too (H1b, below).
 
 ## Image send speed on glasses (H1, 2026-09-30)
 
@@ -81,13 +80,47 @@ SDK compresses it), timing each `updateImageRawData` from call to result:
 | 0 | 2.8 | 372 / 401 ms | 2.0 | 487 / 577 ms |
 
 - A send takes **~300–370 ms**, not the ~100 ms the platform docs suggested; the round trip dominates, so the
-  gap barely matters (gap 0 is ~15 % faster than the default 100 ms).
+  gap barely matters (gap 0 is ~15 % faster than the old default 100 ms). The default is now 25 ms.
 - No failures or retries in 360 sends. With the simple tile every run ended on the last frame (30/30), down to
-  gap 0: no stuck frames. The dense-pattern runs did not record N/N.
+  gap 0: no stuck frames. The dense-pattern runs ended on the last frame too (reported by the user).
 - Content matters: a dense pattern takes ~40 % longer than a mostly black tile, although the PNG bytes are the
-  same size, so the SDK's compression (or the transfer after it) sets the time. Fewer lit pixels, e.g. the
-  outline surface, should also mean faster sends (not measured).
+  same size, so the SDK's compression (or the transfer after it) sets the time. See H1b below.
 - Encoding on the phone is 1–3 ms per tile; rendering is not the bottleneck.
+- Rerun on 2026-09-30 (gap sweep, 30 frames): the same numbers within ±30 ms, every gap ended on 30/30.
+
+## What sets the send time (H1b, 2026-09-30)
+
+`hub-bench` sweeps on the same glasses, 30 frames per run, gap 25 ms; one factor varies, the rest stays at
+288×144, 8-bit PNG, simple counter. Every run ended on the last frame and looked right; 0 failures in 420 sends.
+
+| Sweep | Case | bytes sent | send median / p95 | frames/s |
+|---|---|---|---|---|
+| size | 288×144 | 41 684 | 345 / 430 ms | 2.7 |
+| | 288×72 | 20 876 | 260 / 288 ms | 3.5 |
+| | 144×144 | 20 948 | 287 / 346 ms | 3.3 |
+| | 144×72 | 10 508 | 260 / 318 ms | 3.6 |
+| | 72×72 | 5 324 | 203 / 289 ms | 4.4 |
+| format | png (8-bit) | 41 684 | 345 / 378 ms | 2.8 |
+| | png4 | 20 948 | 317 / 374 ms | 2.9 |
+| | gray8 (raw) | 41 472 | 345 / 406 ms | 2.8 |
+| | gray4 (raw, packed) | 20 736 | 345 / 433 ms | 2.8 |
+| content | blank (a small counter only) | 41 684 | 203 / 260 ms | 4.1 |
+| | simple counter | 41 684 | 345 / 431 ms | 2.8 |
+| | dense cross-hatch | 41 684 | 543 / 689 ms | 1.8 |
+| | bar chart, filled | 41 684 | 518 / 601 ms | 1.9 |
+| | bar chart, outline surface | 41 684 | 569 / 718 ms | 1.7 |
+
+- **Every send costs ~200 ms** however small: a blank 288×144 tile and a 72×72 tile both take 203 ms.
+  Fewer sends is the biggest lever; `Surface` already sends only changed tiles.
+- **On top of that, detail costs time, not bytes.** The byte count we hand over barely matters (raw formats
+  and 4-bit PNG are no faster), but what is in the picture does: edges and texture make a tile slower to
+  send (the SDK compresses before sending). A dense pattern takes 2.7× a blank tile; a detailed chart ~2.5×.
+- **Fewer lit pixels is not faster.** The outline bar chart lights half the pixels of the filled one but
+  sends ~10 % slower: frames and sparse dots are more detail than solid bars, which compress well. Ink
+  (seeing through) and send time pull in different directions.
+- Smaller tiles help modestly: half the pixels saves ~60–85 ms.
+- Format: keep the default `png`; all four work on hardware (H6), none is faster, and encoding costs
+  1–2 ms either way.
 
 ## Known hardware issue: one lens after a rebuild
 
