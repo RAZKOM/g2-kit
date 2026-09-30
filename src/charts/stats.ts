@@ -1,4 +1,5 @@
 /** P2 charts: waffle, scatter (+ trend), histogram, box plot, candlestick. */
+import { drawBlock } from '../core/block.js'
 import { defineComponent } from '../core/component.js'
 import { fillRectPaint, line, strokeRect } from '../core/draw.js'
 import { drawMarker, seriesStyle, warnSeries, type MarkerShape } from '../core/encodings.js'
@@ -171,7 +172,9 @@ export function renderHistogram(fb: Framebuffer, rect: Rect, p: HistogramProps, 
     const w = Math.round(plot.x + (i + 1) * bw) - x - 1
     const h = Math.round(bottom - y(c))
     const hit = p.mark !== undefined && p.mark >= edges[i] && (p.mark < edges[i + 1] || i === k - 1)
-    if (h > 0) fb.fillRect(x, bottom - h, Math.max(1, w), h, hit ? lv.full : lv.bright)
+    // The marked bin stays solid under the outline surface: it is the one to find.
+    if (h > 0 && hit) fb.fillRect(x, bottom - h, Math.max(1, w), h, lv.full)
+    else if (h > 0) drawBlock(fb, x, bottom - h, Math.max(1, w), h, lv.bright, theme, { texture: 'sparseDots' })
     if (hit) {
       const cx = x + w / 2
       for (let d = 0; d < 5; d++) fb.fillRect(Math.round(cx - d), bottom - h - 8 + d, 2 * d + 1, 1, lv.full)

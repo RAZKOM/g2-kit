@@ -250,6 +250,16 @@ export const SAMPLES: Sample[] = [
   }),
   s('grid-keyboard', 'ABC grid keyboard', 'controls', 'P1', W.GridKeyboard, { row: 1, col: 3, text: 'HELLO WOR' }),
   s('grid-keyboard-rows', 'T9 keyboard: row focus', 'controls', 'P1', W.GridKeyboard, { rows: W.T9_ROWS, row: 2, col: -1 }),
+  s('keyboard', 'Keyboard: QWERTY, choosing a row', 'controls', 'P1', W.Keyboard, { layout: W.keyboardLayout(), group: 1 }),
+  s('keyboard-key', 'Keyboard: key focus, shift once', 'controls', 'P1', W.Keyboard, { layout: W.keyboardLayout(), group: 0, key: 4, shift: 'once' }),
+  s('keyboard-symbols', 'Keyboard: symbols layer', 'controls', 'P1', W.Keyboard, { layout: W.keyboardLayout(), view: 1, group: 3, key: 1 }),
+  s('keyboard-abc-columns', 'Keyboard: ABC by columns, caps lock', 'controls', 'P1', W.Keyboard, {
+    layout: W.keyboardLayout({ letters: 'abc', scan: 'columns', punctuation: '.,', actions: ['caps', 'symbols', 'space', 'delete', 'submit'], labels: { submit: 'Send' } }),
+    group: 2,
+    shift: 'lock',
+  }),
+  s('keyboard-side', 'Keyboard: symbols beside, two tiles', 'controls', 'P1', W.Keyboard, { layout: W.keyboardLayout({ panels: 'side' }), group: 2, key: 3 }, { w: 576, h: 144 }),
+  s('keyboard-stack', 'Keyboard: symbols below, digits row', 'controls', 'P1', W.Keyboard, { layout: W.keyboardLayout({ panels: 'stack', digits: 'row', actions: ['shift', 'space', 'delete', 'cancel', 'submit'] }), group: 5, text: 'Hello, world' }, { w: 288, h: 288 }),
 
   // ── text & chrome P1 ──
   s('toast-info', 'Toast: info', 'text & chrome', 'P1', W.Toast, { text: 'Synced 3 new items', remaining: 0.6 }),

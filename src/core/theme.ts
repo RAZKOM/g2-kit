@@ -49,6 +49,15 @@ export interface ThemeFonts {
   display: BitmapFont
 }
 
+/**
+ * How components draw solid blocks (positive bars, active buttons, a toggle's
+ * track, selected segments, progress fills): 'filled' paints them solid,
+ * 'outline' draws frames and light textures instead, which lights far fewer
+ * pixels (see `inkRatio`). Data marks with a meaning (filled / ring / strike)
+ * are the same in both.
+ */
+export type SurfaceStyle = 'filled' | 'outline'
+
 export interface Theme {
   levels: Record<LevelName, number>
   /** Default stroke width for data marks. ≥ 2 recommended. */
@@ -60,6 +69,8 @@ export interface Theme {
   fonts: ThemeFonts
   /** Scale applied to `fonts.small` for labels (1 or 2). */
   smallScale: number
+  /** Solid blocks drawn filled (default) or as outlines. */
+  surface?: SurfaceStyle
 }
 
 export const defaultTheme: Theme = {
@@ -69,6 +80,7 @@ export const defaultTheme: Theme = {
   radius: 4,
   fonts: { small: font5x7, body: font8x12, display: font16x24 },
   smallScale: 1,
+  surface: 'filled',
 }
 
 /** Evenly spaced levels for a display that renders gray4 linearly. On G2 its top three levels look the same. */
@@ -77,6 +89,9 @@ export const linearTheme: Theme = {
   levels: { off: 0, faint: 4, dim: 7, mid: 10, bright: 13, full: 15 },
 }
 
+/** The default theme with `surface: 'outline'`: frames instead of solid blocks, less ink. */
+export const outlineTheme: Theme = { ...defaultTheme, surface: 'outline' }
+
 export interface ThemeOverrides {
   levels?: Partial<Record<LevelName, number>>
   stroke?: number
@@ -84,6 +99,7 @@ export interface ThemeOverrides {
   radius?: number
   fonts?: Partial<ThemeFonts>
   smallScale?: number
+  surface?: SurfaceStyle
 }
 
 export function createTheme(over: ThemeOverrides = {}, base: Theme = defaultTheme): Theme {

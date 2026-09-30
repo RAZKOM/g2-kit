@@ -90,6 +90,18 @@ exports[`every gallery sample: smoke + PNG snapshot > hud-brackets (HudFrame, P1
 
 exports[`every gallery sample: smoke + PNG snapshot > hud-notched (HudFrame, P1) 1`] = `"bd013bc51f0d16f7"`;
 
+exports[`every gallery sample: smoke + PNG snapshot > keyboard (Keyboard, P1) 1`] = `"9f0f3708e3bfe8cf"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > keyboard-abc-columns (Keyboard, P1) 1`] = `"688da58f93a766e9"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > keyboard-key (Keyboard, P1) 1`] = `"2d9491186f11210c"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > keyboard-side (Keyboard, P1) 1`] = `"f7ae51d4eab9986b"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > keyboard-stack (Keyboard, P1) 1`] = `"b6f0a1fd8d208ecf"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > keyboard-symbols (Keyboard, P1) 1`] = `"d5d6d4d496962270"`;
+
 exports[`every gallery sample: smoke + PNG snapshot > kpi (Kpi, P0) 1`] = `"464922bccd08cf1e"`;
 
 exports[`every gallery sample: smoke + PNG snapshot > kpi-plain (Kpi, P0) 1`] = `"9be6568e859fd5db"`;
@@ -183,3 +195,37 @@ exports[`every gallery sample: smoke + PNG snapshot > waffle (WaffleChart, P2) 1
 exports[`every gallery sample: smoke + PNG snapshot > weather (WeatherGlyph, P2) 1`] = `"f5788a13bab0ccf8"`;
 
 exports[`every gallery sample: smoke + PNG snapshot > weather-rain (WeatherGlyph, P2) 1`] = `"bd07951c546ae43e"`;
+
+exports[`outline surface > bar-horizontal: less ink, inside its rect, PNG snapshot 1`] = `"fbf1d73c66ea4b2f"`;
+
+exports[`outline surface > bar-negative: less ink, inside its rect, PNG snapshot 1`] = `"07bff7681a90d4b2"`;
+
+exports[`outline surface > bar-vertical: less ink, inside its rect, PNG snapshot 1`] = `"33a410280893fede"`;
+
+exports[`outline surface > bars-grouped: less ink, inside its rect, PNG snapshot 1`] = `"0908da8e0728e66a"`;
+
+exports[`outline surface > bars-stacked: less ink, inside its rect, PNG snapshot 1`] = `"bddfbc7a252bf418"`;
+
+exports[`outline surface > button-states: less ink, inside its rect, PNG snapshot 1`] = `"4f6701a78d6c479f"`;
+
+exports[`outline surface > histogram: less ink, inside its rect, PNG snapshot 1`] = `"484723dce80b0cd5"`;
+
+exports[`outline surface > keyboard-abc-columns: less ink, inside its rect, PNG snapshot 1`] = `"c64489d2be584e20"`;
+
+exports[`outline surface > keyboard-key: less ink, inside its rect, PNG snapshot 1`] = `"623371384af72ed0"`;
+
+exports[`outline surface > keyboard-side: less ink, inside its rect, PNG snapshot 1`] = `"7b47fc34b5c2f7e0"`;
+
+exports[`outline surface > keyboard-symbols: less ink, inside its rect, PNG snapshot 1`] = `"9f07f27c1c7fd8c5"`;
+
+exports[`outline surface > progress: less ink, inside its rect, PNG snapshot 1`] = `"eca1137218c3b97c"`;
+
+exports[`outline surface > progress-segmented: less ink, inside its rect, PNG snapshot 1`] = `"8022502730e269fc"`;
+
+exports[`outline surface > segmented: less ink, inside its rect, PNG snapshot 1`] = `"9b54c120493b06a2"`;
+
+exports[`outline surface > tabs-boxed: less ink, inside its rect, PNG snapshot 1`] = `"cb63adc11b6fc669"`;
+
+exports[`outline surface > toast-error: less ink, inside its rect, PNG snapshot 1`] = `"6df7025e136eced5"`;
+
+exports[`outline surface > toggle-on: less ink, inside its rect, PNG snapshot 1`] = `"961ca92938a97b53"`;

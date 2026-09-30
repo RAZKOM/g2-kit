@@ -8,24 +8,55 @@ firmware doesn't provide, rendered on the phone into 4-bit greyscale image tiles
 **[Live demo and full gallery →](https://razkom.github.io/g2-kit/)** Every component with its props, plus the
 example apps running in your browser (on-screen gesture buttons stand in for the touchpad).
 
-![All 55 g2-kit components, previewed with the brightness curve measured in evenhub-simulator](docs/img/showcase.png)
+![All 56 g2-kit components, previewed with the brightness curve measured in evenhub-simulator](docs/img/showcase.png)
 
 ## What's in the box
 
-55 components, each a pure function of its props (`X.render(fb, rect, props)`, `X.renderToTile(props)`) plus 56 icons.
+56 components, each a pure function of its props (`X.render(fb, rect, props)`, `X.renderToTile(props)`) plus 56 icons.
 
 | Category | Import | Components |
 |---|---|---|
 | **Charts** (19) | `g2-kit/charts` | `BarChart` · `LineChart` · `Sparkline` · `Kpi` · `Gauge` · `MultiBarChart` (grouped / stacked) · `PieChart` (pie / donut) · `ProgressRings` · `Heatmap` · `CalendarHeatmap` · `Funnel` · `BulletChart` · `Timeline` · `WaffleChart` · `ScatterChart` · `Histogram` · `BoxPlot` · `CandlestickChart` · `Legend` |
-| **Input controls** (13) | `g2-kit/widgets` | `Carousel` · `Button` · `ButtonRow` · `Toggle` · `SegmentedControl` · `Slider` · `Roller` · `TimePicker` · `DatePicker` · `Checklist` · `StatusKeyboard` · `GridKeyboard` (ABC / T9) · `Rating` |
+| **Input controls** (14) | `g2-kit/widgets` | `Keyboard` (QWERTY / QWERTZ / AZERTY / ABC, configurable, see below) · `Carousel` · `Button` · `ButtonRow` · `Toggle` · `SegmentedControl` · `Slider` · `Roller` · `TimePicker` · `DatePicker` · `Checklist` · `StatusKeyboard` · `GridKeyboard` (ABC / T9) · `Rating` |
 | **Text, feedback & chrome** (14) | `g2-kit/widgets` | `BigText` · `ProgressBar` · `Toast` · `Modal` · `Tabs` · `PaginationDots` · `ScrollIndicator` · `StatusBar` · `HudFrame` · `Ticker` · `Table` · `Card` · `Badge` · `Spinner` |
 | **Data faces** (5) | `g2-kit/widgets` | `AnalogClock` · `TimerRing` · `CompassStrip` · `TurnArrow` · `WeatherGlyph` |
 | **Game kit** (4) | `g2-kit/widgets` | `GridBoard` (word games, Sudoku, 2048, tic-tac-toe) · `ScoreHud` · `Dice` · `HealthBar`, plus `SpriteSheet` / `drawSprite` |
 | **Icons** (56) | `g2-kit/icons` | Vector icons for 8 / 12 / 16 px, incl. 10 weather conditions |
-| **Layouts** (7) | `g2-kit/bridge` | `twoTilesWithList` · `twoTilesWithControl` · `dashboardQuad` · `heroSidebar` · `fullScreen` · `menuPage` · `textWithTile` |
-| **Input** | `g2-kit/input` | `blankTextSkeleton` · `listSkeleton` · `PagedList` · `HybridSkeleton` · `FocusRing` (with edit mode) · `TapConfirm` · `HoldToConfirm` |
+| **Layouts** (8) | `g2-kit/bridge` | `twoTilesWithList` · `twoTilesWithControl` · `dashboardQuad` · `heroSidebar` · `fullScreen` · `menuPage` · `textWithTile` · `textWithSpan` |
+| **Input** | `g2-kit/input` | `blankTextSkeleton` · `listSkeleton` · `PagedList` · `HybridSkeleton` · `FocusRing` (with edit mode) · `TapConfirm` · `HoldToConfirm` · `promptText` (one-call text entry) |
 
 Previews use the brightness curve measured in evenhub-simulator 0.9.5, which matched G2 glasses by eye.
+
+### Less ink: the outline surface
+
+Every lit pixel sits between the wearer and the world. `inkRatio(fb)` measures the share of lit pixels; the
+gallery and `npm run bench` show it per sample, and a test flags samples over `INK_BUDGET` (25 %).
+`createTheme({ surface: 'outline' })` (or `outlineTheme`) makes bars, active buttons, toggles, selected
+segments and tabs, progress fills and error toasts draw frames and light textures instead of solid blocks:
+ink across those samples drops from 30 % to 14 %. The gallery shows filled and outline side by side.
+
+```ts
+import { outlineTheme } from 'g2-kit/core'
+const g2 = await connect({ theme: outlineTheme })
+```
+
+### Keyboard
+
+One gesture axis means a keyboard is a question of what a swipe walks through. `keyboardLayout(options)` compiles
+letters (`'qwerty'`, `'qwertz'`, `'azerty'`, `'abc'` or your own rows), digits (a row above the letters, in the
+symbols set, or none), extra punctuation on the letter row, a symbols set (a second layer behind `?123`, a panel
+beside the letters on two tiles, or below them), the action row (`shift`, `caps`, `symbols`, `space`, `delete`,
+`submit`, `cancel`, in any order, with labels) and the scan (`rows`, `columns` or every key in one line).
+Swipe picks a row, tap opens it, swipe picks a key, tap types and returns to the rows; hold goes back.
+
+```ts
+import { promptText } from 'g2-kit/input'
+const text = await promptText(g2, { keyboard: { letters: 'azerty', panels: 'side', labels: { submit: 'Send' } } })
+```
+
+`typingCost(layout, text)` counts the fewest gestures a text needs, to compare configurations. On short messages:
+rows ≈ 5.1 gestures per character, columns ≈ 5.5, one line of keys ≈ 9.4; ABC rows ≈ 4.8. `KeyboardState` is the
+headless state machine if you draw your own page. Try every option with `npm run dev:keyboard`.
 
 ### Running in the simulator
 
@@ -93,11 +124,11 @@ No quantisation, framebuffer, PNG or send-locking code: `g2.draw` renders, diffs
 
 | Import | What |
 |---|---|
-| `g2-kit/core` | `Framebuffer`, named levels and `Theme`, primitives (lines with dashes, arcs, sectors, polygons, pattern fills, round rects), 3 bitmap fonts + 7-segment digits, text layout (align, wrap, ellipsis, auto-fit), PNG / Gray8 / packed Gray4 encoders, `CanvasAdapter`, tile spanning. No DOM, no deps. |
-| `g2-kit/bridge` | `connect()` / `G2`, `ImageQueue` (serial, coalescing, rebuild-aware, typed errors), `PageBuilder` (validated layouts), 7 `layouts` presets, event normaliser, retained `Surface`. The SDK is a peer dependency, imported only inside `connect()`. |
-| `g2-kit/input` | Skeleton presets, `PagedList` (> 20 items through a native list), `HybridSkeleton`, `FocusRing` with edit mode, `HoldToConfirm`, `TapConfirm`. |
+| `g2-kit/core` | `Framebuffer`, named levels and `Theme` (incl. the `outline` surface), `inkRatio`, primitives (lines with dashes, arcs, sectors, polygons, pattern fills, round rects), 3 bitmap fonts + 7-segment digits, text layout (align, wrap, ellipsis, auto-fit), PNG / Gray8 / packed Gray4 encoders, `CanvasAdapter`, tile spanning. No DOM, no deps. |
+| `g2-kit/bridge` | `connect()` / `G2` (incl. `g2.modal()` to hand gestures to a prompt), `ImageQueue` (serial, coalescing, rebuild-aware, typed errors), `PageBuilder` (validated layouts), 8 `layouts` presets, event normaliser, retained `Surface`. The SDK is a peer dependency, imported only inside `connect()`. |
+| `g2-kit/input` | Skeleton presets, `PagedList` (> 20 items through a native list), `HybridSkeleton`, `FocusRing` with edit mode, `HoldToConfirm`, `TapConfirm`, `promptText` (`const name = await promptText(g2, { label: 'Name' })`: keyboard page, resolves the text or null). |
 | `g2-kit/charts` | Bar, line, sparkline, KPI, gauge, grouped/stacked bars, pie/donut, progress rings, heatmap, calendar heatmap, funnel, bullet, timeline, legend; waffle, scatter, histogram, box plot, candlestick. |
-| `g2-kit/widgets` | Carousel, buttons, toggle, segmented, slider, roller, time/date pickers, checklist, status and grid keyboards, progress, big text, toast, modal, tabs, dots, scroll indicator, status bar, HUD frame, ticker, clock, timer ring, compass, turn arrow, grid board, score HUD; table, card, badge, spinner, weather glyph, rating, dice, health bar, sprite sheets. |
+| `g2-kit/widgets` | Configurable keyboard (`keyboardLayout`, `KeyboardState`, `typingCost`), carousel, buttons, toggle, segmented, slider, roller, time/date pickers, checklist, status and grid keyboards, progress, big text, toast, modal, tabs, dots, scroll indicator, status bar, HUD frame, ticker, clock, timer ring, compass, turn arrow, grid board, score HUD; table, card, badge, spinner, weather glyph, rating, dice, health bar, sprite sheets. |
 | `g2-kit/icons` | 56 vector icons tuned for 8, 12 and 16 px, incl. 10 weather conditions. |
 
 Every component has the same contract and is a pure function of its props:
@@ -149,10 +180,12 @@ Three ways, from least to most setup:
 |---|---|---|
 | `hub-quickstart` | The snippet above, over a native list | `npm run dev:quickstart` (5186) |
 | `hub-dashboard` | Quad dashboard; swipe cycles focus (2 tile sends), tap opens a chart drawn across 4 tiles | `npm run dev:dashboard` (5181) |
-| `hub-picker` | Carousel (1 tile per swipe), time picker with FocusRing edit mode, one-tile ABC keyboard under a firmware text line | `npm run dev:picker` (5182) |
+| `hub-picker` | Carousel (1 tile per swipe), time picker with FocusRing edit mode, `promptText`: QWERTY `Keyboard` on one tile under a firmware text line | `npm run dev:picker` (5182) |
 | `hub-game` | Tic-tac-toe: swipe walks empty cells, tap plays | `npm run dev:game` (5183) |
 | `hub-calibrate` | Test card (16 levels, theme levels, patterns, fonts) for tuning a device | `npm run dev:calibrate` (5184) |
 | `hub-lens` | Diagnostic for the one-lens-after-rebuild issue (see STATUS.md); record results per step on the phone | `npm run dev:lens` (5187) |
+| `hub-bench` | Send benchmark: `updateImageRawData` round trip and frames/s at several `gapMs` values; results on the phone | `npm run dev:bench` (5188) |
+| `hub-keyboard` | Every `Keyboard` option: pick a configuration on the phone, type on the glasses; hold switches preset, the page counts gestures per message against `typingCost` | `npm run dev:keyboard` (5189) |
 
 `npm run gallery` renders every component to `examples/output/` (PNG per sample, `index.html`,
 `contact-sheet.png`); `npm run docs:images` regenerates the images in this README.
@@ -178,8 +211,8 @@ Three ways, from least to most setup:
 
 ## Verification status in one paragraph
 
-Everything is unit-tested in Node (214 tests: golden buffers, round-trips, queue ordering/coalescing,
-layout validation, the event truth table, a smoke + PNG-hash snapshot per gallery sample). All examples
+Everything is unit-tested in Node (255 tests: golden buffers, round-trips, queue ordering/coalescing,
+layout validation, the event truth table, a smoke + PNG-hash snapshot per gallery sample, an ink budget). All examples
 run in **evenhub-simulator 0.9.5**, driven through its automation API. On **real G2 glasses**, the
 calibration card displays correctly: four spanned PNG tiles, all six theme levels distinct, level 1 visible,
 every font readable, and brightness levelling off around 8–10 as in the simulator. One hardware issue is known:

@@ -5,6 +5,42 @@ may change APIs.
 
 ## Unreleased
 
+- Ink metric: `inkRatio(fb, rect?, min?)` (share of lit pixels) and `INK_BUDGET` (0.25) in `g2-kit/core`.
+  The gallery (captions, contact sheet), `npm run bench` and a new test report ink per sample; the test fails
+  when a sample goes over budget without a listed reason.
+- Outline surface: `theme.surface: 'filled' | 'outline'` (optional, default `'filled'`, which draws exactly as
+  before) and `outlineTheme`. Under `'outline'`, `BarChart`, `MultiBarChart`, `Histogram`, `Button` /
+  `ButtonRow` (so `Modal`), `Toggle`, `SegmentedControl`, `Tabs` (boxed), `ProgressBar` and error `Toast`s
+  draw frames and light textures instead of solid blocks: 30 % → 14 % ink over those samples. New core helper
+  `drawBlock` (plus `isOutline`) for components of your own. The gallery has a "Filled vs outline" section
+  and `surface-sheet.png`.
+- `G2.modal(handler)`: a handler that sees every event first and consumes it by returning true; unconsumed
+  events fall through (double-tap still exits). Modals stack; `G2.hasModal`.
+- New `Keyboard` (`g2-kit/widgets`): a configurable keyboard for one gesture axis. `keyboardLayout(options)`
+  compiles letters (`qwerty`, `qwertz`, `azerty`, `abc` or your own rows), digits (row above the letters, in
+  the symbols set, or none), extra punctuation on the letter row, a symbols set (a second layer behind a
+  `?123` key, a panel beside the letters, or below them), the action row (`shift`, `caps`, `symbols`,
+  `space`, `delete`, `submit`, `cancel`; order and labels configurable) and the scan (`rows`, `columns`,
+  `keys`), plus `afterType` (back to the rows, or stay on the key). `KeyboardState` is the headless state
+  machine (shift once / lock, caps, layers, text, max length; entering a row lands on the key used last in
+  it). `typingCost(layout, text)` counts the fewest gestures a text needs: rows ≈ 5.1 per character on short
+  messages, columns ≈ 5.5, every key in one line ≈ 9.4. `GridKeyboard` stays as it was.
+- New layout preset `layouts.textWithSpan({ span: 'wide' | 'tall' })`: a firmware text container plus two
+  tiles spanned as 576×144 or 288×288 (for keyboards with symbols beside or below the letters).
+- `promptText(g2, opts)` in `g2-kit/input`: one-call text entry with a `Keyboard` (`keyboard`: options or a
+  compiled layout; default QWERTY with a symbols layer) on `layouts.textWithTile`, or `textWithSpan` for
+  side / stacked panels. Resolves the text on submit, null on cancel (a cancel key, or hold while choosing a
+  row), abort or exit; `onChange` reports every edit.
+- Examples: the picker's keyboard screen is now `promptText` (starting from the carousel's text).
+- Examples: new `hub-keyboard` (`npm run dev:keyboard`, port 5189): every keyboard option in a form on the
+  phone; the glasses type with it, hold (cancel) switches to the next preset, and the page counts gestures
+  per message against `typingCost`. Also on the demo site.
+- Examples: new `hub-bench` (`npm run dev:bench`, port 5188): sends N frames per `gapMs` value and shows
+  `updateImageRawData` round trip, frames/s and failures on the phone page, with a per-run "tile shows N/N"
+  check and "Copy results". For measuring image send speed on real glasses (ROADMAP H1).
+- Examples: fixed the shared phone page stylesheet not loading in dev servers (it was linked outside the Vite
+  root and got the HTML fallback; now imported from `shared/phone.ts`), and the shared `g2.show` wrapper
+  dropping its options, so `hub-lens` now really forces rebuilds (`rebuild: 'always'`).
 - README: one poster of all components (`docs/img/showcase.png`, `npm run showcase`) and a single component
   table instead of four category images.
 - AGENTS.md / CLAUDE.md (guide for coding agents) and ROADMAP.md (next steps).

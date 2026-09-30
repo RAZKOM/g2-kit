@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>g2-kit Keyboard</title>
+    <style>
+      .form { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px 12px; margin: 12px 0; max-width: 576px; font-size: 13px; }
+      .form label { display: flex; flex-direction: column; gap: 2px; color: #8fa88f; }
+      .form input[type='text'], .form select { background: #121a12; color: #cfe8cf; border: 1px solid #2c3a2c; border-radius: 4px; padding: 6px; font: 13px monospace; min-width: 0; }
+      .form .wide { grid-column: 1 / -1; }
+      .checks { display: flex; flex-wrap: wrap; gap: 4px 12px; color: #cfe8cf; }
+      .checks label { flex-direction: row; align-items: center; gap: 4px; color: #cfe8cf; }
+      #numbers { font: 12px monospace; color: #bff5bf; max-width: 576px; white-space: pre-wrap; }
+      pre#code { font: 12px monospace; color: #bff5bf; background: #0f140f; border: 1px solid #1f2a1f; padding: 8px; max-width: 576px; overflow: auto; }
+    </style>
+  </head>
+  <body>
+    <h1>g2-kit · Keyboard</h1>
+    <p>
+      One configurable <code>Keyboard</code> through <code>promptText</code>. Swipe picks a row (or column), tap opens it, swipe picks a key, tap types,
+      hold goes back. <b>Hold while choosing a row</b> (or the ✕ key) switches to the next preset; the submit key starts a new message.
+      Change anything below and the glasses switch right away, keeping the text.
+    </p>
+    <div id="status">Starting…</div>
+    <canvas id="mirror"></canvas>
+    <div id="stats"></div>
+    <div class="form">
+      <label class="wide">preset <select id="preset"></select></label>
+      <label>letters
+        <select id="letters"><option>qwerty</option><option>qwertz</option><option>azerty</option><option>abc</option></select>
+      </label>
+      <label>symbols
+        <select id="panels"><option value="layers">second layer (?123)</option><option value="side">beside (2 tiles)</option><option value="stack">below (2 tiles)</option><option value="none">none</option></select>
+      </label>
+      <label>digits
+        <select id="digits"><option value="symbols">with the symbols</option><option value="row">row above letters</option><option value="none">none</option></select>
+      </label>
+      <label>swipe walks
+        <select id="scan"><option value="rows">rows</option><option value="columns">columns</option><option value="keys">every key</option></select>
+      </label>
+      <label>after typing
+        <select id="afterType"><option value="group">back to rows</option><option value="stay">stay on key</option></select>
+      </label>
+      <label>on the letters <input id="punctuation" type="text" placeholder="e.g. ,." /></label>
+      <label>submit label <input id="submitLabel" type="text" placeholder="OK" /></label>
+      <div class="wide">action row
+        <div class="checks" id="actions"></div>
+      </div>
+    </div>
+    <div id="numbers"></div>
+    <pre id="code"></pre>
+    <div id="log"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

@@ -8,6 +8,9 @@
  */
 import { Framebuffer, type Rect } from 'g2-kit/core'
 import { G2, connect, type G2Event, type G2Options, type Host, type ImageTarget, type PageLayout, type RawEvent } from 'g2-kit/bridge'
+// Imported (not <link>ed from each index.html): the dev server's root is the example folder, so
+// '../shared/page.css' would resolve outside it and get the HTML fallback instead of the stylesheet.
+import './page.css'
 
 const W = 576
 const H = 288
@@ -294,9 +297,9 @@ export async function start(opts: G2Options = {}): Promise<{ g2: G2; mirror: Mir
   }
   // Keep the mirror's layout in sync with every page shown.
   const show = g2.show.bind(g2)
-  g2.show = async (page) => {
+  g2.show = async (page, showOpts) => {
     mirror.setLayout(page.layout)
-    return show(page)
+    return show(page, showOpts)
   }
   g2.on('*', (e: G2Event) => {
     const extra = e.type === 'select' ? ` index=${e.index}` : e.type === 'menu' ? ` item=${e.itemID}` : ''

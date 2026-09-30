@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>g2-kit Send benchmark</title>
+    <style>
+      .form { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 12px 0; max-width: 576px; font-size: 13px; }
+      .form label { display: flex; flex-direction: column; gap: 2px; color: #8fa88f; }
+      .form input, .form select { background: #121a12; color: #cfe8cf; border: 1px solid #2c3a2c; border-radius: 4px; padding: 6px; font: 13px monospace; }
+      .table-wrap { max-width: 100%; overflow-x: auto; }
+      table { border-collapse: collapse; font: 12px monospace; margin: 8px 0; }
+      th, td { border-bottom: 1px solid #1f2a1f; padding: 4px 8px; text-align: right; white-space: nowrap; }
+      th { color: #8fa88f; font-weight: 400; }
+      tr.current td { color: #6dff6d; }
+      td button { margin: 0 2px; padding: 3px 8px; background: #121a12; color: #bff5bf; border: 1px solid #2c3a2c; border-radius: 4px; font: 12px system-ui, sans-serif; }
+      td button.on { border-color: #6dff6d; color: #6dff6d; }
+      pre#summary { white-space: pre-wrap; font: 12px monospace; color: #bff5bf; max-width: 576px; }
+    </style>
+  </head>
+  <body>
+    <h1>g2-kit · Send benchmark</h1>
+    <p>
+      Measures <code>updateImageRawData</code> on your glasses: for each gap between sends, N numbered frames go to one tile.
+      Tap on the glasses (or “Run next”) to run the next gap. When a run ends, check the tile: it should read N/N.
+      Record that below, then “Copy results”.
+    </p>
+    <div id="status">Starting…</div>
+    <canvas id="mirror"></canvas>
+    <div id="stats"></div>
+    <div class="form">
+      <label>frames per run <input id="frames" type="number" min="5" max="200" value="30" /></label>
+      <label>gaps (ms) <input id="gaps" value="150,100,75,50,25,0" size="18" /></label>
+      <label>tile content
+        <select id="content">
+          <option value="simple">simple (counter)</option>
+          <option value="busy">busy (dense pattern)</option>
+        </select>
+      </label>
+    </div>
+    <div class="pad">
+      <button id="next">Run next ▶</button>
+      <button id="all">Run all</button>
+      <button id="reset">Reset</button>
+      <button id="copy">Copy results</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>gap ms</th><th>frames</th><th>frames/s</th><th>interval ms</th><th>rt median</th><th>rt p95</th><th>rt max</th><th>failed</th><th>encode ms</th><th>bytes</th><th style="text-align:left">tile shows N/N?</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <pre id="summary"></pre>
+    <div id="log"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

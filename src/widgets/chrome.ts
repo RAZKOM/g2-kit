@@ -1,4 +1,5 @@
 /** Feedback and chrome: toast, modal, tabs, dots, scroll indicator, status bar, HUD frame, ticker. */
+import { drawBlock } from '../core/block.js'
 import { defineComponent } from '../core/component.js'
 import { dashedRect, fillCircle, roundRect, strokeCircle, strokeRect } from '../core/draw.js'
 import type { Framebuffer } from '../core/framebuffer.js'
@@ -20,25 +21,28 @@ const KIND_ICON: Record<NonNullable<ToastProps['kind']>, IconName> = { info: 'in
 
 /**
  * Transient message. Kinds differ by icon and frame: info = thin frame,
- * success = double frame, warning = dashed frame, error = inverted.
+ * success = double frame, warning = dashed frame, error = inverted (with
+ * `surface: 'outline'`: a frame with only the icon inverted).
  */
 export function renderToast(fb: Framebuffer, rect: Rect, p: ToastProps, theme: Theme): void {
   const lv = theme.levels
   const kind = p.kind ?? 'info'
   const inv = kind === 'error'
-  if (inv) roundRect(fb, rect.x, rect.y, rect.w, rect.h, theme.radius, { fill: lv.full })
-  else if (kind === 'warning') dashedRect(fb, rect.x, rect.y, rect.w, rect.h, lv.full, { dash: [6, 3], width: 2 })
-  else {
+  const solid = inv && drawBlock(fb, rect.x, rect.y, rect.w, rect.h, lv.full, theme, { radius: theme.radius })
+  if (kind === 'warning') dashedRect(fb, rect.x, rect.y, rect.w, rect.h, lv.full, { dash: [6, 3], width: 2 })
+  else if (!inv) {
     roundRect(fb, rect.x, rect.y, rect.w, rect.h, theme.radius, { stroke: lv.full, width: kind === 'success' ? 1 : 2 })
     if (kind === 'success') roundRect(fb, rect.x + 3, rect.y + 3, rect.w - 6, rect.h - 6, Math.max(0, theme.radius - 3), { stroke: lv.bright })
   }
-  const fg = inv ? 0 : lv.full
+  const fg = solid ? 0 : lv.full
   const r = inset(rect, 8)
   const icon = p.icon ?? KIND_ICON[kind]
   const is = r.h >= 24 ? 16 : 12
-  ICONS[icon](fb, r.x, Math.round(r.y + (r.h - is) / 2), is, fg)
+  const iy = Math.round(r.y + (r.h - is) / 2)
+  if (inv && !solid) roundRect(fb, r.x - 3, iy - 3, is + 6, is + 6, 3, { fill: lv.full })
+  ICONS[icon](fb, r.x, iy, is, inv ? 0 : fg)
   drawTextBox(fb, { x: r.x + is + 8, y: r.y, w: r.w - is - 8, h: r.h }, p.text, { font: theme.fonts.body, level: fg, valign: 'middle', wrap: true, maxLines: 2 })
-  if (p.remaining !== undefined) fb.fillRect(rect.x + 4, rect.y + rect.h - 4, Math.round((rect.w - 8) * Math.max(0, Math.min(1, p.remaining))), 2, inv ? 0 : lv.dim)
+  if (p.remaining !== undefined) fb.fillRect(rect.x + 4, rect.y + rect.h - 4, Math.round((rect.w - 8) * Math.max(0, Math.min(1, p.remaining))), 2, solid ? 0 : lv.dim)
 }
 
 export const Toast = defineComponent<ToastProps>('Toast', { w: 288, h: 48 }, renderToast)
@@ -100,12 +104,13 @@ export function renderTabs(fb: Framebuffer, rect: Rect, p: TabsProps, theme: The
   if (p.variant !== 'boxed') fb.fillRect(rect.x, rect.y + rect.h - 1, rect.w, 1, lv.dim)
   cells.forEach((c, i) => {
     const on = i === p.active
+    let solid = false
     if (p.variant === 'boxed') {
-      if (on) fb.fillRect(c.x, c.y, c.w, c.h, lv.bright)
+      if (on) solid = drawBlock(fb, c.x, c.y, c.w, c.h, lv.bright, theme, { width: 1, double: true })
       else strokeRect(fb, c.x, c.y, c.w, c.h, lv.dim, 1)
     } else if (on) fb.fillRect(c.x, c.y + c.h - 4, c.w, 4, lv.full)
     const label = ellipsize(p.tabs[i], c.w - 4, f)
-    drawText(fb, label, c.x + c.w / 2, Math.round(c.y + (c.h - (p.variant === 'boxed' ? 0 : 4) - f.ascent) / 2), { font: f, level: p.variant === 'boxed' && on ? 0 : on ? lv.full : lv.mid, align: 'center' })
+    drawText(fb, label, c.x + c.w / 2, Math.round(c.y + (c.h - (p.variant === 'boxed' ? 0 : 4) - f.ascent) / 2), { font: f, level: solid ? 0 : on ? lv.full : lv.mid, align: 'center' })
   })
 }
 

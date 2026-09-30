@@ -187,3 +187,38 @@ export function textWithTile(o: PresetOptions & { text?: string; tileAt?: 'top' 
     .image({ id: 1, name: 'tile', x: Math.round((CANVAS_W - TW) / 2), y: tileTop ? 0 : CANVAS_H - th, w: TW, h: th })
   return { ...withMenu(b, o).build<'tile'>(), text: { id: SKELETON_ID, name: 'text' } }
 }
+
+/**
+ * 8. Text + a two-tile span: like `textWithTile`, for views bigger than one
+ * tile (a keyboard with symbols beside or below the letters). Draw with
+ * `G2.drawSpan(page.span, …)`; only the tile whose pixels changed is sent.
+ * ```
+ * wide (576×144 span)            tall (288×288 span)
+ * +------------------------+     +--------+-----------+
+ * | firmware text (capture)|     | s0     | firmware  |
+ * +-----------+------------+     +--------+ text      |
+ * | s0        | s1         |     | s1     | (capture) |
+ * +-----------+------------+     +--------+-----------+
+ * ```
+ */
+export function textWithSpan(
+  o: PresetOptions & { span: 'wide' | 'tall'; text?: string; spanAt?: 'top' | 'bottom' | 'left' | 'right'; padding?: number; textColor?: number },
+): SpanPage<'s0' | 's1'> & { text: { id: number; name: string } } {
+  const wide = o.span === 'wide'
+  const first = o.spanAt === 'top' || o.spanAt === 'left'
+  const span = wide ? { x: 0, y: first ? 0 : TH, w: CANVAS_W, h: TH } : { x: first || o.spanAt === undefined ? 0 : TW, y: 0, w: TW, h: CANVAS_H }
+  const textBox = wide ? { x: 0, y: first ? TH : 0, w: CANVAS_W, h: CANVAS_H - TH } : { x: span.x === 0 ? TW : 0, y: 0, w: CANVAS_W - TW, h: CANVAS_H }
+  const b = new PageBuilder().text({
+    id: SKELETON_ID,
+    name: 'text',
+    ...textBox,
+    content: o.text ?? ' ',
+    capture: true,
+    border: { width: 0 },
+    padding: o.padding ?? 8,
+    ...(o.textColor !== undefined ? { textColor: o.textColor } : {}),
+  })
+  b.image({ id: 1, name: 's0', x: span.x, y: span.y, w: TW, h: TH })
+  b.image({ id: 2, name: 's1', x: wide ? span.x + TW : span.x, y: wide ? span.y : span.y + TH, w: TW, h: TH })
+  return { ...withMenu(b, o).build<'s0' | 's1'>(), span, text: { id: SKELETON_ID, name: 'text' } }
+}

@@ -68,6 +68,8 @@
     "preview:site": "vite preview --outDir site --port 5190",
     "sim": "node ./node_modules/@evenrealities/evenhub-simulator/bin/index.js",
     "dev:lens": "vite examples/hub-lens",
+    "dev:bench": "vite examples/hub-bench",
+    "dev:keyboard": "vite examples/hub-keyboard",
     "showcase": "tsx scripts/showcase.ts"
   },
   "peerDependencies": {

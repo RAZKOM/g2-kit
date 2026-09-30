@@ -21,7 +21,7 @@ const vite = join(root, 'node_modules', 'vite', 'bin', 'vite.js')
 
 execFileSync(node, [tsx, join(root, 'examples', 'gallery', 'render.ts'), site, '--site'], { stdio: 'inherit', cwd: root })
 
-const DEMOS = { quickstart: 'hub-quickstart', dashboard: 'hub-dashboard', picker: 'hub-picker', game: 'hub-game', calibrate: 'hub-calibrate' }
+const DEMOS = { quickstart: 'hub-quickstart', dashboard: 'hub-dashboard', picker: 'hub-picker', keyboard: 'hub-keyboard', game: 'hub-game', calibrate: 'hub-calibrate' }
 for (const [name, dir] of Object.entries(DEMOS)) {
   execFileSync(node, [vite, 'build', join('examples', dir), '--base', './', '--outDir', join(site, 'demos', name), '--emptyOutDir', '--logLevel', 'warn'], { stdio: 'inherit', cwd: root })
   console.log(`site/demos/${name}`)

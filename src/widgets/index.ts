@@ -27,6 +27,26 @@ export {
   type SliderProps,
   type TimePickerProps,
 } from './controls.js'
+export {
+  DIGIT_ROW,
+  Keyboard,
+  KeyboardState,
+  LETTER_ROWS,
+  SYMBOL_ROWS,
+  keyboardLayout,
+  renderKeyboard,
+  typingCost,
+  type ActionName,
+  type KeyAction,
+  type KeyboardEffect,
+  type KeyboardLayout,
+  type KeyboardOptions,
+  type KeyboardProps,
+  type KeyboardView,
+  type PlacedKey,
+  type ShiftState,
+  type TypingCost,
+} from './keyboard.js'
 export { ABC_ROWS, GridKeyboard, GridKeyboardState, QWERTY, StatusKeyboard, T9_ROWS, renderGridKeyboard, renderStatusKeyboard, type GridKeyboardProps, type StatusKeyboardProps } from './keyboards.js'
 export {
   HudFrame,

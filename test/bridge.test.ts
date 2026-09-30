@@ -13,11 +13,13 @@ import {
   normalizeEvent,
   resolveListItem,
   toImageResult,
+  type G2Event,
   type Host,
   type ImageTarget,
   type PageLayout,
   type RawEvent,
 } from '../src/bridge/index.js'
+import { promptText } from '../src/input/index.js'
 
 const noSleep = () => Promise.resolve()
 const T = (id: number): ImageTarget => ({ containerID: id, containerName: `img${id}` })
@@ -579,6 +581,40 @@ describe('G2', () => {
     expect(calls.sort()).toEqual(['img:left', 'img:right'])
   })
 
+  it('modal sees events first: consumed ones stop there, the rest fall through (double-tap still exits)', () => {
+    const { host, calls } = fakeHost()
+    const g2 = new G2(host, { sleep: noSleep })
+    const seen: string[] = []
+    g2.on('*', (e) => seen.push(`app:${e.type}`))
+    const release = g2.modal((e) => {
+      seen.push(`modal:${e.type}`)
+      return e.type === 'next'
+    })
+    expect(g2.hasModal).toBe(true)
+    g2.dispatch({ type: 'next', from: 'text' })
+    g2.dispatch({ type: 'doubleTap' })
+    release()
+    g2.dispatch({ type: 'next', from: 'text' })
+    expect(seen).toEqual(['modal:next', 'modal:doubleTap', 'app:doubleTap', 'app:next'])
+    expect(calls).toContain('exit:1')
+    expect(g2.hasModal).toBe(false)
+  })
+
+  it('modals stack: the newest sees events first and may release itself while handling', () => {
+    const { host } = fakeHost()
+    const g2 = new G2(host, { sleep: noSleep })
+    const seen: string[] = []
+    g2.modal((e) => (seen.push(`outer:${e.type}`), true))
+    const inner = g2.modal((e) => {
+      seen.push(`inner:${e.type}`)
+      inner()
+      return true
+    })
+    g2.dispatch({ type: 'tap' })
+    g2.dispatch({ type: 'tap' })
+    expect(seen).toEqual(['inner:tap', 'outer:tap'])
+  })
+
   it('setText runs through the queue without dropping frames', async () => {
     const { host, calls } = fakeHost()
     const g2 = new G2(host, { sleep: noSleep })
@@ -589,5 +625,100 @@ describe('G2', () => {
     await g2.settle()
     expect(calls).toContain('text:sidebar:KPI 42')
     expect(calls.filter((c) => c.startsWith('img:')).length).toBe(4)
+  })
+})
+
+describe('promptText', () => {
+  const next: G2Event = { type: 'next', from: 'text' }
+  const prev: G2Event = { type: 'prev', from: 'text' }
+  const tap: G2Event = { type: 'tap' }
+  const hold: G2Event = { type: 'hold' }
+  async function setup() {
+    const { host, calls } = fakeHost()
+    const g2 = new G2(host, { sleep: noSleep })
+    await g2.show(layouts.twoTilesWithControl())
+    calls.length = 0
+    // Let show() resolve and the keyboard draw, then wait for the sends.
+    const flush = async () => {
+      await new Promise((r) => setTimeout(r, 0))
+      await g2.settle()
+    }
+    // One gesture at a time, each sent before the next (the queue would coalesce a burst).
+    const send = async (...events: G2Event[]) => {
+      for (const e of events) {
+        g2.dispatch(e)
+        await flush()
+      }
+    }
+    return { g2, calls, flush, send }
+  }
+  const texts = (calls: string[]) => calls.filter((c) => c.startsWith('text:'))
+
+  // Rows: [a b c] [d e f] [space delete submit].
+  const tiny = { letters: ['abc', 'def'], symbols: false, actions: ['space', 'delete', 'submit'] } as const
+
+  it('rebuilds to text + one tile, types into the text container, resolves the text on submit', async () => {
+    const { g2, calls, flush, send } = await setup()
+    const result = promptText(g2, { value: 'a', label: 'Name', keyboard: tiny })
+    await flush()
+    expect(calls).toEqual(['rebuild:2', 'img:tile'])
+    calls.length = 0
+    // Row 1, open it (d), next key (e), type it: one tile send per gesture, the text line updates.
+    await send(next, tap, next, tap)
+    expect(calls.filter((c) => c.startsWith('img:')).length).toBe(4)
+    expect(texts(calls).at(-1)).toContain('Name: ae_')
+    expect(texts(calls).at(-1)).toContain('swipe: pick a row')
+    // Typing went back to choosing rows: down to the action row, open it, move to submit.
+    await send(next, tap, next, next, tap)
+    await expect(result).resolves.toBe('ae')
+    expect(g2.hasModal).toBe(false)
+  })
+
+  it('delete stays on its key, maxLength caps typing, space types a space', async () => {
+    const { g2, calls, flush, send } = await setup()
+    const result = promptText(g2, { value: 'abc', maxLength: 3, hints: false, keyboard: tiny })
+    await flush()
+    await send(tap, tap) // row 0, key a: already at maxLength
+    expect(texts(calls)).toEqual([])
+    await send(hold, prev, tap, next, tap) // action row → delete
+    expect(texts(calls).at(-1)).toBe('text:text:> ab_')
+    await send(prev, tap) // space
+    expect(texts(calls).at(-1)).toBe('text:text:> ab _')
+    await send(tap, next, next, tap) // reopen (lands on space), submit
+    await expect(result).resolves.toBe('ab ')
+  })
+
+  it('symbols beside the letters use a two-tile span', async () => {
+    const { g2, calls, flush, send } = await setup()
+    const result = promptText(g2, { keyboard: { panels: 'side' } })
+    await flush()
+    expect(calls[0]).toBe('rebuild:3')
+    expect(calls.filter((c) => c.startsWith('img:')).sort()).toEqual(['img:s0', 'img:s1'])
+    calls.length = 0
+    // The letters cross the tile seam, so a row move redraws both tiles (and nothing else).
+    await send(next)
+    expect(calls.sort()).toEqual(['img:s0', 'img:s1'])
+    await send(hold)
+    await expect(result).resolves.toBeNull()
+  })
+  it('hold at row level cancels with null; double-tap falls through to the exit prompt', async () => {
+    const { g2, calls, flush, send } = await setup()
+    const result = promptText(g2)
+    await flush()
+    await send({ type: 'doubleTap' })
+    expect(calls).toContain('exit:1')
+    await send(hold)
+    await expect(result).resolves.toBeNull()
+    expect(g2.hasModal).toBe(false)
+  })
+
+  it('an abort signal resolves null', async () => {
+    const { g2, flush } = await setup()
+    const ac = new AbortController()
+    const result = promptText(g2, { signal: ac.signal })
+    await flush()
+    ac.abort()
+    await expect(result).resolves.toBeNull()
+    expect(g2.hasModal).toBe(false)
   })
 })

@@ -31,7 +31,23 @@ const SCENARIOS: Record<string, { port: number; steps: Step[] }> = {
       // To TIME (index 0): step back from 'B'.
       I('up'), W(400), I('up'), W(400), I('up'), W(400), I('up'), W(400), I('up'), W(600), S('on-time-item'), I('click'), W(2500), S('time'),
       I('click'), W(800), I('down'), W(600), I('down'), W(800), S('time-editing'), I('click'), W(800), I('down'), W(600), I('down'), W(600), I('click'), W(2500), S('back-to-carousel'),
+      // promptText (QWERTY): row 1, open it (a), next key (s), type it; typing returns to the rows.
       I('down'), W(600), I('click'), W(2500), S('keys'), I('down'), W(800), I('click'), W(800), I('down'), W(600), I('click'), W(1200), S('keys-typed'),
+      // Down twice to the action row, open it (shift), back one to submit (wraps), commit.
+      I('down'), W(600), I('down'), W(600), I('click'), W(800), I('up'), W(800), S('keys-ok-row'), I('click'), W(2500), S('keys-ok'),
+      // Open it again and cancel with a hold at row level.
+      I('click'), W(2500), S('keys-again'), I('long_press'), W(600), I('long_press_release'), W(2500), S('keys-cancelled'),
+    ],
+  },
+  // Keyboard demo: type "hi" on QWERTY, then a hold per preset (cancel → next preset, the text is kept).
+  'hub-keyboard': {
+    port: 5189,
+    steps: [
+      W(3500), S('qwerty'),
+      I('down'), W(600), I('click'), W(600), I('up'), W(400), I('up'), W(400), I('up'), W(400), I('up'), W(600), I('click'), W(800),
+      I('up'), W(600), I('click'), W(600), I('up'), W(400), I('up'), W(400), I('up'), W(600), I('click'), W(1200), S('qwerty-typed'),
+      ...['abc-columns', 'side', 'stack', 'minimal', 'azerty'].flatMap((p) => [I('long_press'), W(500), I('long_press_release'), W(3000), S(p)]),
+      I('down'), W(800), S('azerty-row'),
     ],
   },
   'hub-game': {
@@ -41,6 +57,8 @@ const SCENARIOS: Record<string, { port: number; steps: Step[] }> = {
   'hub-calibrate': { port: 5184, steps: [W(3500), S('card')] },
   'hub-ramp': { port: 5185, steps: [W(4000), S('ramp')] },
   'hub-lens': { port: 5187, steps: [W(4000), S('s1'), I('click'), W(1500), S('s2'), I('click'), W(2000), S('s3'), I('click'), W(1500), I('click'), W(3500), S('s5'), I('click'), W(4000), I('click'), W(2500), S('s7'), I('click'), W(5000), S('s8')] },
+  // Two runs of the send benchmark (gaps 150 and 100 ms); the console has the numbers ([hub-bench] lines).
+  'hub-bench': { port: 5188, steps: [W(3500), S('start'), I('click'), W(12000), S('run1'), I('click'), W(10000), S('run2')] },
   // Native list: swipes move the firmware highlight (expect no events), tap reports the index.
   'hub-quickstart': { port: 5186, steps: [W(3500), S('start'), I('down'), W(800), S('list-moved'), I('click'), W(1500), I('up'), W(600), I('click'), W(1500), S('refreshed'), I('down'), W(500), I('down'), W(500), I('down'), W(500), I('down'), W(800), I('click'), W(1500), S('after-exit')] },
 }

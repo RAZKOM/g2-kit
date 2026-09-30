@@ -62,9 +62,13 @@ simulator). Every distinction g2-kit draws has a shape difference too:
 
 - **Marks** (WordLens's rule): filled = yes / right spot, ring = partly / wrong spot, strike = no.
   Used by `GridBoard`, `StatusKeyboard` and `Legend`.
-- **Negative bars** are outlines; positive bars are filled.
+- **Negative bars** are outlines; positive bars are filled (with the outline surface: framed with sparse
+  dots, so negatives stay the empty frames).
 - **Focus** is a 2 px outline (plus corner ticks on buttons), never only a brighter fill.
-- **Toggle**: off = hollow track with a hollow knob on the left; on = filled track, knob on the right.
+- **Toggle**: off = hollow track with a hollow knob on the left; on = filled track, knob on the right (outline
+  surface: lit frame, solid knob on the right).
+- **Selected** (active button, selected segment or boxed tab) is a solid block, or a double frame with the
+  outline surface.
 - **Delta arrows**: filled when the change is good, outlined when bad (`good: 'up' | 'down'`).
 - **Toasts**: info = frame, success = double frame, warning = dashed frame, error = inverted.
 - **Heatmaps** can encode the value twice: level *and* square size (`encoding: 'both'`).
@@ -122,6 +126,22 @@ photos only.
 Render at 1:1, look at it in the simulator (or the gallery preview), and if you can't read it at a glance, it
 fails. The gallery's contact sheet exists for this.
 
+### Ink
+
+Level 0 is see-through; every lit pixel sits between the wearer and the world. `inkRatio(fb)` is the share
+of lit pixels. The gallery captions, the contact sheet and `npm run bench` show it per sample, and a test fails
+when a sample goes over `INK_BUDGET` (25 %) without a listed reason (test/components.test.ts). Allowed
+exceptions are fills that carry the data or a meaning (heatmap cells, waffle, filled marks, held dice) and
+small rects that a solid badge or bar fills.
+
+`theme.surface: 'outline'` (`outlineTheme`) trades solid blocks for frames: positive bars and histogram bins
+become frames with sparse dots (the highlighted bar and the marked bin stay solid, so they still stand
+out), active buttons and selected segments or tabs get a double frame, toggles a lit frame with a solid
+knob, progress fills a hatch with a solid leading edge, and error toasts a frame with only the icon inverted.
+A pressed button stays solid (it is a brief flash). Components call `drawBlock` for this; it returns whether
+the block came out solid, so content on it is punched out (level 0) or drawn lit. Across the 13 samples that
+change, ink drops from 30 % to 14 %; `npm run gallery` writes `surface-sheet.png` with both side by side.
+
 ## 7. Recommended sizes
 
 Every component accepts any rect; these are the sizes they are designed and tested at (the default for
@@ -143,7 +163,7 @@ Every component accepts any rect; these are the sizes they are designed and test
 | PaginationDots | 96×16 | ScrollIndicator | 6×144 |
 | AnalogClock, TimerRing | 144×144 | CompassStrip | 288×48 |
 | TurnArrow | 288×96 | GridBoard | 144×144 |
-| ScoreHud | 288×24 | | |
+| ScoreHud | 288×24 | Keyboard | 288×144 (576×144 symbols beside, 288×288 below) |
 
 ## 8. Gesture convention
 

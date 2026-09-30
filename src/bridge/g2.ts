@@ -53,6 +53,9 @@ export interface G2Options extends NormalizeOptions {
 
 type Handler<T extends G2EventType> = (e: Extract<G2Event, { type: T }>) => void
 
+/** Sees every event before the `on` handlers; return true to consume it. */
+export type ModalHandler = (e: G2Event) => boolean | void
+
 export class G2 {
   readonly queue: ImageQueue
   readonly surface: Surface
@@ -60,6 +63,7 @@ export class G2 {
   private created = false
   private shownLayout: string | null = null
   private handlers = new Map<string, Set<(e: G2Event) => void>>()
+  private modals: ModalHandler[] = []
   private named = new Map<string, { component: Component<unknown>; mounted: Mounted<unknown> }>()
   private commitScheduled = false
   private unsubscribe: (() => void) | null = null
@@ -242,6 +246,27 @@ export class G2 {
     return () => set.delete(fn as (e: G2Event) => void)
   }
 
+  /**
+   * Route events to `handler` first until the returned function is called
+   * (a prompt or dialog that owns the gestures while it is up). Return true
+   * from the handler to consume an event; unconsumed events go on to the `on`
+   * handlers and the defaults, so double-tap still reaches the exit prompt.
+   * Modals stack: the newest sees events first.
+   */
+  modal(handler: ModalHandler): () => void {
+    const entry: ModalHandler = (e) => handler(e)
+    this.modals.push(entry)
+    return () => {
+      const i = this.modals.indexOf(entry)
+      if (i >= 0) this.modals.splice(i, 1)
+    }
+  }
+
+  /** True while a modal handler is set. */
+  get hasModal(): boolean {
+    return this.modals.length > 0
+  }
+
   /** Feed a raw SDK event (done automatically for host events). */
   handleRaw(raw: RawEvent): G2Event {
     const e = normalizeEvent(raw, this.opts)
@@ -253,6 +278,8 @@ export class G2 {
   dispatch(e: G2Event): void {
     if (e.type === 'ignore') return
     if (e.type === 'foreground') this.redraw()
+    // A modal may release itself while handling, so walk a copy, newest first.
+    for (const m of [...this.modals].reverse()) if (m(e) === true) return
     if (e.type === 'doubleTap' && this.opts.doubleTapExits !== false && !this.handlers.get('doubleTap')?.size) void this.exit()
     for (const fn of this.handlers.get(e.type) ?? []) fn(e)
     for (const fn of this.handlers.get('*') ?? []) fn(e)

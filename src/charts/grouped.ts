@@ -2,12 +2,13 @@
  * Grouped and stacked bars. Series are told apart by fill pattern (solid,
  * hatch, dots, …), not by brightness alone.
  */
+import { drawBlock, isOutline } from '../core/block.js'
 import { defineComponent } from '../core/component.js'
 import { fillRectPaint, strokeRect } from '../core/draw.js'
 import { seriesStyle, warnSeries } from '../core/encodings.js'
 import type { Framebuffer } from '../core/framebuffer.js'
 import type { Rect } from '../core/geometry.js'
-import type { FillPattern, Paint } from '../core/paint.js'
+import { isSolid, type FillPattern, type Paint } from '../core/paint.js'
 import type { Theme } from '../core/theme.js'
 import { chartFrame, drawSmall, drawState, formatNumber, linear, showLabel, smallH, smallW, type ChartCommon } from './common.js'
 
@@ -33,6 +34,11 @@ export function seriesPaint(i: number, theme: Theme, fill?: FillPattern, dim = f
   const pattern = fill ?? seriesStyle(i).fill
   const level = dim ? theme.levels.mid : i === 0 ? theme.levels.bright : theme.levels.full
   return pattern === 'solid' ? level : { pattern, level }
+}
+
+/** Under `surface: 'outline'` a solid paint becomes sparse dots (stacked segments keep their 1 px frame). */
+function surfacePaint(paint: Paint, theme: Theme): Paint {
+  return isOutline(theme) && isSolid(paint) ? { pattern: 'sparseDots', level: paint } : paint
 }
 
 export function renderMultiBarChart(fb: Framebuffer, rect: Rect, p: MultiBarChartProps, theme: Theme): void {
@@ -67,7 +73,7 @@ export function renderMultiBarChart(fb: Framebuffer, rect: Rect, p: MultiBarChar
         const v = Math.max(0, s.values[i] ?? 0)
         const h = Math.round(bottom - y(v))
         if (h <= 0) return
-        fillRectPaint(fb, x0, base - h, groupW, h, seriesPaint(si, theme, s.fill, dim))
+        fillRectPaint(fb, x0, base - h, groupW, h, surfacePaint(seriesPaint(si, theme, s.fill, dim), theme))
         strokeRect(fb, x0, base - h, groupW, h, dim ? lv.mid : lv.full, 1)
         // 1 px gap between segments so the stack reads as parts.
         fb.fillRect(x0, base - h, groupW, 1, 0)
@@ -82,7 +88,9 @@ export function renderMultiBarChart(fb: Framebuffer, rect: Rect, p: MultiBarChar
         const h = Math.max(v > 0 ? 2 : 0, Math.round(bottom - y(v)))
         const bx = x0 + si * (bw + 2)
         if (h > 0) {
-          fillRectPaint(fb, bx, bottom - h, bw, h, seriesPaint(si, theme, s.fill, dim))
+          const paint = seriesPaint(si, theme, s.fill, dim)
+          if (isSolid(paint)) drawBlock(fb, bx, bottom - h, bw, h, paint, theme, { texture: 'sparseDots' })
+          else fillRectPaint(fb, bx, bottom - h, bw, h, paint)
           if (si > 0) strokeRect(fb, bx, bottom - h, bw, h, dim ? lv.mid : lv.full, 1)
         }
         const t = formatNumber(v, p.format)

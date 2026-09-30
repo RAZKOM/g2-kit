@@ -102,7 +102,73 @@ g2.on('*', (e) => ring.handle(e))
   `Roller { focus, editing }`, `ButtonRow { focus }`.
 
 `GridKeyboardState` is a two-level ring for keyboards: swipes pick a row, tap enters it, swipes pick a key,
-tap types, hold goes back up.
+tap types, hold goes back up. `KeyboardState` (for the configurable `Keyboard`) does the same over rows,
+columns or one line of keys, and adds shift, caps lock, a symbols layer and the text itself.
+
+## Keyboards
+
+With one gesture axis a keyboard is a list of groups: a swipe walks the groups (rows, or columns left to right,
+then the action row), tap opens one, swipes walk its keys, tap types. After typing, focus goes back to the
+groups (`afterType: 'group'`, default) or stays on the key (`'stay'`); delete always stays, so repeated taps
+keep deleting. Entering a group lands on the key used last in it, and a group with a single key types on the
+first tap. Hold goes back from the keys to the groups; at the group level it is free for the caller
+(`promptText`: cancel).
+
+```ts
+import { Keyboard, KeyboardState, keyboardLayout, typingCost } from 'g2-kit/widgets'
+
+const layout = keyboardLayout({ letters: 'qwerty', panels: 'layers', actions: ['shift', 'symbols', 'space', 'delete', 'submit'] })
+const kb = new KeyboardState(layout, { maxLength: 40 })
+g2.on('*', (e) => {
+  if (e.type === 'next' || e.type === 'prev') kb.move(e.type === 'next' ? 1 : -1)
+  else if (e.type === 'hold') kb.back()
+  else if (e.type === 'tap' && kb.tap() === 'submit') send(kb.text)
+  g2.draw('tile', Keyboard, kb.props)
+})
+typingCost(layout, 'on my way') // { gestures, swipes, taps, holds, perChar, missing }
+```
+
+Shift is one-shot, a second tap locks it (without a separate `caps` key), a third releases it. Letters show in
+lowercase until shift or caps is on. Symbols live on a second layer (`panels: 'layers'`, a `?123` / `abc` key
+switches and lands on the same key), beside the letters (`'side'`, 576×144 over two tiles) or below them
+(`'stack'`, 288×288). Measured with `typingCost` on short messages (fewest gestures per character):
+
+| Configuration | Gestures / char |
+|---|---|
+| QWERTY, rows, back to rows after typing (default) | 5.1 |
+| QWERTY, rows, stay on the key | 5.6 |
+| QWERTY, columns | 5.5 |
+| ABC (7 per row), rows | 4.8 |
+| Symbols beside, rows / columns | 5.1 / 6.1 |
+| Symbols below, rows / columns | 5.1 / 6.4 |
+| Every key in one line | 9.4 |
+
+Columns cost more with side panels because there are more columns (16) than rows (8) to walk. These are
+minimums from a model; `hub-keyboard` counts real gestures on the glasses.
+
+## Text entry and modals
+
+`promptText` is text entry in one call:
+
+```ts
+import { promptText } from 'g2-kit/input'
+
+const name = await promptText(g2, { label: 'Name', value: 'Ada', maxLength: 20 })
+if (name !== null) save(name)
+await showHome() // the prompt leaves its own page on screen: show yours again
+```
+
+It rebuilds to `layouts.textWithTile`: the firmware text line shows the text and gesture hints (updates cost no
+image send), the tile below is a `Keyboard` (one tile send per move). Pass `keyboard` (options or a compiled
+layout) to change it; side or stacked symbols use `layouts.textWithSpan` with two tiles, and a move sends only
+the tile that changed. It resolves with the text on the submit key, and null on a cancel key, a hold while
+choosing a row, `signal` abort, or app exit. `onChange` reports every edit.
+
+While it runs it owns the gestures through `g2.modal(handler)`: a modal handler sees every event before the
+`on` handlers and returns true to consume it. Unconsumed events fall through, so double-tap still reaches the
+exit prompt (or your `doubleTap` handler); `foreground` redraws as usual. Modals stack (the newest sees events
+first); the function `modal()` returns releases it, and `g2.hasModal` tells your own handlers one is up. Use it
+for any dialog that takes over the gestures, e.g. a `Modal` confirm on its own tile.
 
 ## Confirming destructive actions
 

@@ -3,6 +3,9 @@ import { describe, expect, it } from 'vitest'
 import {
   Framebuffer,
   TiledCanvas,
+  createTheme,
+  defaultTheme,
+  drawBlock,
   drawMarker,
   drawSevenSeg,
   drawText,
@@ -22,7 +25,9 @@ import {
   fromGray8,
   fromRGBA,
   gridTiles,
+  inkRatio,
   line,
+  outlineTheme,
   measureSevenSeg,
   pack4,
   polyline,
@@ -120,6 +125,37 @@ describe('Framebuffer', () => {
     b.set(6, 5, 1)
     expect(a.diffBounds(b)).toEqual({ x: 2, y: 3, w: 5, h: 3 })
     expect(a.hash()).not.toBe(b.hash())
+  })
+})
+
+describe('ink and surfaces', () => {
+  it('inkRatio counts lit pixels, optionally in a rect and above a level', () => {
+    const fb = new Framebuffer(4, 2)
+    expect(inkRatio(fb)).toBe(0)
+    fb.fillRect(0, 0, 2, 1, 1)
+    fb.set(3, 1, 15)
+    expect(inkRatio(fb)).toBe(3 / 8)
+    expect(inkRatio(fb, { x: 0, y: 0, w: 2, h: 1 })).toBe(1)
+    expect(inkRatio(fb, { x: 2, y: 0, w: 9, h: 9 })).toBe(1 / 4)
+    expect(inkRatio(fb, undefined, 2)).toBe(1 / 8)
+    expect(inkRatio(fb, { x: 9, y: 9, w: 2, h: 2 })).toBe(0)
+  })
+
+  it('drawBlock: solid by default, a frame under surface outline', () => {
+    const solid = new Framebuffer(9, 9)
+    expect(drawBlock(solid, 0, 0, 9, 9, 8, defaultTheme)).toBe(true)
+    expect(inkRatio(solid)).toBe(1)
+    const frame = new Framebuffer(9, 9)
+    expect(drawBlock(frame, 0, 0, 9, 9, 8, outlineTheme)).toBe(false)
+    expect(frame.toAscii().split('\n')[4]).toBe('88.....88')
+    const dotted = new Framebuffer(9, 9)
+    drawBlock(dotted, 0, 0, 9, 9, 8, outlineTheme, { texture: 'sparseDots', double: true })
+    expect(inkRatio(dotted)).toBeGreaterThan(inkRatio(frame))
+    expect(inkRatio(dotted)).toBeLessThan(1)
+    // Too small for a frame: stays solid.
+    const tiny = new Framebuffer(6, 6)
+    expect(drawBlock(tiny, 0, 0, 6, 6, 8, outlineTheme)).toBe(true)
+    expect(createTheme({ surface: 'outline' }).surface).toBe('outline')
   })
 })
 

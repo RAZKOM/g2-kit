@@ -3,6 +3,7 @@
  * marker, negative values around a zero baseline. Negative bars are drawn as
  * outlines so the sign survives without brightness.
  */
+import { drawBlock } from '../core/block.js'
 import { defineComponent } from '../core/component.js'
 import { fillRectPaint, fillTriangle, strokeRect } from '../core/draw.js'
 import type { Framebuffer } from '../core/framebuffer.js'
@@ -35,6 +36,17 @@ export interface BarChartProps extends ChartCommon {
 
 function value(d: BarDatum): number {
   return typeof d === 'number' ? d : d.value
+}
+
+/**
+ * Positive bar: `fill` pattern, or solid. Under `surface: 'outline'` a solid bar
+ * becomes a frame with sparse dots (negatives stay empty frames); the
+ * highlighted bar stays solid so it is the one that stands out.
+ */
+function positiveBar(fb: Framebuffer, x: number, y: number, w: number, h: number, p: BarChartProps, hl: boolean, level: number, theme: Theme): void {
+  if (hl) fb.fillRect(x, y, w, h, theme.levels.full)
+  else if (p.fill) fillRectPaint(fb, x, y, w, h, { pattern: p.fill, level })
+  else drawBlock(fb, x, y, w, h, level, theme, { texture: 'sparseDots' })
 }
 
 export function renderBarChart(fb: Framebuffer, rect: Rect, p: BarChartProps, theme: Theme): void {
@@ -73,7 +85,7 @@ export function renderBarChart(fb: Framebuffer, rect: Rect, p: BarChartProps, th
     const yv = Math.round(y(v))
     if (v >= 0) {
       const h = Math.max(v > 0 ? 2 : 0, zero - yv)
-      if (h > 0) fillRectPaint(fb, x, zero - h, barW, h, p.fill && !hl ? { pattern: p.fill, level } : hl ? lv.full : level)
+      if (h > 0) positiveBar(fb, x, zero - h, barW, h, p, hl, level, theme)
     } else {
       const h = Math.max(2, yv - zero - 1)
       strokeRect(fb, x, zero + 2, barW, h, hl ? lv.full : level, 2)
@@ -119,7 +131,7 @@ function renderHorizontal(fb: Framebuffer, plot: Rect, p: BarChartProps, theme: 
     const xv = Math.round(x(v))
     if (v >= 0) {
       const w = Math.max(v > 0 ? 2 : 0, xv - zero - 1)
-      if (w > 0) fillRectPaint(fb, zero + 1, y, w, barH, p.fill && !hl ? { pattern: p.fill, level } : hl ? lv.full : level)
+      if (w > 0) positiveBar(fb, zero + 1, y, w, barH, p, hl, level, theme)
     } else strokeRect(fb, xv, y, Math.max(2, zero - 1 - xv), barH, hl ? lv.full : level, 2)
     const ty = Math.round(cy - sh / 2)
     if (labels[i]) drawSmall(fb, labels[i], x0 - 6, ty, hl ? lv.full : lv.bright, theme, 'right')

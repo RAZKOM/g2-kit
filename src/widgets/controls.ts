@@ -3,6 +3,7 @@
  * pickers, checklist. Pair them with FocusRing: tap enters edit mode, swipes
  * adjust, tap commits, hold cancels.
  */
+import { drawBlock } from '../core/block.js'
 import { defineComponent } from '../core/component.js'
 import { fillTriangle, line, roundRect, strokeRect } from '../core/draw.js'
 import type { Framebuffer } from '../core/framebuffer.js'
@@ -31,10 +32,10 @@ export function renderSegmentedControl(fb: Framebuffer, rect: Rect, p: Segmented
   const f = theme.fonts.body
   cells.forEach((c, i) => {
     const sel = i === p.selected
-    if (sel) fb.fillRect(c.x, c.y, c.w, c.h, p.editing ? lv.full : lv.bright)
-    else if (i > 0 && p.selected !== i - 1) fb.fillRect(c.x - 2, c.y + 3, 1, c.h - 6, lv.dim)
+    const solid = sel && drawBlock(fb, c.x, c.y, c.w, c.h, p.editing ? lv.full : lv.bright, theme, { double: true })
+    if (!sel && i > 0 && p.selected !== i - 1) fb.fillRect(c.x - 2, c.y + 3, 1, c.h - 6, lv.dim)
     const text = ellipsize(p.options[i], c.w - 6, f)
-    drawText(fb, text, c.x + c.w / 2, Math.round(c.y + (c.h - f.ascent) / 2), { font: f, level: sel ? 0 : lv.bright, align: 'center' })
+    drawText(fb, text, c.x + c.w / 2, Math.round(c.y + (c.h - f.ascent) / 2), { font: f, level: solid ? 0 : sel ? lv.full : lv.bright, align: 'center' })
   })
   if (p.editing) {
     const c = cells[p.selected]

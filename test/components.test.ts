@@ -1,8 +1,9 @@
 import { createHash } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
-import { Framebuffer, TILE, createTheme, encodePreviewPng } from '../src/core/index.js'
+import { Framebuffer, INK_BUDGET, TILE, createTheme, encodePreviewPng, inkRatio, outlineTheme } from '../src/core/index.js'
 import { formatNumber, heatStep, niceScale } from '../src/charts/index.js'
 import { GridKeyboardState, dateColumns, daysInMonth, marqueeFrames, timeColumns } from '../src/widgets/index.js'
+import * as W from '../src/widgets/index.js'
 import { ICON_NAMES, drawIcon } from '../src/icons/index.js'
 import { SAMPLES } from '../examples/gallery/samples.js'
 
@@ -59,6 +60,68 @@ describe('every gallery sample: smoke + PNG snapshot', () => {
   })
 })
 
+/**
+ * Samples allowed over INK_BUDGET with the default (filled) surface, and why.
+ * `outline: true`: the outline surface must bring the sample under budget.
+ * A new sample over budget fails the test: make it lighter, or add it here with a reason.
+ */
+const INK_EXCEPTIONS: Record<string, { why: string; outline?: true }> = {
+  'bar-vertical': { why: 'solid bars', outline: true },
+  'bars-grouped': { why: 'solid series-0 bars', outline: true },
+  'bars-stacked': { why: 'solid series-0 segments', outline: true },
+  histogram: { why: 'solid bins', outline: true },
+  'button-states': { why: 'shows every state, incl. pressed and active fills', outline: true },
+  'toggle-on': { why: 'solid track', outline: true },
+  'progress-segmented': { why: 'solid lit segments', outline: true },
+  segmented: { why: 'solid selected segment', outline: true },
+  'toast-error': { why: 'error toasts are inverted', outline: true },
+  'tabs-boxed': { why: 'solid active tab in a small rect', outline: true },
+  heatmap: { why: 'the lit cells are the data' },
+  waffle: { why: 'the lit cells are the data' },
+  'board-2048': { why: 'filled marks carry meaning' },
+  dice: { why: 'held dice are filled (meaning)' },
+  badges: { why: 'a solid badge fills most of its 96×16 rect' },
+  health: { why: 'a 16 px tall bar fills most of its rect' },
+}
+
+describe('ink budget', () => {
+  const size = (s: (typeof SAMPLES)[number]) => s.size ?? s.component.size ?? TILE
+  const ink = new Map(SAMPLES.map((s) => [s.id, inkRatio(s.component.renderToTile(s.props, size(s)))]))
+
+  it(`no sample lights more than ${INK_BUDGET * 100} % of its pixels unless listed`, () => {
+    const over = SAMPLES.filter((s) => ink.get(s.id)! > INK_BUDGET && !INK_EXCEPTIONS[s.id]).map((s) => `${s.id} ${(ink.get(s.id)! * 100).toFixed(1)} %`)
+    expect(over).toEqual([])
+  })
+
+  it('the exception list only holds samples that are over budget', () => {
+    const stale = Object.keys(INK_EXCEPTIONS).filter((id) => !(ink.get(id)! > INK_BUDGET))
+    expect(stale).toEqual([])
+  })
+
+  it('the outline surface brings the listed samples under budget', () => {
+    const still = SAMPLES.filter((s) => INK_EXCEPTIONS[s.id]?.outline && inkRatio(s.component.renderToTile(s.props, size(s), outlineTheme)) > INK_BUDGET).map((s) => s.id)
+    expect(still).toEqual([])
+  })
+})
+
+describe('outline surface', () => {
+  for (const s of SAMPLES) {
+    const size = s.size ?? s.component.size ?? TILE
+    const filled = s.component.renderToTile(s.props, size)
+    const outline = s.component.renderToTile(s.props, size, outlineTheme)
+    if (outline.equals(filled)) continue
+    it(`${s.id}: less ink, inside its rect, PNG snapshot`, () => {
+      expect(inkRatio(outline)).toBeLessThan(inkRatio(filled))
+      const o = 60
+      const big = new Framebuffer(size.w + 2 * o, size.h + 2 * o)
+      s.component.render(big, { x: o, y: o, w: size.w, h: size.h }, s.props, outlineTheme)
+      // Every lit pixel of the big canvas is inside the rect.
+      expect(Math.round(inkRatio(big) * big.data.length)).toBe(Math.round(inkRatio(big, { x: o, y: o, w: size.w, h: size.h }) * size.w * size.h))
+      expect(createHash('sha256').update(encodePreviewPng(outline)).digest('hex').slice(0, 16)).toMatchSnapshot()
+    })
+  }
+})
+
 describe('icons', () => {
   it('every icon draws something at 8, 12 and 16 px inside its box', () => {
     for (const name of ICON_NAMES)
@@ -112,6 +175,89 @@ describe('widget helpers', () => {
     k.move(-1)
     k.move(-1)
     expect(k.row).toBe(4)
+  })
+
+  it('keyboardLayout: groups by rows, columns or keys; symbols as a layer, beside or below', () => {
+    const labels = (l: W.KeyboardLayout, v = 0) => l.views[v].groups.map((g) => g.map((i) => l.views[v].keys[i].char ?? l.views[v].keys[i].action).join(' '))
+    const rows = W.keyboardLayout()
+    expect(rows.views.map((v) => v.id)).toEqual(['letters', 'symbols'])
+    expect(labels(rows)).toEqual(['q w e r t y u i o p', 'a s d f g h j k l', 'z x c v b n m', 'shift symbols space delete submit'])
+    expect(labels(rows, 1)[0]).toBe('1 2 3 4 5 6 7 8 9 0')
+    const cols = W.keyboardLayout({ letters: 'abc', scan: 'columns', symbols: false })
+    // 'vwxyz' is centred by whole keys under the 7-wide rows, so v sits under b.
+    expect(labels(cols).slice(0, 2)).toEqual(['a h o', 'b i p v'])
+    expect(labels(cols).at(-1)).toBe('shift space delete submit') // no symbols layer, no switch key
+    const side = W.keyboardLayout({ panels: 'side', punctuation: ',.' })
+    expect(side.views).toHaveLength(1)
+    expect(labels(side)[2]).toBe('z x c v b n m , .')
+    expect(labels(side)[3]).toBe('1 2 3 4 5') // then the symbol rows
+    expect(side.size).toEqual({ w: 576, h: 144 })
+    expect(W.keyboardLayout({ scan: 'keys' }).views[0].groups).toHaveLength(1)
+    expect(labels(W.keyboardLayout({ digits: 'row', symbols: false }))[0]).toBe('1 2 3 4 5 6 7 8 9 0')
+  })
+
+  it('KeyboardState: open, type, shift once / lock, caps, layer switch, delete stays', () => {
+    const kb = new W.KeyboardState(W.keyboardLayout({ actions: ['shift', 'caps', 'symbols', 'space', 'delete', 'submit'] }), { maxLength: 6 })
+    const actions = () => {
+      while (kb.group !== kb.current.groups.length - 1) kb.move(-1)
+    }
+    const pressAction = (name: string) => {
+      actions()
+      kb.tap()
+      while (kb.focusedKey!.action !== name) kb.move(1)
+      return kb.tap()
+    }
+    expect(pressAction('shift')).toBe('mode')
+    expect(kb.key).toBe(-1) // back to choosing rows
+    kb.move(1) // row 0
+    expect(kb.tap()).toBe('opened')
+    expect(kb.tap()).toBe('typed') // Q, shift once
+    expect(kb.text).toBe('Q')
+    expect(kb.shift).toBe('off')
+    kb.tap() // reopen at q
+    kb.tap()
+    expect(kb.text).toBe('Qq')
+    pressAction('caps')
+    expect(kb.shift).toBe('lock')
+    kb.move(1)
+    kb.tap()
+    kb.tap()
+    expect(kb.text).toBe('QqQ')
+    pressAction('caps')
+    expect(pressAction('symbols')).toBe('mode')
+    expect(kb.current.id).toBe('symbols')
+    kb.move(1) // digits row
+    kb.tap()
+    kb.tap()
+    expect(kb.text).toBe('QqQ1')
+    expect(pressAction('delete')).toBe('deleted')
+    expect(kb.focusedKey!.action).toBe('delete') // stays for repeated deletes
+    kb.tap()
+    expect(kb.text).toBe('Qq')
+    expect(kb.back()).toBe(true)
+    expect(kb.back()).toBe(false)
+    expect(pressAction('submit')).toBe('submit')
+  })
+
+  it('KeyboardState: afterType stay, one-key groups type on the first tap, maxLength', () => {
+    const kb = new W.KeyboardState(W.keyboardLayout({ letters: ['ab', 'c'], symbols: false, actions: ['submit'], afterType: 'stay' }), { maxLength: 2 })
+    kb.tap()
+    kb.tap()
+    expect(kb.key).toBe(0) // stays on a
+    kb.back()
+    kb.move(1) // row [c]: one key
+    expect(kb.tap()).toBe('typed')
+    expect(kb.text).toBe('ac')
+    expect(kb.tap()).toBe('none') // maxLength
+  })
+
+  it('typingCost: rows beat one long line; uppercase costs a shift', () => {
+    const rows = W.typingCost(W.keyboardLayout(), 'hello world')
+    const keys = W.typingCost(W.keyboardLayout({ scan: 'keys' }), 'hello world')
+    expect(rows.missing).toBe('')
+    expect(rows.gestures).toBeLessThan(keys.gestures)
+    expect(W.typingCost(W.keyboardLayout(), 'Hi').gestures).toBeGreaterThan(W.typingCost(W.keyboardLayout(), 'hi').gestures)
+    expect(W.typingCost(W.keyboardLayout({ symbols: false }), 'a1').missing).toBe('1')
   })
 
   it('time and date columns', () => {

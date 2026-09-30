@@ -2,3 +2,4 @@ export { BACK, MORE, PagedList, blankTextSkeleton, listSkeleton, type ListSkelet
 export { HybridSkeleton, type HybridMode } from './hybrid.js'
 export { DEFAULT_GESTURES, FocusRing, stepIndex, stepValue, type Action, type EditHandler, type FocusRingOptions, type FocusState, type Focusable, type GestureMap } from './focus.js'
 export { HoldToConfirm, TapConfirm, realTimers, type HoldToConfirmOptions, type TapConfirmOptions, type Timers } from './confirm.js'
+export { promptText, type PromptTextOptions } from './prompt.js'

@@ -2,7 +2,7 @@
 
 What is done and how each part was verified.
 
-- **unit**: covered by `npm test` (214 tests in Node, no device).
+- **unit**: covered by `npm test` (255 tests in Node, no device).
 - **gallery**: rendered by `npm run gallery` and inspected by eye at 1:1 and 2×.
 - **simulator**: exercised in evenhub-simulator 0.9.5 (SDK 0.0.16) through its automation API
   (`npm run sim:check`), with screenshots and console logs checked.
@@ -43,7 +43,14 @@ What is done and how each part was verified.
 | FocusRing, edit mode | ✓ | | ✓ (time picker: enter, adjust, commit) | – |
 | HoldToConfirm | ✓ (fake timers) | | not driven | open: LONG_PRESS timing |
 | TapConfirm, PagedList, HybridSkeleton | ✓ | | not driven | – |
-| Every chart and widget (92 gallery samples) | ✓ smoke + PNG snapshot | ✓ | components used by the examples ✓ | – |
+| Every chart and widget (98 gallery samples) | ✓ smoke + PNG snapshot | ✓ | components used by the examples ✓ | – |
+| Ink metric (`inkRatio`), budget test (25 %, listed exceptions) | ✓ | ✓ ink in captions, contact sheet, bench | | – |
+| Outline surface (13 samples change) | ✓ PNG snapshots; less ink than filled; inside the rect | ✓ `surface-sheet.png` at 1:1 | not driven | – |
+| `G2.modal` (consume / fall through / stack) | ✓ | | ✓ via `promptText` in hub-picker | – |
+| `promptText` | ✓ type, DEL, max length, OK, cancel, abort, double-tap exits | | ✓ hub-picker: type, back to rows, OK commits, hold cancels | – |
+| `Keyboard`, `keyboardLayout`, `KeyboardState`, `typingCost` | ✓ groups by rows / columns / keys, shift, caps, layers, delete, max length, cost model | ✓ 6 samples (layers, symbols, columns, side, stack) | ✓ `hub-keyboard`: typing on QWERTY, all 6 presets incl. two-tile side and stacked; hub-picker types and commits | – |
+| `layouts.textWithSpan` (wide, tall) | ✓ | | ✓ via `hub-keyboard` (seamless across the two tiles) | – |
+| `hub-bench` send benchmark | | | ✓ runs; simulator round trip ~10 ms (no BLE, not meaningful) | open: H1 |
 | Render time | ✓ `npm run bench`: worst sample 0.8 ms warm on a desktop | | | phone WebView not measured; examples display it |
 
 ## Needs real glasses
@@ -54,6 +61,8 @@ What is done and how each part was verified.
 4. Render time per tile in the phone WebView (shown on every example page).
 5. Raw Gray8 / packed Gray4 image data (`format`), which would skip PNG encoding.
 6. ~~Font readability~~: all four text rows on the card read comfortably.
+7. Image send speed: `updateImageRawData` round trip and whether `gapMs` < 100 ms leaves frames stuck
+   (`npm run dev:bench`, ROADMAP H1).
 
 ## Known hardware issue: one lens after a rebuild
 
@@ -73,6 +82,11 @@ Seen on G2 glasses on 2026-09-29 with `examples/hub-lens` (details from the test
 Mitigation in g2-kit: `G2.show()` skips the rebuild when the new page has the same containers as the current
 one (it only redraws tiles), and the dashboard example switches views inside one layout. `hub-lens` has steps
 S9 (clear to a text-only page first) and S10 (three tiles) to try the next time it happens.
+
+Caveat (found 2026-09-30): until then the examples' shared `g2.show` wrapper dropped its options, so the
+committed `hub-lens` did not force rebuilds: S3, S5 and S6 (same layout as the step before) reused the page
+and the phone log said "page reused". Runs of that version tested re-sending tiles in those steps, not
+rebuild-then-send. Fixed; rerun hub-lens if those steps matter.
 
 ## Known limits
 

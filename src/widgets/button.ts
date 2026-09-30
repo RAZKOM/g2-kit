@@ -3,9 +3,10 @@
  *   normal   1 px dim outline, bright label
  *   focused  2 px full outline + corner ticks
  *   pressed  full fill, dark label, 1 px dark inset (looks pushed)
- *   active   bright fill, dark label (selected / on)
+ *   active   bright fill, dark label (selected / on); double frame with `surface: 'outline'`
  *   disabled dashed faint outline, dim label
  */
+import { drawBlock } from '../core/block.js'
 import { defineComponent } from '../core/component.js'
 import { dashedRect, roundRect, strokeRect } from '../core/draw.js'
 import type { Framebuffer } from '../core/framebuffer.js'
@@ -29,9 +30,12 @@ export function renderButton(fb: Framebuffer, rect: Rect, p: ButtonProps, theme:
   const state = p.state ?? 'normal'
   const { x, y, w, h } = rect
   const radius = p.variant === 'pill' ? Math.floor(h / 2) : Math.min(theme.radius, Math.floor(h / 4))
-  const filled = state === 'pressed' || state === 'active'
-  const fill = state === 'pressed' ? lv.full : lv.bright
-  if (filled) roundRect(fb, x, y, w, h, radius, { fill })
+  let filled = false
+  // Pressed is a brief flash, so it stays solid under every surface.
+  if (state === 'pressed') {
+    roundRect(fb, x, y, w, h, radius, { fill: lv.full })
+    filled = true
+  } else if (state === 'active') filled = drawBlock(fb, x, y, w, h, lv.bright, theme, { radius, double: true })
   else if (state === 'disabled') {
     if (p.variant === 'pill') roundRect(fb, x, y, w, h, radius, { stroke: lv.faint })
     else dashedRect(fb, x, y, w, h, lv.dim, { dash: [3, 3] })
@@ -45,7 +49,7 @@ export function renderButton(fb: Framebuffer, rect: Rect, p: ButtonProps, theme:
       fb.fillRect(cx, dy > 0 ? cy : cy - t + 1, 1, t, lv.full)
     }
   }
-  const text = filled ? 0 : state === 'disabled' ? lv.dim : state === 'focused' ? lv.full : lv.bright
+  const text = filled ? 0 : state === 'disabled' ? lv.dim : state === 'focused' || state === 'active' ? lv.full : lv.bright
   // Content: icon + label, centred; shrink the font if needed.
   const fonts: FontName[] = p.font ? [p.font] : ['body', 'small']
   const inner = w - 2 * Math.max(6, radius)

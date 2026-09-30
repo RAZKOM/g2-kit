@@ -5,14 +5,16 @@
  *     tile per gesture; tap types; hold deletes. TIME / KEYS open 2 and 3.
  *  2. Time picker: FocusRing over hours / minutes / Done. Tap enters edit
  *     mode, swipes roll the value, tap commits, hold cancels.
- *  3. Keyboard (textWithTile): an ABC grid on one tile under a firmware text
- *     container showing the typed text. Swipe moves rows, tap enters a row,
- *     swipe moves keys, tap types, hold goes back up. One tile send per move;
- *     typing updates the text container (no image send).
+ *  3. Keyboard: one call to promptText(), which rebuilds to textWithTile (an
+ *     ABC grid on one tile under a firmware text container showing the typed
+ *     text) and owns the gestures through g2.modal() until OK or cancel.
+ *     Swipe moves rows, tap enters a row, swipe moves keys, tap types, hold
+ *     goes back up (at row level: cancel). One tile send per move; typing
+ *     updates the text container (no image send).
  */
 import { layouts } from 'g2-kit/bridge'
-import { FocusRing, stepValue } from 'g2-kit/input'
-import { BigText, ButtonRow, Carousel, GridKeyboard, GridKeyboardState, TimePicker } from 'g2-kit/widgets'
+import { FocusRing, promptText, stepValue } from 'g2-kit/input'
+import { BigText, ButtonRow, Carousel, TimePicker } from 'g2-kit/widgets'
 import { start } from '../shared/phone'
 
 const { g2, mirror } = await start()
@@ -91,56 +93,18 @@ async function showTime(): Promise<void> {
 }
 
 // ── 3. keyboard ──
-// One 288×144 keyboard tile under a firmware text container that shows the typed text (and captures
-// input). Every key move is one tile send; typing updates the text container with no image send.
-const kbPage = layouts.textWithTile()
-const kb = new GridKeyboardState()
-let kbText = ''
-
-function kbTextContent(): string {
-  const hint = kb.col < 0 ? 'swipe: pick a row   tap: open it   hold: done' : 'swipe: pick a key   tap: type it   hold: back to rows'
-  return `> ${kbText}_
-
-${hint}`
-}
-
-function drawKeys(): void {
-  g2.draw('tile', GridKeyboard, { row: kb.row, col: kb.col })
-}
-
+// promptText() takes over the gestures (g2.modal) and resolves on OK (text) or cancel (null).
 async function showKeys(): Promise<void> {
   screen = 'keys'
-  kb.row = 0
-  kb.col = -1
-  await g2.show(layouts.textWithTile({ text: kbTextContent() }))
-  drawKeys()
-}
-
-function onKeys(type: string): void {
-  const level = kb.col
-  if (type === 'next' || type === 'prev') kb.move(type === 'next' ? 1 : -1)
-  else if (type === 'hold') {
-    if (!kb.back()) return void showCarousel()
-  } else if (type === 'tap') {
-    const key = kb.tap()
-    if (key === 'OK') {
-      typed = kbText
-      return void showCarousel()
-    }
-    if (key === 'DEL') kbText = kbText.slice(0, -1)
-    else if (key === 'SPACE') kbText += ' '
-    else if (key) kbText += key
-    if (key) void g2.setText(kbPage.text.name, kbTextContent())
-  } else return
-  // The hint changes when moving between row and key level.
-  if ((level < 0) !== (kb.col < 0)) void g2.setText(kbPage.text.name, kbTextContent())
-  drawKeys()
+  const text = await promptText(g2, { value: typed })
+  mirror.log(text === null ? 'keys: cancelled' : `keys: "${text}"`)
+  if (text !== null) typed = text
+  await showCarousel()
 }
 
 g2.on('*', (e) => {
   if (screen === 'carousel') onCarousel(e.type)
   else if (screen === 'time') ring.handle(e)
-  else onKeys(e.type)
 })
 
 await showCarousel()
