@@ -1,0 +1,56 @@
+name: Release
+
+# Publishes to npm when a v* tag is pushed, via npm trusted publishing (OIDC,
+# no token) with provenance. The very first version must be published by hand;
+# then add this workflow as a Trusted Publisher on npmjs.com (package →
+# Settings → Trusted Publisher → GitHub Actions, workflow file: release.yml).
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          # npm 12+ (needed for OIDC trusted publishing) requires Node ^22.22.2 || ^24.15.0 || >=26.
+          node-version: "24.x"
+          registry-url: "https://registry.npmjs.org"
+          cache: npm
+      - name: Install latest npm (required for OIDC)
+        run: npm install -g npm@latest
+      - name: Verify tag matches package version
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF#refs/tags/v}"
+          PKG=$(node -p "require('./package.json').version")
+          if [ "$TAG" != "$PKG" ]; then
+            echo "Tag v$TAG does not match package.json version $PKG"
+            exit 1
+          fi
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      # Skip if this version is already on the registry (e.g. published by hand).
+      - name: Publish to npm
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION=$(node -p "require('./package.json').version")
+          CODE=$(curl -sS -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/g2-kit/${VERSION}")
+          if [ "$CODE" = "200" ]; then
+            echo "g2-kit@${VERSION} is already on the registry; skipping publish."
+            exit 0
+          fi
+          if [ "$CODE" != "404" ]; then
+            echo "Unexpected HTTP ${CODE} from the registry"
+            exit 1
+          fi
+          npm publish --provenance --access public

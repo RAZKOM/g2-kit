@@ -1,0 +1,14 @@
+:root { color-scheme: dark; }
+body { margin: 0; padding: 16px; background: #0b0d0b; color: #cfe8cf; font: 14px/1.4 system-ui, sans-serif; }
+h1 { font-size: 18px; margin: 0 0 4px; }
+p { margin: 0 0 12px; color: #8fa88f; }
+#status { color: #9fdc9f; margin-bottom: 12px; }
+canvas#mirror { display: block; width: 100%; max-width: 576px; image-rendering: pixelated; background: #000; outline: 1px solid #1f2a1f; }
+#stats { font: 12px monospace; color: #7c957c; margin: 6px 0; }
+#log { font: 12px monospace; color: #8fa88f; max-height: 240px; overflow: auto; margin-top: 8px; }
+kbd { background: #1a221a; border: 1px solid #2c3a2c; border-radius: 3px; padding: 0 4px; font-size: 12px; }
+.pad { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; max-width: 576px; }
+.pad button { flex: 1 1 100px; padding: 10px 8px; background: #121a12; color: #bff5bf; border: 1px solid #2c3a2c; border-radius: 6px; font: 14px system-ui, sans-serif; cursor: pointer; touch-action: manipulation; user-select: none; }
+.pad button:active { background: #1d2b1d; border-color: #6dff6d; }
+a { color: #6dff6d; }
+h1 + p, a + h1 { margin-top: 8px; }

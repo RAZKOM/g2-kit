@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>g2-kit Dashboard</title>
+    <link rel="stylesheet" href="../shared/page.css" />
+  </head>
+  <body>
+    <h1>g2-kit · Dashboard</h1>
+    <p>Quad dashboard: <kbd>↓</kbd>/<kbd>↑</kbd> move focus, <kbd>Enter</kbd> opens the chart full-screen, <kbd>Enter</kbd> or <kbd>H</kbd> goes back. <kbd>D</kbd> double-tap exits. The canvas mirrors the frames sent to the glasses.</p>
+    <div id="status">Starting…</div>
+    <canvas id="mirror"></canvas>
+    <div id="stats"></div>
+    <div id="log"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

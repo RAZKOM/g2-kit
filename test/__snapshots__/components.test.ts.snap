@@ -1,0 +1,185 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`every gallery sample: smoke + PNG snapshot > badges (Badge, P2) 1`] = `"e2ba584fc21be3ec"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > bar-dense (BarChart, P0) 1`] = `"d2750c34c4f70918"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > bar-horizontal (BarChart, P0) 1`] = `"547a6b2bcd5b5353"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > bar-negative (BarChart, P0) 1`] = `"5a2783496b351dd3"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > bar-vertical (BarChart, P0) 1`] = `"c6aa76be1b50ed62"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > bars-grouped (MultiBarChart, P1) 1`] = `"edd6f67460f55a6f"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > bars-stacked (MultiBarChart, P1) 1`] = `"b3f18a3cf0790228"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > big-text (BigText, P0) 1`] = `"6d87de681527d16b"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > big-text-short (BigText, P0) 1`] = `"2629fc79acf36f8b"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > board-2048 (GridBoard, P1) 1`] = `"0d39b254268718f1"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > board-ttt (GridBoard, P1) 1`] = `"b439cf8cac7e6d6b"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > board-wordle (GridBoard, P1) 1`] = `"6993efa78d465743"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > boxplot (BoxPlot, P2) 1`] = `"f9ac765125e93b89"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > bullet (BulletChart, P1) 1`] = `"6e0a37bca4c0425e"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > button (Button, P0) 1`] = `"e18d0e2da7f43cf2"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > button-row-icons (ButtonRow, P0) 1`] = `"43bdf43b1989ab13"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > button-states (ButtonRow, P0) 1`] = `"a7c0949283a77adb"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > calendar-heatmap (CalendarHeatmap, P1) 1`] = `"f8dd5a4c10e54774"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > candles (CandlestickChart, P2) 1`] = `"f422b4bf2268532e"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > card (Card, P2) 1`] = `"a53a30f47a52364c"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > carousel-icons (Carousel, P0) 1`] = `"e5ce54f88e15044d"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > carousel-letters (Carousel, P0) 1`] = `"c6c25b9518434e9f"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > carousel-vertical (Carousel, P0) 1`] = `"aedc3a8a138336d2"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > carousel-words (Carousel, P0) 1`] = `"53ca7a556baf02e6"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > chart-empty (BarChart, P0) 1`] = `"f35b159a8ee7336f"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > chart-error (LineChart, P0) 1`] = `"ba0d0890f59876e6"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > checklist (Checklist, P1) 1`] = `"c70c2a9720468685"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > clock (AnalogClock, P1) 1`] = `"7784c1517d961ed8"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > clock-numbers (AnalogClock, P1) 1`] = `"0c975d68bbff705b"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > compass (CompassStrip, P1) 1`] = `"340f1e279807caf2"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > date-picker (DatePicker, P1) 1`] = `"f7fc139350ccc3a5"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > dice (Dice, P2) 1`] = `"3265d03801b5e37c"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > donut (PieChart, P1) 1`] = `"5cef3204dcc80ccb"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > dots (PaginationDots, P1) 1`] = `"6f57fc63bc9a0587"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > funnel (Funnel, P1) 1`] = `"bf2b0c4e5f59baa3"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > gauge (Gauge, P0) 1`] = `"7ba41b1e42464248"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > gauge-dial (Gauge, P0) 1`] = `"2a8c64765d949276"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > gauge-needle (Gauge, P0) 1`] = `"070378fa4b75c444"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > grid-keyboard (GridKeyboard, P1) 1`] = `"df484ec15200be39"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > grid-keyboard-rows (GridKeyboard, P1) 1`] = `"e55292c2641cec7e"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > health (HealthBar, P2) 1`] = `"dcfde3907b1db00b"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > heatmap (Heatmap, P1) 1`] = `"3225e48b705208c1"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > histogram (Histogram, P2) 1`] = `"14b840d107135ad6"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > hud-brackets (HudFrame, P1) 1`] = `"5c2c7038c9ba8cb0"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > hud-notched (HudFrame, P1) 1`] = `"bd013bc51f0d16f7"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > kpi (Kpi, P0) 1`] = `"464922bccd08cf1e"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > kpi-plain (Kpi, P0) 1`] = `"9be6568e859fd5db"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > kpi-segment (Kpi, P0) 1`] = `"016825070a5fe40e"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > legend-marks (Legend, P1) 1`] = `"5f56536cd21bb048"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > legend-series (Legend, P1) 1`] = `"4d63198f3ade9af7"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > line-single (LineChart, P0) 1`] = `"948afa03207e9cd4"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > line-three (LineChart, P0) 1`] = `"683403b92ee39a40"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > line-two-series (LineChart, P0) 1`] = `"6af76a01d187ff7f"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > modal (Modal, P1) 1`] = `"df25fc76a23468a2"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > pie-outside (PieChart, P1) 1`] = `"24fbcc58eea568ff"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > progress (ProgressBar, P0) 1`] = `"8a94ce23129be9ee"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > progress-segmented (ProgressBar, P0) 1`] = `"017370daaaaa104b"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > rating (Rating, P2) 1`] = `"6dfa17d3856d7cb2"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > rings (ProgressRings, P1) 1`] = `"24c9fb726f11f13d"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > roller-pin (Roller, P1) 1`] = `"8caa1df4ab613a21"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > scatter (ScatterChart, P2) 1`] = `"ef9ce7693ed04ccb"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > score-hud (ScoreHud, P1) 1`] = `"28e775a857d3e564"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > score-hud-stack (ScoreHud, P1) 1`] = `"0c4dec2f792249ee"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > scroll (ScrollIndicator, P1) 1`] = `"a8115f1b6316bb71"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > segmented (SegmentedControl, P1) 1`] = `"dc65a9520abea5da"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > slider (Slider, P1) 1`] = `"4144c0dbc37bdbaa"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > slider-editing (Slider, P1) 1`] = `"f77a068d054cca82"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > slider-vertical (Slider, P1) 1`] = `"8f8fcdbc6134eb24"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > sparkline (Sparkline, P0) 1`] = `"cd293a9249d788e8"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > sparkline-small (Sparkline, P0) 1`] = `"5f008de3460cc61a"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > spinner (Spinner, P2) 1`] = `"f44d2bccde2688dc"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > status-bar (StatusBar, P1) 1`] = `"606f99deb4f657bf"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > status-keyboard (StatusKeyboard, P1) 1`] = `"0151158ad277d922"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > table (Table, P2) 1`] = `"43b527f4f4e7c80a"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > tabs (Tabs, P1) 1`] = `"6b8734b7840ea1db"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > tabs-boxed (Tabs, P1) 1`] = `"eb89cc65819e4bdf"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > ticker (Ticker, P1) 1`] = `"fbb84fb4cf748ef6"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > time-picker (TimePicker, P1) 1`] = `"44b4a3d74dfe1832"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > timeline (Timeline, P1) 1`] = `"abfc1298976bb611"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > timer-ring (TimerRing, P1) 1`] = `"1cfbfc3372d68607"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > toast-error (Toast, P1) 1`] = `"9de89c9af3c3b3fa"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > toast-info (Toast, P1) 1`] = `"36fea160552403f7"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > toast-success (Toast, P1) 1`] = `"f897426a599379a8"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > toast-warning (Toast, P1) 1`] = `"793bf13e70cb6a66"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > toggle-off (Toggle, P0) 1`] = `"dac0e6dde94b6a0e"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > toggle-on (Toggle, P0) 1`] = `"7e3d39b98be22563"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > turn-right (TurnArrow, P1) 1`] = `"33d37bb57e6979e2"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > turn-slight-left (TurnArrow, P1) 1`] = `"2f97c27094c98f26"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > turn-uturn (TurnArrow, P1) 1`] = `"700372b6a94372bc"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > waffle (WaffleChart, P2) 1`] = `"247a8ba0058803d1"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > weather (WeatherGlyph, P2) 1`] = `"f5788a13bab0ccf8"`;
+
+exports[`every gallery sample: smoke + PNG snapshot > weather-rain (WeatherGlyph, P2) 1`] = `"bd07951c546ae43e"`;

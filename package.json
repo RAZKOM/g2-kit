@@ -1,0 +1,103 @@
+{
+  "name": "g2-kit",
+  "version": "0.1.0",
+  "description": "Drawn UI for Even Realities G2 Hub plugins: charts, controls and HUD chrome rendered to 4-bit image tiles, driven by a blank input skeleton. Unofficial.",
+  "license": "MIT",
+  "author": "RAZKOM",
+  "homepage": "https://razkom.github.io/g2-kit/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RAZKOM/g2-kit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/RAZKOM/g2-kit/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "DESIGN.md",
+    "INPUT.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "exports": {
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js"
+    },
+    "./bridge": {
+      "types": "./dist/bridge/index.d.ts",
+      "import": "./dist/bridge/index.js"
+    },
+    "./input": {
+      "types": "./dist/input/index.d.ts",
+      "import": "./dist/input/index.js"
+    },
+    "./charts": {
+      "types": "./dist/charts/index.d.ts",
+      "import": "./dist/charts/index.js"
+    },
+    "./widgets": {
+      "types": "./dist/widgets/index.d.ts",
+      "import": "./dist/widgets/index.js"
+    },
+    "./icons": {
+      "types": "./dist/icons/index.d.ts",
+      "import": "./dist/icons/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "gallery": "tsx examples/gallery/render.ts",
+    "bench": "tsx scripts/bench.ts",
+    "dev:dashboard": "vite examples/hub-dashboard",
+    "dev:picker": "vite examples/hub-picker",
+    "dev:game": "vite examples/hub-game",
+    "build:examples": "vite build examples/hub-quickstart && vite build examples/hub-dashboard && vite build examples/hub-picker && vite build examples/hub-game && vite build examples/hub-calibrate",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build",
+    "sim:check": "tsx scripts/simcheck.ts",
+    "dev:calibrate": "vite examples/hub-calibrate",
+    "dev:quickstart": "vite examples/hub-quickstart",
+    "docs:images": "tsx scripts/docs-images.ts",
+    "build:site": "tsx scripts/build-site.ts",
+    "preview:site": "vite preview --outDir site --port 5190",
+    "sim": "node ./node_modules/@evenrealities/evenhub-simulator/bin/index.js"
+  },
+  "peerDependencies": {
+    "@evenrealities/even_hub_sdk": ">=0.0.15"
+  },
+  "peerDependenciesMeta": {
+    "@evenrealities/even_hub_sdk": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@evenrealities/even_hub_sdk": "^0.0.16",
+    "@evenrealities/evenhub-simulator": "^0.9.5",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.1",
+    "vitest": "^5.0.2"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "even-realities",
+    "g2",
+    "even-hub",
+    "smart-glasses",
+    "charts",
+    "greyscale",
+    "framebuffer"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
