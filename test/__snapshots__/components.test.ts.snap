@@ -76,9 +76,9 @@ exports[`every gallery sample: smoke + PNG snapshot > gauge-dial (Gauge, P0) 1`]
 
 exports[`every gallery sample: smoke + PNG snapshot > gauge-needle (Gauge, P0) 1`] = `"070378fa4b75c444"`;
 
-exports[`every gallery sample: smoke + PNG snapshot > grid-keyboard (GridKeyboard, P1) 1`] = `"df484ec15200be39"`;
+exports[`every gallery sample: smoke + PNG snapshot > grid-keyboard (GridKeyboard, P1) 1`] = `"5263f18a9f3eb4ca"`;
 
-exports[`every gallery sample: smoke + PNG snapshot > grid-keyboard-rows (GridKeyboard, P1) 1`] = `"e55292c2641cec7e"`;
+exports[`every gallery sample: smoke + PNG snapshot > grid-keyboard-rows (GridKeyboard, P1) 1`] = `"20ca7d81659b7587"`;
 
 exports[`every gallery sample: smoke + PNG snapshot > health (HealthBar, P2) 1`] = `"dcfde3907b1db00b"`;
 

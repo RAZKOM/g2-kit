@@ -22,8 +22,9 @@ and reads the glasses framebuffer back through the automation API:
 | Simulator brightness | 0 % | 38 % | 51 % | 62 % | 70 % | 77 % | 84 % | 90 % | 96 % | 100 % |
 
 So on the simulator, **levels 9–15 look identical**, and levels 1–8 are spread over the top 60 %.
-How real G2 glasses respond is **not verified**. WordLens reported that levels 5–7 stay visible on
-hardware, which fits either model.
+**On real G2 glasses** (2026-09-29, `hub-calibrate` sideloaded by QR, checked by eye) the response has the
+same shape: brightness levels off around 8–10, level 1 is still visible, and the six default theme swatches
+(0/2/4/6/8/15) are all distinct. This was a visual check, not a photometric measurement.
 
 ![Calibration card in evenhub-simulator](docs/img/sim-calibration.png)
 
@@ -40,9 +41,10 @@ Components never use raw numbers. They ask the `Theme` for a named level:
 | `bright` | 8 | 96 % | 53 % | primary data and text |
 | `full` | 15 | 100 % | 100 % | focus, highlights, headline numbers |
 
-The defaults were picked to stay ordered and distinguishable under both the measured simulator curve and a
-linear display. `linearTheme` (4/7/10/13/15) is included for a device that turns out to be linear. Retune on
-a device with `examples/hub-calibrate`:
+The defaults were picked against the measured simulator curve and confirmed distinct on G2 glasses. Keep
+the bright end at or below ~9 for anything that must differ from `full`. `linearTheme` (4/7/10/13/15) is
+for a display that renders levels linearly; on G2 its top three levels look the same. To retune (e.g. for
+sunlight or another device), run `examples/hub-calibrate` and override:
 
 ```ts
 import { createTheme } from 'g2-kit/core'
@@ -154,7 +156,15 @@ Every component accepts any rect; these are the sizes they are designed and test
 
 See [INPUT.md](INPUT.md).
 
-## 9. Frame budget
+## 9. Prefer one layout, change pixels
+
+Switching views by redrawing tiles inside one layout is cheaper and safer than rebuilding the page:
+rebuilds flicker on hardware, and on G2 glasses a rebuild to four full-size images has been seen to leave the
+right lens without images (STATUS.md). `G2.show()` skips the rebuild when the new page has exactly the same
+containers as the one on screen, so showing the same layout again is free. The full-screen layout's four tiles
+can host a 2×2 dashboard, one chart spanning all four, a keyboard, or a board without ever rebuilding.
+
+## 10. Frame budget
 
 Each image send takes ~100 ms and sends never overlap. Design so that one gesture changes one tile: put the
 thing that reacts to swipes (a carousel, a cursor) on its own tile, and let `G2`/`Surface` skip tiles whose

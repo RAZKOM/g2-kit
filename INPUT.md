@@ -44,8 +44,8 @@ default (`nextIs: 'up'` flips it). `connect()` checks the mirrored constants aga
 ## Truth table
 
 Observed by driving the examples through the **evenhub-simulator 0.9.5** automation API, with SDK 0.0.16
-(`npm run sim:check`). The glasses column only repeats what WordLens reported; g2-kit has not been tested
-on hardware.
+(`npm run sim:check`). The glasses column only repeats what WordLens reported; g2-kit's own glasses testing
+so far covers display (see DESIGN.md), not input.
 
 | Source | Gesture | Arrives as (simulator 0.9.5) | g2-kit event | Glasses |
 |---|---|---|---|---|
@@ -63,8 +63,6 @@ Every row is also a unit test (`test/bridge.test.ts`).
 
 ### Still open
 
-- On glasses: whether dim levels (1–4) are visible and distinct, and how the brightness curve compares with
-  the simulator's (see DESIGN.md).
 - How long after touch-down `LONG_PRESS_EVENT` fires, and whether `HoldToConfirm` progress (one send per
   ~100 ms) is smooth enough.
 - Whether every fast swipe reaches the app when the image path is busy (WordLens says yes for one tile).

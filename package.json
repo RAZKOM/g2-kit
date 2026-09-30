@@ -66,7 +66,8 @@
     "docs:images": "tsx scripts/docs-images.ts",
     "build:site": "tsx scripts/build-site.ts",
     "preview:site": "vite preview --outDir site --port 5190",
-    "sim": "node ./node_modules/@evenrealities/evenhub-simulator/bin/index.js"
+    "sim": "node ./node_modules/@evenrealities/evenhub-simulator/bin/index.js",
+    "dev:lens": "vite examples/hub-lens"
   },
   "peerDependencies": {
     "@evenrealities/even_hub_sdk": ">=0.0.15"

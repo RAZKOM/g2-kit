@@ -3,6 +3,10 @@
  * (two tile sends: old and new focus), tap drills into the focused chart
  * full-screen (tile spanning across four tiles), tap or hold goes back.
  * The KPI updates every 5 s: one tile send.
+ *
+ * Both views use the same full-screen layout (its four tiles are the four
+ * panels), so switching views only redraws tiles: no page rebuild, no flicker,
+ * and no exposure to the one-lens-after-rebuild issue seen on G2 glasses.
  */
 import { defineComponent, type Component } from 'g2-kit/core'
 import { BarChart, Gauge, Kpi, LineChart } from 'g2-kit/charts'
@@ -36,8 +40,8 @@ const Panel = defineComponent<{ chart: Chart; focused: boolean }>('Panel', { w: 
   p.chart.component.render(fb, hudContentRect(rect, frame, theme), p.chart.props(), theme)
 })
 
-const quad = layouts.dashboardQuad({ menu: [{ id: 1, name: 'Refresh data' }] })
-const keys = ['tl', 'tr', 'bl', 'br'] as const
+const page = layouts.fullScreen({ menu: [{ id: 1, name: 'Refresh data' }] })
+const keys = ['t0', 't1', 't2', 't3'] as const
 let mode: 'dashboard' | 'detail' = 'dashboard'
 
 const ring = new FocusRing(
@@ -52,14 +56,14 @@ function drawDashboard(): void {
 
 async function showDashboard(): Promise<void> {
   mode = 'dashboard'
-  await g2.show(quad)
+  const how = await g2.show(page) // 'created' the first time, then 'reused'
+  mirror.log(`dashboard (${how})`)
   drawDashboard()
 }
 
 async function openDetail(i: number): Promise<void> {
   mode = 'detail'
-  const page = layouts.fullScreen()
-  await g2.show(page)
+  await g2.show(page) // same layout: redraw only
   const chart = charts[i]
   // One logical 576×288 view spread over four tiles.
   g2.drawSpan(page.span, chart.component, { ...(chart.props() as object), title: `${chart.title}  (tap to go back)`, labels: 'normal' })
@@ -86,7 +90,7 @@ setInterval(() => {
   usersSpark = [...usersSpark.slice(1), users / 1000]
   cpu = Math.max(5, Math.min(99, cpu + Math.round((Math.random() - 0.5) * 20)))
   if (mode === 'dashboard') {
-    g2.draw('tr', Panel, { chart: charts[1], focused: ring.index === 1 })
-    g2.draw('br', Panel, { chart: charts[3], focused: ring.index === 3 })
+    g2.draw('t1', Panel, { chart: charts[1], focused: ring.index === 1 })
+    g2.draw('t3', Panel, { chart: charts[3], focused: ring.index === 3 })
   }
 }, 5000)

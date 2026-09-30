@@ -153,3 +153,37 @@ export function menuPage(o: PresetOptions & { items: readonly string[]; previewS
     .image({ id: 1, name: 'preview', x: right ? TW : 0, y: (CANVAS_H - TH) / 2, w: TW, h: TH })
   return withMenu(b, o).build()
 }
+
+/**
+ * 7. Text + one tile: a firmware text container (which also captures input)
+ * and a single drawn tile. Only one image on the page, so every redraw is one
+ * send, and text updates (`G2.setText`) cost no image send at all. Good for
+ * keyboards, pickers and anything that shows a value above a control.
+ * ```
+ * +-----------------------------+
+ * | firmware text (capture)     |   576 × (288 - tile height)
+ * +--------+==========+---------+
+ * |        |  tile    |         |   288 × 144, centred
+ * +--------+==========+---------+
+ * ```
+ * Keep the text short enough not to overflow, so swipes are not taken by
+ * text scrolling.
+ */
+export function textWithTile(o: PresetOptions & { text?: string; tileAt?: 'top' | 'bottom'; tileHeight?: number; padding?: number; textColor?: number } = {}): Page<'tile'> & { text: { id: number; name: string } } {
+  const th = o.tileHeight ?? TH
+  const tileTop = o.tileAt === 'top'
+  const textBox = { x: 0, y: tileTop ? th : 0, w: CANVAS_W, h: CANVAS_H - th }
+  const b = new PageBuilder()
+    .text({
+      id: SKELETON_ID,
+      name: 'text',
+      ...textBox,
+      content: o.text ?? ' ',
+      capture: true,
+      border: { width: 0 },
+      padding: o.padding ?? 8,
+      ...(o.textColor !== undefined ? { textColor: o.textColor } : {}),
+    })
+    .image({ id: 1, name: 'tile', x: Math.round((CANVAS_W - TW) / 2), y: tileTop ? 0 : CANVAS_H - th, w: TW, h: th })
+  return { ...withMenu(b, o).build<'tile'>(), text: { id: SKELETON_ID, name: 'text' } }
+}

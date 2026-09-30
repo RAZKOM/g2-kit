@@ -16,6 +16,10 @@ export function exampleConfig(port: number): UserConfig {
         'g2-kit/icons': src('icons/index.ts'),
       },
     },
+    // connect() loads the SDK with a dynamic import(). Declaring it here makes Vite bundle it when the dev
+    // server starts; discovered at runtime instead, the import can fail with "Outdated Optimize Dep" (504)
+    // and the page stays on "Connecting…".
+    optimizeDeps: { include: ['@evenrealities/even_hub_sdk'] },
     server: { host: true, port, strictPort: true },
     build: { target: 'esnext' },
   })

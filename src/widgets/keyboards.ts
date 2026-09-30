@@ -84,7 +84,8 @@ export interface GridKeyboardProps {
 export function renderGridKeyboard(fb: Framebuffer, rect: Rect, p: GridKeyboardProps, theme: Theme): void {
   const lv = theme.levels
   const rows = p.rows ?? ABC_ROWS
-  let r = rect
+  // 2 px margin so the focused-row frame (drawn 2 px outside the row) is never clipped.
+  let r = { x: rect.x + 2, y: rect.y + 2, w: rect.w - 4, h: rect.h - 4 }
   const body = theme.fonts.body
   if (p.text !== undefined) {
     const h = body.glyphH + 8

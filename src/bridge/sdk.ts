@@ -24,7 +24,7 @@ export interface SdkBridge {
   updateImageRawData(d: never): Promise<unknown>
   textContainerUpgrade(c: never): Promise<boolean>
   shutDownPageContainer(mode?: number): Promise<boolean>
-  onEvenHubEvent(cb: (e: never) => void): () => void
+  onEvenHubEvent(cb: (e: unknown) => void): () => void
 }
 
 /** Fail loudly if our mirrored event constants drift from the SDK enum. */

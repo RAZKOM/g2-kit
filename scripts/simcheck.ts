@@ -40,6 +40,7 @@ const SCENARIOS: Record<string, { port: number; steps: Step[] }> = {
   },
   'hub-calibrate': { port: 5184, steps: [W(3500), S('card')] },
   'hub-ramp': { port: 5185, steps: [W(4000), S('ramp')] },
+  'hub-lens': { port: 5187, steps: [W(4000), S('s1'), I('click'), W(1500), S('s2'), I('click'), W(2000), S('s3'), I('click'), W(1500), I('click'), W(3500), S('s5'), I('click'), W(4000), I('click'), W(2500), S('s7'), I('click'), W(5000), S('s8')] },
   // Native list: swipes move the firmware highlight (expect no events), tap reports the index.
   'hub-quickstart': { port: 5186, steps: [W(3500), S('start'), I('down'), W(800), S('list-moved'), I('click'), W(1500), I('up'), W(600), I('click'), W(1500), S('refreshed'), I('down'), W(500), I('down'), W(500), I('down'), W(500), I('down'), W(800), I('click'), W(1500), S('after-exit')] },
 }

@@ -6,7 +6,7 @@ What is done and how each part was verified.
 - **gallery**: rendered by `npm run gallery` and inspected by eye at 1:1 and 2×.
 - **simulator**: exercised in evenhub-simulator 0.9.5 (SDK 0.0.16) through its automation API
   (`npm run sim:check`), with screenshots and console logs checked.
-- **glasses**: tested on real G2 hardware. **Nothing in g2-kit is at this level yet.**
+- **glasses**: tested on real G2 hardware. So far: `hub-calibrate` displayed correctly (2026-09-29, sideloaded via QR).
 
 ## Steps
 
@@ -26,18 +26,18 @@ What is done and how each part was verified.
 
 | Area | unit | gallery | simulator | glasses |
 |---|---|---|---|---|
-| Framebuffer, primitives (golden buffers), text layout | ✓ | ✓ | ✓ (via examples) | – |
-| PNG / pack round trips | ✓ | | PNG ✓; raw Gray8 / packed Gray4 accepted | PNG reported working by WordLens |
+| Framebuffer, primitives (golden buffers), text layout | ✓ | ✓ | ✓ (via examples) | ✓ fonts and patterns (hub-calibrate) |
+| PNG / pack round trips | ✓ | | PNG ✓; raw Gray8 / packed Gray4 accepted | PNG ✓ (hub-calibrate) |
 | Host 8-bit → gray4 conversion is linear `round(v/17)` | | | ✓ measured (`hub-ramp`) | – |
-| Simulator brightness curve (levels 9–15 identical) | | | ✓ measured (`hub-calibrate`, `hub-ramp`) | open |
-| Default theme levels (0/2/4/6/8/15) | ✓ | ✓ | ✓ distinct | **needs retuning on glasses** |
+| Brightness curve (levels ~9–15 identical) | | | ✓ measured (`hub-calibrate`, `hub-ramp`) | ✓ same shape by eye (levels off ~8–10) |
+| Default theme levels (0/2/4/6/8/15) | ✓ | ✓ | ✓ distinct | ✓ distinct by eye; level 1 visible |
 | ImageQueue: serial, coalescing, rebuild drop, retry, typed errors | ✓ | | ✓ (no overlapping sends, correct order) | – |
 | PageBuilder validation (all rules) | ✓ | | layouts accepted by the simulator | – |
-| All 6 layout presets | ✓ | | twoTilesWithList, twoTilesWithControl, dashboardQuad, fullScreen ✓; heroSidebar, menuPage unit only | – |
+| All 6 layout presets | ✓ | | twoTilesWithList, twoTilesWithControl, dashboardQuad, fullScreen ✓; heroSidebar, menuPage unit only | fullScreen ✓ |
 | Event normalisation | ✓ every truth-table row | | ✓ list tap, list swipe (no event), text swipes, tap, double-tap, long press, release | WordLens reports |
 | Contextual menu events | ✓ | | not driven | – |
 | Surface: only changed tiles sent | ✓ | | ✓ 1 send per carousel swipe; 2 per dashboard focus move; 1–2 per keyboard move | – |
-| Tile spanning (one view over 4 tiles) | ✓ | | ✓ seamless (dashboard detail, keyboard) | – |
+| Tile spanning (one view over 4 tiles) | ✓ | | ✓ seamless (dashboard detail, keyboard) | ✓ displays (hub-calibrate) |
 | create → rebuild fallback after a WebView reload | ✓ | | not driven | WordLens reports |
 | Double-tap → `shutDownPageContainer(1)` | ✓ | | ✓ | – |
 | FocusRing, edit mode | ✓ | | ✓ (time picker: enter, adjust, commit) | – |
@@ -48,12 +48,31 @@ What is done and how each part was verified.
 
 ## Needs real glasses
 
-1. Run `examples/hub-calibrate` and decide the default levels (and whether `linearTheme` fits better).
+1. ~~Brightness levels~~: done; defaults confirmed (see DESIGN.md).
 2. Long-press timing: how soon `hold` arrives and whether `HoldToConfirm` progress looks smooth.
 3. Swipe throughput while tiles are sending (fast swipes on the carousel).
 4. Render time per tile in the phone WebView (shown on every example page).
 5. Raw Gray8 / packed Gray4 image data (`format`), which would skip PNG encoding.
-6. Readability of the 5×7 font at 1× and of `faint` / `dim` marks.
+6. ~~Font readability~~: all four text rows on the card read comfortably.
+
+## Known hardware issue: one lens after a rebuild
+
+Seen on G2 glasses on 2026-09-29 with `examples/hub-lens` (details from the tester):
+
+- After `rebuildPageContainer` to a page of **four full-size (288×144) images**, the images showed only in the
+  **left** lens. Re-sending the tiles did not recover the right lens; waiting 1.5 s or 3 s before sending did
+  not help either.
+- In the same runs, a rebuild to **two images plus text** showed in both lenses, and pages created at app
+  start always showed in both.
+- It depended on the glasses' state: it persisted across app restarts, the glasses then crashed and rebooted,
+  and after the reboot every step worked. It has not come back since.
+- Our guess: the right side of the glasses runs out of room for four full-size image containers during a
+  rebuild after heavy use. Unconfirmed; the app gets a success result either way. Worth reporting to
+  Even Realities with `hub-lens`.
+
+Mitigation in g2-kit: `G2.show()` skips the rebuild when the new page has the same containers as the current
+one (it only redraws tiles), and the dashboard example switches views inside one layout. `hub-lens` has steps
+S9 (clear to a text-only page first) and S10 (three tiles) to try the next time it happens.
 
 ## Known limits
 

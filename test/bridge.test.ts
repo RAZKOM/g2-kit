@@ -390,6 +390,11 @@ describe('layout presets', () => {
     expect(hero.capture.kind).toBe('text')
     expect(layouts.fullScreen().tileList.map((t) => t.rect.w * t.rect.h).reduce((a, b) => a + b)).toBe(576 * 288)
     expect(layouts.menuPage({ items: ['One'] }).capture.kind).toBe('list')
+    const tw = layouts.textWithTile({ text: 'HELLO' })
+    expect(tw.tileList).toHaveLength(1)
+    expect(tw.tiles.tile.rect).toEqual({ x: 144, y: 144, w: 288, h: 144 })
+    expect(tw.layout.textObject![0]).toMatchObject({ content: 'HELLO', isEventCapture: 1, yPosition: 0, height: 144 })
+    expect(layouts.textWithTile({ tileAt: 'top' }).tiles.tile.rect.y).toBe(0)
   })
 
   it('skeletons sit below the images (lowest zOrder)', () => {
@@ -512,8 +517,26 @@ describe('G2', () => {
     const g2 = new G2(host, { sleep: noSleep })
     await g2.show(layouts.dashboardQuad())
     expect(calls).toEqual(['create:5', 'rebuild:5'])
-    await g2.show(layouts.dashboardQuad())
+    await g2.show(layouts.dashboardQuad({ captureUnder: 'tl' }))
     expect(calls.at(-1)).toBe('rebuild:5')
+  })
+
+  it('skips the rebuild when the new page has the same containers; redraws every tile', async () => {
+    const { host, calls } = fakeHost()
+    const g2 = new G2(host, { sleep: noSleep })
+    const page = layouts.fullScreen()
+    expect(await g2.show(page)).toBe('created')
+    g2.drawSpan(page.span, Fill, { level: 3 })
+    await g2.settle()
+    calls.length = 0
+    expect(await g2.show(layouts.fullScreen())).toBe('reused')
+    g2.drawSpan(page.span, Fill, { level: 5 })
+    await g2.settle()
+    expect(calls.filter((c) => c.startsWith('rebuild'))).toEqual([])
+    expect(calls.filter((c) => c.startsWith('img:')).length).toBe(4)
+    expect(await g2.show(layouts.dashboardQuad())).toBe('rebuilt')
+    expect(await g2.show(layouts.dashboardQuad(), { rebuild: 'always' })).toBe('rebuilt')
+    expect(calls.filter((c) => c.startsWith('rebuild')).length).toBe(2)
   })
 
   it('redrawing the same tile updates in place: one send per change', async () => {

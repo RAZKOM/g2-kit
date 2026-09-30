@@ -5,9 +5,10 @@
  *     tile per gesture; tap types; hold deletes. TIME / KEYS open 2 and 3.
  *  2. Time picker: FocusRing over hours / minutes / Done. Tap enters edit
  *     mode, swipes roll the value, tap commits, hold cancels.
- *  3. Keyboard: a full-screen ABC grid spanning four tiles. Swipe moves rows,
- *     tap enters a row, swipe moves keys, tap types, hold goes back up.
- *     Only tiles whose pixels changed are re-sent.
+ *  3. Keyboard (textWithTile): an ABC grid on one tile under a firmware text
+ *     container showing the typed text. Swipe moves rows, tap enters a row,
+ *     swipe moves keys, tap types, hold goes back up. One tile send per move;
+ *     typing updates the text container (no image send).
  */
 import { layouts } from 'g2-kit/bridge'
 import { FocusRing, stepValue } from 'g2-kit/input'
@@ -90,23 +91,33 @@ async function showTime(): Promise<void> {
 }
 
 // ── 3. keyboard ──
-const kbPage = layouts.fullScreen()
+// One 288×144 keyboard tile under a firmware text container that shows the typed text (and captures
+// input). Every key move is one tile send; typing updates the text container with no image send.
+const kbPage = layouts.textWithTile()
 const kb = new GridKeyboardState()
 let kbText = ''
 
+function kbTextContent(): string {
+  const hint = kb.col < 0 ? 'swipe: pick a row   tap: open it   hold: done' : 'swipe: pick a key   tap: type it   hold: back to rows'
+  return `> ${kbText}_
+
+${hint}`
+}
+
 function drawKeys(): void {
-  g2.drawSpan(kbPage.span, GridKeyboard, { row: kb.row, col: kb.col, text: kbText, placeholder: 'swipe rows, tap to enter' })
+  g2.draw('tile', GridKeyboard, { row: kb.row, col: kb.col })
 }
 
 async function showKeys(): Promise<void> {
   screen = 'keys'
   kb.row = 0
   kb.col = -1
-  await g2.show(kbPage)
+  await g2.show(layouts.textWithTile({ text: kbTextContent() }))
   drawKeys()
 }
 
 function onKeys(type: string): void {
+  const level = kb.col
   if (type === 'next' || type === 'prev') kb.move(type === 'next' ? 1 : -1)
   else if (type === 'hold') {
     if (!kb.back()) return void showCarousel()
@@ -119,7 +130,10 @@ function onKeys(type: string): void {
     if (key === 'DEL') kbText = kbText.slice(0, -1)
     else if (key === 'SPACE') kbText += ' '
     else if (key) kbText += key
+    if (key) void g2.setText(kbPage.text.name, kbTextContent())
   } else return
+  // The hint changes when moving between row and key level.
+  if ((level < 0) !== (kb.col < 0)) void g2.setText(kbPage.text.name, kbTextContent())
   drawKeys()
 }
 

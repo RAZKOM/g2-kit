@@ -40,7 +40,7 @@ Sudoku, 2048, tic-tac-toe), score HUD, dice, health bar, sprites. Plus 56 icons.
 | Dashboard: swipe moves focus | Tap: one chart across 4 tiles | Carousel typing |
 |---|---|---|
 | ![](docs/img/sim-dashboard.png) | ![](docs/img/sim-detail.png) | ![](docs/img/sim-carousel.png) |
-| **Time picker in edit mode** | **Full-screen keyboard** | **Tic-tac-toe** |
+| **Time picker in edit mode** | **Keyboard tile + firmware text** | **Tic-tac-toe** |
 | ![](docs/img/sim-time-picker.png) | ![](docs/img/sim-keyboard.png) | ![](docs/img/sim-game.png) |
 
 ## The idea: skeleton input + image UI
@@ -100,7 +100,7 @@ No quantisation, framebuffer, PNG or send-locking code: `g2.draw` renders, diffs
 | Import | What |
 |---|---|
 | `g2-kit/core` | `Framebuffer`, named levels and `Theme`, primitives (lines with dashes, arcs, sectors, polygons, pattern fills, round rects), 3 bitmap fonts + 7-segment digits, text layout (align, wrap, ellipsis, auto-fit), PNG / Gray8 / packed Gray4 encoders, `CanvasAdapter`, tile spanning. No DOM, no deps. |
-| `g2-kit/bridge` | `connect()` / `G2`, `ImageQueue` (serial, coalescing, rebuild-aware, typed errors), `PageBuilder` (validated layouts), 6 `layouts` presets, event normaliser, retained `Surface`. The SDK is a peer dependency, imported only inside `connect()`. |
+| `g2-kit/bridge` | `connect()` / `G2`, `ImageQueue` (serial, coalescing, rebuild-aware, typed errors), `PageBuilder` (validated layouts), 7 `layouts` presets, event normaliser, retained `Surface`. The SDK is a peer dependency, imported only inside `connect()`. |
 | `g2-kit/input` | Skeleton presets, `PagedList` (> 20 items through a native list), `HybridSkeleton`, `FocusRing` with edit mode, `HoldToConfirm`, `TapConfirm`. |
 | `g2-kit/charts` | Bar, line, sparkline, KPI, gauge, grouped/stacked bars, pie/donut, progress rings, heatmap, calendar heatmap, funnel, bullet, timeline, legend; waffle, scatter, histogram, box plot, candlestick. |
 | `g2-kit/widgets` | Carousel, buttons, toggle, segmented, slider, roller, time/date pickers, checklist, status and grid keyboards, progress, big text, toast, modal, tabs, dots, scroll indicator, status bar, HUD frame, ticker, clock, timer ring, compass, turn arrow, grid board, score HUD; table, card, badge, spinner, weather glyph, rating, dice, health bar, sprite sheets. |
@@ -155,12 +155,23 @@ Three ways, from least to most setup:
 |---|---|---|
 | `hub-quickstart` | The snippet above, over a native list | `npm run dev:quickstart` (5186) |
 | `hub-dashboard` | Quad dashboard; swipe cycles focus (2 tile sends), tap opens a chart drawn across 4 tiles | `npm run dev:dashboard` (5181) |
-| `hub-picker` | Carousel (1 tile per swipe), time picker with FocusRing edit mode, full-screen ABC keyboard | `npm run dev:picker` (5182) |
+| `hub-picker` | Carousel (1 tile per swipe), time picker with FocusRing edit mode, one-tile ABC keyboard under a firmware text line | `npm run dev:picker` (5182) |
 | `hub-game` | Tic-tac-toe: swipe walks empty cells, tap plays | `npm run dev:game` (5183) |
 | `hub-calibrate` | Test card (16 levels, theme levels, patterns, fonts) for tuning a device | `npm run dev:calibrate` (5184) |
+| `hub-lens` | Diagnostic for the one-lens-after-rebuild issue (see STATUS.md); record results per step on the phone | `npm run dev:lens` (5187) |
 
 `npm run gallery` renders every component to `examples/output/` (PNG per sample, `index.html`,
 `contact-sheet.png`); `npm run docs:images` regenerates the images in this README.
+
+## Troubleshooting
+
+- **Page stuck connecting in a Vite dev server**, with `Failed to fetch dynamically imported module …even_hub_sdk…`
+  (HTTP 504) in the console: Vite discovered the SDK at runtime. Add
+  `optimizeDeps: { include: ['@evenrealities/even_hub_sdk'] }` to `vite.config.ts`, or import the SDK
+  yourself and pass it in: `import * as sdk from '@evenrealities/even_hub_sdk'` then `connect({ sdk })`.
+- **Images in only one lens after switching pages**: see "Known hardware issue" in STATUS.md. Prefer
+  switching views inside one layout (`G2.show()` skips rebuilds for identical layouts); a glasses restart
+  cleared it.
 
 ## Docs
 
@@ -173,8 +184,12 @@ Three ways, from least to most setup:
 
 Everything is unit-tested in Node (214 tests: golden buffers, round-trips, queue ordering/coalescing,
 layout validation, the event truth table, a smoke + PNG-hash snapshot per gallery sample). All examples
-run in **evenhub-simulator 0.9.5**, driven through its automation API. **Nothing has been tested on real
-G2 glasses yet**: brightness levels, touch timing and send pacing on hardware are open; see STATUS.md.
+run in **evenhub-simulator 0.9.5**, driven through its automation API. On **real G2 glasses**, the
+calibration card displays correctly: four spanned PNG tiles, all six theme levels distinct, level 1 visible,
+every font readable, and brightness levelling off around 8–10 as in the simulator. One hardware issue is known:
+after a page rebuild to four full-size images, the right lens sometimes stayed empty until the glasses
+restarted, so `G2.show()` avoids rebuilds it doesn't need. Touch timing, swipe throughput and phone render
+time on hardware are still open; see STATUS.md.
 
 ## Credits
 

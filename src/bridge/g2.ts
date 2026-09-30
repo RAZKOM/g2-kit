@@ -58,6 +58,7 @@ export class G2 {
   readonly surface: Surface
   page: Page | null = null
   private created = false
+  private shownLayout: string | null = null
   private handlers = new Map<string, Set<(e: G2Event) => void>>()
   private named = new Map<string, { component: Component<unknown>; mounted: Mounted<unknown> }>()
   private commitScheduled = false
@@ -87,23 +88,37 @@ export class G2 {
 
   /**
    * Show a page. The first call creates the startup page (falling back to a
-   * rebuild after a WebView reload, when create fails); later calls rebuild.
-   * Image pixels are sent only after the layout call resolves.
+   * rebuild after a WebView reload, when create fails). Later calls rebuild,
+   * unless the page has exactly the same containers as the one on screen:
+   * then only the tiles are redrawn. Rebuilds flicker on hardware, and on G2
+   * glasses a rebuild to four full-size images has been seen to leave the
+   * right lens without images (see STATUS.md), so switching views inside one
+   * layout is preferred. Image pixels are sent only after the layout call
+   * resolves. Returns what happened.
    */
-  async show(page: Page): Promise<void> {
+  async show(page: Page, opts: { rebuild?: 'auto' | 'always' } = {}): Promise<'created' | 'rebuilt' | 'reused'> {
+    const key = JSON.stringify(page.layout)
+    const reuse = this.created && opts.rebuild !== 'always' && key === this.shownLayout
     this.page = page
     this.named.clear()
     this.surface.reset(page.tileList)
+    if (reuse) return 'reused'
+    let result: 'created' | 'rebuilt' = 'rebuilt'
     await this.queue.op(async () => {
       if (!this.created) {
         this.created = true
-        if (await this.host.createPage(page.layout)) return
+        if (await this.host.createPage(page.layout)) {
+          result = 'created'
+          return
+        }
         // A WebView reload leaves the startup page in place, so create fails: rebuild over it.
         if (await this.host.rebuildPage(page.layout)) return
         throw new Error('createStartUpPageContainer and rebuildPageContainer both failed')
       }
       if (!(await this.host.rebuildPage(page.layout))) throw new Error('rebuildPageContainer failed')
     })
+    this.shownLayout = key
+    return result
   }
 
   /** Re-send every tile (e.g. after returning to the foreground). */

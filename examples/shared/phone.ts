@@ -58,6 +58,15 @@ export class Mirror {
     ctx.restore()
   }
 
+  /** Mock only: repaint one firmware text container after textContainerUpgrade (images stay). */
+  redrawText(id: number): void {
+    const t = this.layout?.textObject?.find((x) => x.containerID === id)
+    if (!t) return
+    this.ctx.fillStyle = '#000'
+    this.ctx.fillRect(t.xPosition as number, t.yPosition as number, t.width as number, t.height as number)
+    this.drawFirmwareContainers()
+  }
+
   /** Mock only: outline the native list's highlighted item (the firmware draws this on the glasses). */
   setListHighlight(index: number): void {
     const list = this.layout?.listObject?.find((l) => l.isEventCapture === 1)
@@ -199,7 +208,7 @@ export function mockHost(mirror: Mirror): Host {
     async updateText(t, content) {
       const c = layout?.textObject?.find((x) => x.containerID === t.containerID)
       if (c) c.content = content
-      if (layout) mirror.setLayout(layout)
+      mirror.redrawText(t.containerID)
       return true
     },
     async shutDown(mode) {
@@ -214,8 +223,36 @@ export function mockHost(mirror: Mirror): Host {
 }
 
 /** Connect to the glasses (or a mock) with the mirror wired in. */
+function withTimeout<T>(p: Promise<T>, ms: number, message: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(message)), ms)
+    p.then(
+      (v) => {
+        clearTimeout(t)
+        resolve(v)
+      },
+      (e) => {
+        clearTimeout(t)
+        reject(e)
+      },
+    )
+  })
+}
+
+/** Show uncaught errors on the phone page: the WebView has no visible console. */
+function surfaceErrors(mirror: Mirror): void {
+  const status = document.getElementById('status')
+  const show = (what: string) => {
+    mirror.log(`error: ${what}`)
+    if (status) status.textContent = `Error: ${what}`
+  }
+  window.addEventListener('error', (e) => show(e.message))
+  window.addEventListener('unhandledrejection', (e) => show(e.reason instanceof Error ? e.reason.message : String(e.reason)))
+}
+
 export async function start(opts: G2Options = {}): Promise<{ g2: G2; mirror: Mirror; mock: boolean }> {
   const mirror = new Mirror(document.getElementById('mirror') as HTMLCanvasElement)
+  surfaceErrors(mirror)
   const status = document.getElementById('status')
   const q = new URLSearchParams(location.search)
   const hasBridge = () => typeof (window as unknown as { flutter_inappwebview?: unknown }).flutter_inappwebview !== 'undefined'
@@ -245,7 +282,14 @@ export async function start(opts: G2Options = {}): Promise<{ g2: G2; mirror: Mir
     if (status) status.textContent = 'Running in your browser with a mock host (no glasses). Use the buttons below the display, or ↓/↑ swipe · Enter tap · D double-tap · H hold.'
   } else {
     if (status) status.textContent = 'Connecting to your glasses…'
-    g2 = await connect(base)
+    try {
+      g2 = await withTimeout(connect(base), 15000, 'no answer from the Even App bridge after 15 s')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      if (status) status.textContent = `Could not connect: ${msg}. Reload the page; if it persists, restart the dev server.`
+      mirror.log(`connect failed: ${msg}`)
+      throw err
+    }
     if (status) status.textContent = 'Connected. Use the glasses touchpad.'
   }
   // Keep the mirror's layout in sync with every page shown.

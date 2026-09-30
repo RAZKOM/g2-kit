@@ -3,6 +3,30 @@
 All notable changes to g2-kit. This project follows [semver](https://semver.org/); until 1.0, minor versions
 may change APIs.
 
+## 0.1.1 (2026-09-29)
+
+- Fix: `connect({ sdk })` with the real `@evenrealities/even_hub_sdk` module failed to typecheck
+  (`SdkBridge.onEvenHubEvent`'s callback type was too narrow). A type test now checks the real SDK against
+  `SdkModule`.
+- `G2.show()` skips `rebuildPageContainer` when the new page has exactly the same containers as the page on
+  screen, and just redraws the tiles; it now returns `'created' | 'rebuilt' | 'reused'`. Pass
+  `{ rebuild: 'always' }` to force a rebuild.
+- Known issue documented (STATUS.md): on G2 glasses, a rebuild to four full-size images sometimes showed
+  images only in the left lens until the glasses restarted.
+- New layout preset `layouts.textWithTile()`: a firmware text container (also the input capture) plus one
+  drawn tile. One image per page, text updates cost no image send.
+- `GridKeyboard` keeps a 2 px margin so the focused-row frame is never clipped.
+- Examples: the picker's keyboard is one 288×144 tile under a firmware text line (was four spanned tiles):
+  one tile send per key move, typing updates the text only.
+- Examples: the dashboard switches views inside one layout (no rebuilds); new `hub-lens` diagnostic
+  (`npm run dev:lens`).
+- Examples: fixed the dev server sometimes leaving the page on "Connecting…" (Vite discovered the SDK's
+  dynamic import at runtime and served a stale copy, HTTP 504). The SDK is now pre-bundled, and example pages
+  show connection errors with a 15 s timeout.
+- Docs: default theme levels and fonts checked on real G2 glasses with `hub-calibrate`: brightness levels off
+  around 8–10 like the simulator, level 1 is visible, all six theme levels are distinct, all fonts readable.
+  No code changes.
+
 ## 0.1.0 (2026-09-29)
 
 First release.

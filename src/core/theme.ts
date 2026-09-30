@@ -10,13 +10,13 @@ import { font8x12 } from './fonts/font8x12.js'
 import { font16x24 } from './fonts/display.js'
 
 /**
- * Default named levels. Chosen to stay distinct under both display models we
- * know of:
+ * Default named levels, tuned to the display response:
  *   - evenhub-simulator 0.9.5 (measured): brightness ≈ min(1, L/9)^0.45, so
  *     levels 9–15 all look the same; faint..full here read 51/70/84/96/100 %.
- *   - a linear display: 13/27/40/53/100 %.
- * Real-glasses response is UNVERIFIED: run examples/hub-calibrate on a device
- * and retune with `createTheme({ levels })` (or use `linearTheme`).
+ *   - G2 glasses (checked by eye with examples/hub-calibrate): same shape;
+ *     brightness levels off around 8–10, level 1 is visible, and these six
+ *     levels are distinct.
+ * Retune with `createTheme({ levels })`.
  */
 /** Off: black, which is see-through on the glasses. */
 export const OFF = 0
@@ -71,7 +71,7 @@ export const defaultTheme: Theme = {
   smallScale: 1,
 }
 
-/** Evenly spaced levels for a display that renders gray4 linearly. */
+/** Evenly spaced levels for a display that renders gray4 linearly. On G2 its top three levels look the same. */
 export const linearTheme: Theme = {
   ...defaultTheme,
   levels: { off: 0, faint: 4, dim: 7, mid: 10, bright: 13, full: 15 },
