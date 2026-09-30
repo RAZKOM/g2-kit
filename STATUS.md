@@ -52,7 +52,7 @@ What is done and how each part was verified.
 | `Keyboard`, `keyboardLayout`, `KeyboardState`, `typingCost` | ✓ groups by rows / columns / keys, shift, caps, layers, delete, max length, cost model | ✓ 6 samples (layers, symbols, columns, side, stack) | ✓ `hub-keyboard`: typing on QWERTY, all 6 presets incl. two-tile side and stacked; hub-picker types and commits | – |
 | `layouts.textWithSpan` (wide, tall) | ✓ | | ✓ via `hub-keyboard` (seamless across the two tiles) | – |
 | Text components (`TextSpinner`, `TextProgress`, `TextSlider`) | ✓ output snapshots, ASCII, deterministic | ✓ gallery text section | ✓ `hub-text`: spinner and bar animate inline; sliders in their own boxes with FocusRing edit mode | text updates measured (H1d); these components not yet looked at on glasses |
-| `TextArea` / `g2.textArea`, `layouts.textBoxes` | ✓ compose, skip unchanged, coalesce, reset on show; preset validation | | ✓ `hub-text`; non-capture box updates (`hub-bench` "text, own box") | open: own-box timing (H1e) |
+| `TextArea` / `g2.textArea`, `layouts.textBoxes` | ✓ compose, skip unchanged, coalesce, reset on show; preset validation | | ✓ `hub-text`; non-capture box updates (`hub-bench` "text, own box") | ✓ a non-capture box updates in 60 ms, like the capture box (hub-bench) |
 | `hub-bench` send benchmark | | | ✓ runs; simulator round trip ~10 ms (no BLE, not meaningful) | open: H1 |
 | Render time | ✓ `npm run bench`: worst sample 0.8 ms warm on a desktop | | | phone WebView not measured; examples display it |
 
@@ -138,12 +138,16 @@ Same glasses, 30 frames per run, gap 25 ms, 288×144 PNG tiles; every run ended 
 | progress bar, outline, plain frames | 260 / 317 ms | 3.4 |
 | progress as an image tile (text sweep) | 259 / 316 ms | 3.5 |
 | **progress as firmware text** (`textContainerUpgrade`, no image) | **61 / 118 ms** | **10.0** |
+| progress as firmware text, rerun | 61 / 89 ms | 10.5 |
+| progress as text in a container of its own (not the capture) | 60 / 89 ms | 10.6 |
 
 - **Outline bars cost ~10 % more to send, with or without textures**: the frames themselves are the extra
   detail. Keeping the dots costs nothing extra, so `surfaceTexture` stays on by default for bars.
 - **Outline progress costs ~10 % more because of its hatch**; with plain frames it sends like the filled bar.
 - **A text update is ~4× faster than an image send** (61 vs 259 ms) and reached 10 updates/s; the text counted
   up to the last frame. Anything that can be characters is far cheaper as firmware text (ROADMAP F12).
+- **A text container that does not capture input updates just as fast** (60 ms, rerun 2026-09-30), so text
+  components can live in boxes of their own (`layouts.textBoxes`) at no extra cost.
 
 ## Known hardware issue: one lens after a rebuild
 

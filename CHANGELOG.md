@@ -13,7 +13,8 @@ may change APIs.
   `layouts.textBoxes()`: text containers stacked from the top, optionally above one tile.
 - `G2.settle()` also waits for pending text-area updates.
 - Examples: new `hub-text` (`npm run dev:text`, port 5191; also on the demo site). `hub-bench`'s text sweep adds
-  "text, own box" (a non-capture text container).
+  "text, own box" (a non-capture text container); measured on G2 it updates in 60 ms, the same as the
+  capture container.
 
 - Docs: measured on G2 glasses (STATUS.md): outline bar charts send ~10 % slower than filled with or without
   textures; outline progress is as fast as filled with `surfaceTexture: false`; a firmware text update takes
