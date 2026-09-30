@@ -5,6 +5,16 @@ may change APIs.
 
 ## Unreleased
 
+- Text components (`g2-kit/core` `defineTextComponent`, `g2-kit/widgets` `TextSpinner`, `TextProgress`,
+  `TextSlider`): props → string for firmware text containers, no image send (~60 ms per update on G2 vs
+  ~260 ms for an image). `G2.textArea(container)` (`TextArea` in `g2-kit/bridge`) composes plain-text and
+  component slots (one line each, or your own `layout`), sends only changed text and coalesces bursts; it works
+  inline in a page's existing text container or in a container of its own. New layout preset
+  `layouts.textBoxes()`: text containers stacked from the top, optionally above one tile.
+- `G2.settle()` also waits for pending text-area updates.
+- Examples: new `hub-text` (`npm run dev:text`, port 5191; also on the demo site). `hub-bench`'s text sweep adds
+  "text, own box" (a non-capture text container).
+
 - Docs: measured on G2 glasses (STATUS.md): outline bar charts send ~10 % slower than filled with or without
   textures; outline progress is as fast as filled with `surfaceTexture: false`; a firmware text update takes
   ~60 ms vs ~260 ms for an image send (~4× faster), so text-only components (ROADMAP F12) are next.

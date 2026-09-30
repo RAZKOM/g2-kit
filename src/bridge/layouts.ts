@@ -222,3 +222,42 @@ export function textWithSpan(
   b.image({ id: 2, name: 's1', x: wide ? span.x + TW : span.x, y: wide ? span.y : span.y + TH, w: TW, h: TH })
   return { ...withMenu(b, o).build<'s0' | 's1'>(), span, text: { id: SKELETON_ID, name: 'text' } }
 }
+
+/**
+ * 9. Text boxes: firmware text containers stacked from the top, for text components that each want a
+ * container of their own (a settings page of `TextSlider`s, a status panel), optionally above one drawn tile
+ * at the bottom. The first box captures input unless `capture` names another. Update a box with
+ * `g2.textArea(page.boxes.<name>)`; text updates cost no image send.
+ *
+ * Size each box for its text: a firmware line is ~27 px tall, so one line needs h ≥ 28 + 2 × padding
+ * (padding defaults to 4 here). A box whose text overflows scrolls and shows a scroll bar, and if it is the
+ * capture box the firmware spends swipes on scrolling it instead of sending events.
+ * ```
+ * +-----------------------------+
+ * | box 0 (capture)             |
+ * | box 1                       |
+ * | …                           |
+ * +--------+==========+---------+
+ * |        |  tile?   |         |   optional, centred
+ * +--------+==========+---------+
+ * ```
+ */
+export function textBoxes<K extends string>(
+  o: PresetOptions & { boxes: ReadonlyArray<{ name: K; h: number; text?: string }>; capture?: K; tile?: { w: number; h: number }; padding?: number },
+): Page<'tile'> & { boxes: Record<K, { id: number; name: string }> } {
+  const tileH = o.tile?.h ?? 0
+  const total = o.boxes.reduce((a, b) => a + b.h, 0)
+  if (total > CANVAS_H - tileH) throw new RangeError(`text boxes are ${total} px tall; ${CANVAS_H - tileH} px available`)
+  const capture = o.capture ?? o.boxes[0]?.name
+  const b = new PageBuilder()
+  const boxes = {} as Record<K, { id: number; name: string }>
+  let y = 0
+  o.boxes.forEach((box, i) => {
+    const id = SKELETON_ID + i
+    b.text({ id, name: box.name, x: 0, y, w: CANVAS_W, h: box.h, content: box.text ?? ' ', capture: box.name === capture, border: { width: 0 }, padding: o.padding ?? 4 })
+    boxes[box.name] = { id, name: box.name }
+    y += box.h
+  })
+  if (o.tile) b.image({ id: 1, name: 'tile', x: Math.round((CANVAS_W - o.tile.w) / 2), y: CANVAS_H - o.tile.h, w: o.tile.w, h: o.tile.h })
+  return { ...withMenu(b, o).build<'tile'>(), boxes }
+}

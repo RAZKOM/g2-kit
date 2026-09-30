@@ -70,6 +70,7 @@
     "dev:lens": "vite examples/hub-lens",
     "dev:bench": "vite examples/hub-bench",
     "dev:keyboard": "vite examples/hub-keyboard",
+    "dev:text": "vite examples/hub-text",
     "showcase": "tsx scripts/showcase.ts"
   },
   "peerDependencies": {

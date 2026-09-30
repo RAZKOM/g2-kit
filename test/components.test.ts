@@ -5,7 +5,7 @@ import { formatNumber, heatStep, niceScale } from '../src/charts/index.js'
 import { GridKeyboardState, dateColumns, daysInMonth, marqueeFrames, timeColumns } from '../src/widgets/index.js'
 import * as W from '../src/widgets/index.js'
 import { ICON_NAMES, drawIcon } from '../src/icons/index.js'
-import { SAMPLES } from '../examples/gallery/samples.js'
+import { SAMPLES, TEXT_SAMPLES } from '../examples/gallery/samples.js'
 
 describe('every gallery sample: smoke + PNG snapshot', () => {
   for (const s of SAMPLES) {
@@ -271,5 +271,27 @@ describe('widget helpers', () => {
   it('marqueeFrames', () => {
     expect(marqueeFrames('short', 288)).toEqual([0])
     expect(marqueeFrames('x'.repeat(50), 100, { step: 50, gap: 0 })).toEqual([0, 50, 100, 150, 200, 250, 300, 350])
+  })
+})
+
+describe('text components (firmware text)', () => {
+  for (const s of TEXT_SAMPLES) {
+    it(`${s.id} (${s.component.name})`, () => {
+      const out = s.component.render(s.props)
+      // Printable ASCII only (any firmware font has it), one line, well under the 999-byte text limit.
+      expect(out).toMatch(/^[\x20-\x7e]+$/)
+      expect(out.length).toBeLessThan(80)
+      expect(s.component.render(s.props)).toBe(out)
+      expect(out).toMatchSnapshot()
+    })
+  }
+
+  it('spinner frames wrap; progress clamps; slider marks focus and edit mode by characters', () => {
+    expect([0, 1, 2, 3, 4, -1].map((frame) => W.renderTextSpinner({ frame }))).toEqual(['|', '/', '-', '\\', '|', '\\'])
+    expect(W.renderTextProgress({ value: 1.5, width: 4 })).toBe('[####] 100%')
+    expect(W.renderTextProgress({ value: -1, width: 4, valueText: false })).toBe('[----]')
+    expect(W.renderTextSlider({ value: 0, width: 4 })).toBe('  [o---] 0')
+    expect(W.renderTextSlider({ value: 100, width: 4, focused: true })).toBe('> [===o] 100')
+    expect(W.renderTextSlider({ value: 50, width: 5, editing: true, label: 'V' })).toBe('> V < ==o-- > 50')
   })
 })

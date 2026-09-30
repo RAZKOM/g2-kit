@@ -50,6 +50,16 @@ const SCENARIOS: Record<string, { port: number; steps: Step[]; query?: string }>
       I('down'), W(800), S('azerty-row'),
     ],
   },
+  // Text components: the sync screen animates (two shots 1 s apart), tap → settings, edit volume (+2 steps),
+  // keep it, move to Done, back to sync.
+  'hub-text': {
+    port: 5191,
+    steps: [
+      W(3500), S('sync'), W(1000), S('sync-later'), I('click'), W(2500), S('settings'),
+      I('click'), W(600), I('down'), W(500), I('down'), W(800), S('editing'), I('click'), W(800), S('kept'),
+      I('down'), W(500), I('down'), W(500), I('down'), W(800), S('on-done'), I('click'), W(2500), S('back-to-sync'),
+    ],
+  },
   'hub-game': {
     port: 5183,
     steps: [W(3000), S('start'), I('click'), W(1500), S('after-move'), I('down'), W(800), S('cursor'), I('click'), W(1500), I('click'), W(1500), I('click'), W(1500), S('later')],
@@ -58,8 +68,8 @@ const SCENARIOS: Record<string, { port: number; steps: Step[]; query?: string }>
   'hub-ramp': { port: 5185, steps: [W(4000), S('ramp')] },
   'hub-lens': { port: 5187, steps: [W(4000), S('s1'), I('click'), W(1500), S('s2'), I('click'), W(2000), S('s3'), I('click'), W(1500), I('click'), W(3500), S('s5'), I('click'), W(4000), I('click'), W(2500), S('s7'), I('click'), W(5000), S('s8')] },
   // Two runs of the send benchmark (gaps 150 and 100 ms); the console has the numbers ([hub-bench] lines).
-  // Text sweep, 8 frames per run: an image progress bar, then the same progress as firmware text; the console has the numbers.
-  'hub-bench': { port: 5188, query: '?sweep=text&frames=8', steps: [W(3500), S('start'), I('click'), W(6000), S('run1'), I('click'), W(1000), S('text-run'), W(5000), S('run2')] },
+  // Text sweep, 8 frames per run: an image progress bar, the same progress as firmware text, then in a text box of its own; the console has the numbers.
+  'hub-bench': { port: 5188, query: '?sweep=text&frames=8', steps: [W(3500), S('start'), I('click'), W(6000), S('run1'), I('click'), W(1000), S('text-run'), W(5000), S('run2'), I('click'), W(4000), S('own-box')] },
   // Native list: swipes move the firmware highlight (expect no events), tap reports the index.
   'hub-quickstart': { port: 5186, steps: [W(3500), S('start'), I('down'), W(800), S('list-moved'), I('click'), W(1500), I('up'), W(600), I('click'), W(1500), S('refreshed'), I('down'), W(500), I('down'), W(500), I('down'), W(500), I('down'), W(800), I('click'), W(1500), S('after-exit')] },
 }

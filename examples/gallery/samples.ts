@@ -2,7 +2,7 @@
  * Gallery samples: every component with sample data. Shared by the gallery
  * script (PNG contact sheet) and the smoke/snapshot tests.
  */
-import type { Component, Size } from '../../src/core/index.js'
+import type { Component, Size, TextComponent } from '../../src/core/index.js'
 import * as C from '../../src/charts/index.js'
 import * as W from '../../src/widgets/index.js'
 
@@ -351,4 +351,26 @@ export const SAMPLES: Sample[] = [
   s('rating', 'Rating stars', 'controls', 'P2', W.Rating, { value: 3.5, focused: true }),
   s('dice', 'Dice', 'game', 'P2', W.Dice, { values: [3, 6, 1, 5, 2], held: [false, true, false, true, false], focus: 2 }),
   s('health', 'Health bar', 'game', 'P2', W.HealthBar, { value: 64, max: 100, icon: 'heart' }),
+]
+
+/** Text components: strings for firmware text containers (no image send). Shown as text in the gallery. */
+export interface TextSample {
+  id: string
+  title: string
+  component: TextComponent<any>
+  props: unknown
+  note?: string
+}
+
+const ts = <P,>(id: string, title: string, component: TextComponent<P>, props: P, note?: string): TextSample => ({ id, title, component, props, note })
+
+export const TEXT_SAMPLES: TextSample[] = [
+  ts('text-spinner', 'Text spinner: line', W.TextSpinner, { frame: 1, label: 'Syncing' }, 'Frames | / - \\; one text update per frame.'),
+  ts('text-spinner-dots', 'Text spinner: dots', W.TextSpinner, { frame: 2, style: 'dots', label: 'Loading' }),
+  ts('text-spinner-bar', 'Text spinner: bouncing bar', W.TextSpinner, { frame: 2, style: 'bar' }),
+  ts('text-progress', 'Text progress bar', W.TextProgress, { value: 0.4, label: 'Download' }),
+  ts('text-progress-count', 'Text progress: count, custom characters', W.TextProgress, { value: 7, max: 10, width: 10, valueText: '7/10', chars: { done: '=', todo: '.' }, label: 'Reps' }),
+  ts('text-slider', 'Text slider', W.TextSlider, { label: 'Brightness', value: 60 }),
+  ts('text-slider-focused', 'Text slider: focused', W.TextSlider, { label: 'Volume', value: 35, focused: true }),
+  ts('text-slider-editing', 'Text slider: edit mode', W.TextSlider, { label: 'Temp', value: 21, min: 16, max: 28, editing: true, format: (v: number) => `${v} C` }),
 ]

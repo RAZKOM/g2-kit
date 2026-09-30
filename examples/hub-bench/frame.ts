@@ -15,6 +15,8 @@ export type Content =
   | 'progress-outline-plain'
   /** Not an image: the frame is text in the firmware text container (see main.ts). */
   | 'text'
+  /** Same, in a text container of its own that does not capture input. */
+  | 'text-own'
 
 /** Outline surface without textures (plain frames). */
 const outlinePlain = createTheme({ surface: 'outline', surfaceTexture: false })

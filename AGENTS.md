@@ -15,9 +15,9 @@ Repo: github.com/RAZKOM/g2-kit · demo site: razkom.github.io/g2-kit · owner: R
 | Path | What |
 |---|---|
 | `src/core` | Framebuffer, primitives, paints/patterns, encodings, fonts (5×7, 8×12, 16×24, 7-seg), text, theme (incl. `surface`), `drawBlock`, `inkRatio`, PNG/Gray4 encoders, tiles, `defineComponent`. No DOM, no deps. |
-| `src/bridge` | `G2` (app object), `connect()`, `ImageQueue`, `PageBuilder` (validation), `layouts` (7 presets), events normaliser, `Surface`. **Only `bridge/sdk.ts` touches the SDK**, via dynamic `import()`. |
+| `src/bridge` | `G2` (app object), `connect()`, `ImageQueue`, `PageBuilder` (validation), `layouts` (9 presets), events normaliser, `Surface`, `TextArea` (`g2.textArea`). **Only `bridge/sdk.ts` touches the SDK**, via dynamic `import()`. |
 | `src/input` | Skeletons, `PagedList`, `HybridSkeleton`, `FocusRing` (edit mode), `TapConfirm`, `HoldToConfirm`, `promptText` (uses `G2.modal` and `Keyboard`). |
-| `src/charts`, `src/widgets` | Components. `src/icons`: vector icons. |
+| `src/charts`, `src/widgets` | Components (`widgets/text.ts`: text components, strings for firmware text). `src/icons`: vector icons. |
 | `test/` | Vitest. `components.test.ts` smoke-tests + PNG-hash-snapshots every gallery sample (filled and outline surface) and enforces the ink budget (`INK_EXCEPTIONS`). `sdk-types.test.ts` checks the real SDK against `SdkModule` (compile time). |
 | `examples/gallery/samples.ts` | Every component with sample props: drives the gallery, the site, the showcase and the tests. |
 | `examples/hub-*` | Plugin examples (Vite). `shared/phone.ts`: phone mirror, keyboard/button mock host, error display. |
@@ -31,7 +31,7 @@ npm run typecheck
 npm run gallery          # examples/output/ (PNGs, index.html, contact-sheet.png, surface-sheet.png; prints ink over budget)
 npm run docs:images      # regenerate docs/img/ incl. showcase.png (run sim:check first for sim-*.png)
 npm run build:site       # site/ (gallery + in-browser demos), then npm run preview:site
-npm run dev:<name>       # quickstart | dashboard | picker | game | calibrate | lens | bench | keyboard
+npm run dev:<name>       # quickstart | dashboard | picker | game | calibrate | lens | bench | keyboard | text
 npm run sim -- <url>     # launch evenhub-simulator (npx evenhub-simulator does not resolve here)
 npm run sim:check -- hub-dashboard   # headless: replay gestures via the simulator's automation API
 npm run bench
@@ -68,6 +68,9 @@ npm run bench
 - Example dev servers use the example folder as Vite root: anything shared (CSS, TS) must be imported from a
   module, not linked by a relative URL from index.html (`../shared/x` gets the HTML fallback in dev).
 - `examples/shared/phone.ts` wraps `g2.show`; keep passing its options through (`rebuild: 'always'`).
+- Firmware text containers must fit their text (~27 px per line plus 2 × padding). One that overflows scrolls,
+  shows a scroll bar, and if it is the capture container the firmware spends swipes on scrolling: gestures get
+  lost (seen in the simulator with `textBoxes`).
 
 ## Working with the user
 

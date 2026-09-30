@@ -20,9 +20,10 @@ example apps running in your browser (on-screen gesture buttons stand in for the
 | **Input controls** (14) | `g2-kit/widgets` | `Keyboard` (QWERTY / QWERTZ / AZERTY / ABC, configurable, see below) · `Carousel` · `Button` · `ButtonRow` · `Toggle` · `SegmentedControl` · `Slider` · `Roller` · `TimePicker` · `DatePicker` · `Checklist` · `StatusKeyboard` · `GridKeyboard` (ABC / T9) · `Rating` |
 | **Text, feedback & chrome** (14) | `g2-kit/widgets` | `BigText` · `ProgressBar` · `Toast` · `Modal` · `Tabs` · `PaginationDots` · `ScrollIndicator` · `StatusBar` · `HudFrame` · `Ticker` · `Table` · `Card` · `Badge` · `Spinner` |
 | **Data faces** (5) | `g2-kit/widgets` | `AnalogClock` · `TimerRing` · `CompassStrip` · `TurnArrow` · `WeatherGlyph` |
+| **Text components** (3) | `g2-kit/widgets` | `TextSpinner` · `TextProgress` · `TextSlider`: strings for firmware text containers, no image send (see below) |
 | **Game kit** (4) | `g2-kit/widgets` | `GridBoard` (word games, Sudoku, 2048, tic-tac-toe) · `ScoreHud` · `Dice` · `HealthBar`, plus `SpriteSheet` / `drawSprite` |
 | **Icons** (56) | `g2-kit/icons` | Vector icons for 8 / 12 / 16 px, incl. 10 weather conditions |
-| **Layouts** (8) | `g2-kit/bridge` | `twoTilesWithList` · `twoTilesWithControl` · `dashboardQuad` · `heroSidebar` · `fullScreen` · `menuPage` · `textWithTile` · `textWithSpan` |
+| **Layouts** (9) | `g2-kit/bridge` | `textBoxes` · `twoTilesWithList` · `twoTilesWithControl` · `dashboardQuad` · `heroSidebar` · `fullScreen` · `menuPage` · `textWithTile` · `textWithSpan` |
 | **Input** | `g2-kit/input` | `blankTextSkeleton` · `listSkeleton` · `PagedList` · `HybridSkeleton` · `FocusRing` (with edit mode) · `TapConfirm` · `HoldToConfirm` · `promptText` (one-call text entry) |
 
 Previews use the brightness curve measured in evenhub-simulator 0.9.5, which matched G2 glasses by eye.
@@ -57,6 +58,22 @@ const text = await promptText(g2, { keyboard: { letters: 'azerty', panels: 'side
 `typingCost(layout, text)` counts the fewest gestures a text needs, to compare configurations. On short messages:
 rows ≈ 5.1 gestures per character, columns ≈ 5.5, one line of keys ≈ 9.4; ABC rows ≈ 4.8. `KeyboardState` is the
 headless state machine if you draw your own page. Try every option with `npm run dev:keyboard`.
+
+### Text components
+
+A firmware text update took ~60 ms on G2 glasses vs ~260 ms for an image send (STATUS.md), so readouts that
+change often can be text instead of pixels. Text components render props to a string; `g2.textArea(container)`
+shows them, composing slots and sending only when the text changed. Inline, in the page's existing text:
+
+```ts
+const status = g2.textArea(page.text)
+status.layout((p) => `${p.spin} ${p.title}\n${p.bar}`)
+status.set('title', 'Syncing').draw('spin', TextSpinner, { frame }).draw('bar', TextProgress, { value: 0.4 })
+```
+
+Or one per container, e.g. a settings page of sliders with `layouts.textBoxes`. Keep each box to the lines it
+fits (~27 px per line plus padding): an overflowing box scrolls, and the capture box then eats swipes. Firmware
+font only: no grey levels or shapes. Try both with `npm run dev:text`.
 
 ### Running in the simulator
 
@@ -125,7 +142,7 @@ No quantisation, framebuffer, PNG or send-locking code: `g2.draw` renders, diffs
 | Import | What |
 |---|---|
 | `g2-kit/core` | `Framebuffer`, named levels and `Theme` (incl. the `outline` surface), `inkRatio`, primitives (lines with dashes, arcs, sectors, polygons, pattern fills, round rects), 3 bitmap fonts + 7-segment digits, text layout (align, wrap, ellipsis, auto-fit), PNG / Gray8 / packed Gray4 encoders, `CanvasAdapter`, tile spanning. No DOM, no deps. |
-| `g2-kit/bridge` | `connect()` / `G2` (incl. `g2.modal()` to hand gestures to a prompt), `ImageQueue` (serial, coalescing, rebuild-aware, typed errors), `PageBuilder` (validated layouts), 8 `layouts` presets, event normaliser, retained `Surface`. The SDK is a peer dependency, imported only inside `connect()`. |
+| `g2-kit/bridge` | `connect()` / `G2` (incl. `g2.modal()` to hand gestures to a prompt), `ImageQueue` (serial, coalescing, rebuild-aware, typed errors), `PageBuilder` (validated layouts), 9 `layouts` presets, `g2.textArea()`, event normaliser, retained `Surface`. The SDK is a peer dependency, imported only inside `connect()`. |
 | `g2-kit/input` | Skeleton presets, `PagedList` (> 20 items through a native list), `HybridSkeleton`, `FocusRing` with edit mode, `HoldToConfirm`, `TapConfirm`, `promptText` (`const name = await promptText(g2, { label: 'Name' })`: keyboard page, resolves the text or null). |
 | `g2-kit/charts` | Bar, line, sparkline, KPI, gauge, grouped/stacked bars, pie/donut, progress rings, heatmap, calendar heatmap, funnel, bullet, timeline, legend; waffle, scatter, histogram, box plot, candlestick. |
 | `g2-kit/widgets` | Configurable keyboard (`keyboardLayout`, `KeyboardState`, `typingCost`), carousel, buttons, toggle, segmented, slider, roller, time/date pickers, checklist, status and grid keyboards, progress, big text, toast, modal, tabs, dots, scroll indicator, status bar, HUD frame, ticker, clock, timer ring, compass, turn arrow, grid board, score HUD; table, card, badge, spinner, weather glyph, rating, dice, health bar, sprite sheets. |
@@ -185,6 +202,7 @@ Three ways, from least to most setup:
 | `hub-calibrate` | Test card (16 levels, theme levels, patterns, fonts) for tuning a device | `npm run dev:calibrate` (5184) |
 | `hub-lens` | Diagnostic for the one-lens-after-rebuild issue (see STATUS.md); record results per step on the phone | `npm run dev:lens` (5187) |
 | `hub-bench` | Send benchmark: `updateImageRawData` round trip and frames/s, sweeping the gap, tile size, image format or tile content; results saved to the PC | `npm run dev:bench` (5188) |
+| `hub-text` | Text components: a spinner and progress bar inline in the page's text, then a settings page with a `TextSlider` per text box | `npm run dev:text` (5191) |
 | `hub-keyboard` | Every `Keyboard` option: pick a configuration on the phone, type on the glasses; hold switches preset, the page counts gestures per message against `typingCost` | `npm run dev:keyboard` (5189) |
 
 `npm run gallery` renders every component to `examples/output/` (PNG per sample, `index.html`,

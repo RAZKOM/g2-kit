@@ -17,6 +17,7 @@ import { normalizeEvent, type G2Event, type G2EventType, type NormalizeOptions, 
 import { ImageQueue, type Sleep } from './imageQueue.js'
 import type { Page, PageLayout, TileRef } from './pageBuilder.js'
 import { Surface, type Mounted } from './surface.js'
+import { TextArea } from './textArea.js'
 
 /** Everything g2-kit needs from the platform. `sdkHost()` builds one from the real bridge. */
 export interface Host {
@@ -66,6 +67,7 @@ export class G2 {
   private handlers = new Map<string, Set<(e: G2Event) => void>>()
   private modals: ModalHandler[] = []
   private named = new Map<string, { component: Component<unknown>; mounted: Mounted<unknown> }>()
+  private areas = new Map<number, TextArea>()
   private commitScheduled = false
   private unsubscribe: (() => void) | null = null
   readonly theme: Theme
@@ -106,6 +108,7 @@ export class G2 {
     const reuse = this.created && opts.rebuild !== 'always' && key === this.shownLayout
     this.page = page
     this.named.clear()
+    this.areas.clear()
     this.surface.reset(page.tileList)
     if (reuse) return 'reused'
     let result: 'created' | 'rebuilt' = 'rebuilt'
@@ -230,6 +233,22 @@ export class G2 {
     return ok
   }
 
+  /**
+   * Retained content for a firmware text container (by name, or `{ id, name }`): slots of plain text and
+   * text components, sent only when the composed text changes. Text updates are ~4× faster than image
+   * sends on G2 (STATUS.md). The same area is returned until the next `show()`.
+   */
+  textArea(target: string | { id: number; name: string }): TextArea {
+    const t = typeof target === 'string' ? this.findContainer(target) : target
+    let area = this.areas.get(t.id)
+    if (!area) {
+      const spec = this.page?.layout.textObject?.find((c) => c.containerID === t.id)
+      area = new TextArea((content) => this.setText(t, content), (spec?.content as string | undefined) ?? null)
+      this.areas.set(t.id, area)
+    }
+    return area
+  }
+
   private findContainer(name: string): { id: number; name: string } {
     const layout = this.page?.layout
     for (const list of [layout?.textObject, layout?.listObject, layout?.imageObject])
@@ -292,8 +311,9 @@ export class G2 {
   }
 
   /** Wait until every queued frame and op has been sent. */
-  settle(): Promise<void> {
+  async settle(): Promise<void> {
     if (this.commitScheduled) this.commit()
+    await Promise.all([...this.areas.values()].map((a) => a.flush()))
     return this.queue.idle()
   }
 

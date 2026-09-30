@@ -44,10 +44,10 @@ const SWEEPS: Record<Sweep, (gaps: number[]) => Case[]> = {
   // H1c: is the outline surface's extra send time its textures? Filled vs outline vs outline with plain frames.
   surface: () => (['chart', 'chart-outline', 'chart-outline-plain', 'progress', 'progress-outline', 'progress-outline-plain'] as const).map((content) => ({ ...BASE, content })),
   // Image progress bar vs the same progress as firmware text (textContainerUpgrade, no image).
-  text: () => (['progress', 'text'] as const).map((content) => ({ ...BASE, content })),
+  text: () => (['progress', 'text', 'text-own'] as const).map((content) => ({ ...BASE, content })),
 }
 const label = (c: Case, sweep: Sweep) =>
-  sweep === 'gap' ? `gap ${c.gap} ms` : sweep === 'size' ? `${c.w}×${c.h}` : sweep === 'format' ? c.format : c.content === 'text' ? 'text (no image)' : c.content
+  sweep === 'gap' ? `gap ${c.gap} ms` : sweep === 'size' ? `${c.w}×${c.h}` : sweep === 'format' ? c.format : c.content === 'text' ? 'text (no image)' : c.content === 'text-own' ? 'text, own box' : c.content
 
 interface Run extends Case {
   name: string
@@ -93,13 +93,22 @@ const fps = (r: Run) => r.frames / (r.ms / 1000)
 // ── glasses ──
 const TEXT = { id: 10, name: 'text' }
 const pages = new Map<string, Page<'tile'>>()
-/** Firmware text (capture) above one tile of w×h, centred at the bottom. */
-function pageFor(w: number, h: number): Page<'tile'> {
-  const key = `${w}x${h}`
+/** A second text container that does not capture input ('text-own' case). */
+const BOX = { id: 11, name: 'box' }
+/**
+ * Firmware text (capture) above one tile of w×h, centred at the bottom. With `box`, a separate one-line
+ * text container sits above the capture text.
+ */
+function pageFor(w: number, h: number, box = false): Page<'tile'> {
+  const key = `${w}x${h}${box ? '+box' : ''}`
   let p = pages.get(key)
   if (!p) {
-    p = new PageBuilder()
-      .text({ ...TEXT, x: 0, y: 0, w: 576, h: 288 - h, content: ' ', capture: true, border: { width: 0 }, padding: 8 })
+    // One firmware line (~27 px + padding): more would overflow and scroll.
+    const top = box ? 38 : 0
+    const b = new PageBuilder()
+    if (box) b.text({ ...BOX, x: 0, y: 0, w: 576, h: top, content: ' ', border: { width: 0 }, padding: 4 })
+    p = b
+      .text({ ...TEXT, x: 0, y: top, w: 576, h: 288 - h - top, content: ' ', capture: true, border: { width: 0 }, padding: 8 })
       .image({ id: 1, name: 'tile', x: Math.round((576 - w) / 2), y: 288 - h, w, h })
       .build<'tile'>()
     pages.set(key, p)
@@ -122,7 +131,7 @@ async function runCase(c: Case): Promise<Run> {
   const n = frames()
   const name = label(c, sweep())
   const run: Run = { ...c, name, frames: n, ms: 0, rts: [], encode: [], bytes: 0, failed: 0, retried: 0 }
-  const page = pageFor(c.w, c.h)
+  const page = pageFor(c.w, c.h, c.content === 'text-own')
   await g2.show(page) // rebuilds only when the tile size changes
   await say(`${name}: sending ${n} frames...`)
   await g2.settle()
@@ -145,12 +154,13 @@ async function runCase(c: Case): Promise<Run> {
     },
   )
   const t0 = performance.now()
-  if (c.content === 'text') {
-    // No image: each frame is a firmware text update, timed the same way.
+  if (c.content === 'text' || c.content === 'text-own') {
+    // No image: each frame is a firmware text update (the capture text, or its own box), timed the same way.
+    const box = c.content === 'text-own' ? BOX : TEXT
     for (let i = 1; i <= n; i++) {
       if (i > 1 && c.gap) await new Promise((r) => setTimeout(r, c.gap))
       const s = performance.now()
-      const ok = await g2.host.updateText!({ containerID: TEXT.id, containerName: TEXT.name }, `${name}
+      const ok = await g2.host.updateText!({ containerID: box.id, containerName: box.name }, box === BOX ? textFrame(i, n) : `${name}
 ${textFrame(i, n)}`).catch(() => false)
       run.rts.push(performance.now() - s)
       if (!ok) run.failed++
@@ -187,7 +197,7 @@ async function runNext(): Promise<void> {
     console.log(`[hub-bench] ${line}, interval ${ms(run.ms / run.frames)} ms, failed ${run.failed}, retried ${run.retried}, ${run.bytes} bytes`)
     render()
     const next = cases()[runs.length]
-    const text = run.content === 'text'
+    const text = run.content === 'text' || run.content === 'text-own'
     // A text run's last frame is in the text container this message replaces: leave it up a moment.
     if (text) await new Promise((r) => setTimeout(r, 1500))
     await say(`${line}${run.failed ? `, ${run.failed} failed` : ''}

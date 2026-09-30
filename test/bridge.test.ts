@@ -8,6 +8,7 @@ import {
   PageBuilder,
   PageLayoutError,
   Surface,
+  TextArea,
   checkEnumDrift,
   layouts,
   normalizeEvent,
@@ -20,6 +21,7 @@ import {
   type RawEvent,
 } from '../src/bridge/index.js'
 import { promptText } from '../src/input/index.js'
+import { TextProgress, TextSlider, TextSpinner } from '../src/widgets/index.js'
 
 const noSleep = () => Promise.resolve()
 const T = (id: number): ImageTarget => ({ containerID: id, containerName: `img${id}` })
@@ -730,5 +732,67 @@ describe('promptText', () => {
     ac.abort()
     await expect(result).resolves.toBeNull()
     expect(g2.hasModal).toBe(false)
+  })
+})
+
+describe('TextArea / g2.textArea', () => {
+  it('composes slots into one text update, skips unchanged content and coalesces bursts', async () => {
+    const sent: string[] = []
+    let release: (() => void) | null = null
+    const area = new TextArea(async (c) => {
+      sent.push(c)
+      await new Promise<void>((r) => (release = r))
+      return true
+    }, ' ')
+    area.set('title', 'Upload').draw('bar', TextProgress, { value: 0.5, width: 4 })
+    await Promise.resolve()
+    expect(sent).toEqual(['Upload\n[##--] 50%'])
+    // Three changes while the first update is in flight: one follow-up with the latest.
+    area.draw('bar', TextProgress, { value: 0.75, width: 4 })
+    area.draw('bar', TextProgress, { value: 1, width: 4 })
+    area.set('title', 'Done')
+    await Promise.resolve()
+    release!()
+    await new Promise((r) => setTimeout(r, 0))
+    expect(sent).toEqual(['Upload\n[##--] 50%', 'Done\n[####] 100%'])
+    release!()
+    await area.flush()
+    // Same content again: no update.
+    area.set('title', 'Done')
+    await area.flush()
+    expect(sent).toHaveLength(2)
+    // Custom layout: spinner inline with a title.
+    area.layout((p) => `${p.title} ${p.bar}`)
+    const done = area.flush()
+    release!()
+    await done
+    expect(sent.at(-1)).toBe('Done [####] 100%')
+  })
+
+  it('g2.textArea updates a text container by name through setText, and resets on show()', async () => {
+    const { host, calls } = fakeHost()
+    const g2 = new G2(host, { sleep: noSleep })
+    const page = layouts.textBoxes({ boxes: [{ name: 'status', h: 60 }, { name: 'volume', h: 40 }], tile: { w: 288, h: 144 } })
+    await g2.show(page)
+    calls.length = 0
+    g2.textArea('status').draw('spin', TextSpinner, { frame: 1, label: 'Syncing' })
+    g2.textArea(page.boxes.volume).draw('v', TextSlider, { label: 'Volume', value: 40, focused: true, width: 6 })
+    await g2.settle()
+    expect(calls).toEqual(['text:status:/ Syncing', 'text:volume:> Volume [==o---] 40'])
+    expect(g2.textArea('status')).toBe(g2.textArea('status'))
+    // The initial layout content counts as shown: an area set to the same text sends nothing.
+    await g2.show(layouts.textWithTile({ text: 'hello' }))
+    calls.length = 0
+    g2.textArea('text').set('t', 'hello')
+    await g2.settle()
+    expect(calls).toEqual([])
+  })
+
+  it('textBoxes: first box captures, heights must fit above the tile', () => {
+    const page = layouts.textBoxes({ boxes: [{ name: 'a', h: 100 }, { name: 'b', h: 44 }], tile: { w: 288, h: 144 } })
+    const texts = page.layout.textObject!
+    expect(texts.map((t) => [t.containerName, t.isEventCapture])).toEqual([['a', 1], ['b', 0]])
+    expect(page.boxes.b.id).toBe(11)
+    expect(() => layouts.textBoxes({ boxes: [{ name: 'a', h: 200 }], tile: { w: 288, h: 144 } })).toThrow(RangeError)
   })
 })

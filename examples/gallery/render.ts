@@ -10,7 +10,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { deflateSync } from 'node:zlib'
 import { Framebuffer, INK_BUDGET, SIMULATOR_CURVE, TILE, drawText, encodePreviewPng, font5x7, inkRatio, outlineTheme, strokeRect } from '../../src/core/index.js'
-import { SAMPLES, type Sample } from './samples.js'
+import { SAMPLES, TEXT_SAMPLES, type Sample } from './samples.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const out = resolve(process.argv[2] && !process.argv[2].startsWith('--') ? process.argv[2] : join(here, '..', 'output'))
@@ -77,6 +77,7 @@ const DEMOS = [
   ['dashboard', 'Dashboard', 'Four panels; swipe moves focus, tap opens one chart across all four tiles.'],
   ['picker', 'Pickers', 'Carousel typing, a time picker with edit mode, a keyboard prompt.'],
   ['keyboard', 'Keyboard', 'Every keyboard option: letters, symbols layer / beside / below, rows or columns, action keys.'],
+  ['text', 'Text components', 'Spinner and progress as firmware text, and a slider per text box: no image sends.'],
   ['game', 'Tic-tac-toe', 'The game kit with one gesture axis.'],
   ['calibrate', 'Calibration card', '16 levels, theme levels, patterns and fonts, for tuning a device.'],
 ] as const
@@ -112,6 +113,8 @@ const html = `<!doctype html>
   .pair { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: flex-start; }
   .pair > div { display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: var(--muted); max-width: 100%; }
   .pair figcaption { flex-basis: 100%; margin-top: 0; }
+  .texts { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+  pre.fw { background: #000; color: #6dff6d; border: 1px solid var(--line); padding: 10px; font-size: 15px; margin: 0; max-height: none; overflow-x: auto; }
 </style></head><body><main>
 <h1>g2-kit <small>${SAMPLES.length} samples · ${new Set(SAMPLES.map((s) => s.component.name)).size} components</small></h1>
 <p class="lede">Charts, controls and HUD pieces for Even Realities G2 Hub plugins, drawn on the phone into 4-bit image tiles.
@@ -119,12 +122,15 @@ Previews are 2× and use the brightness curve measured in evenhub-simulator 0.9.
 Unofficial; not affiliated with Even Realities.</p>
 ${site ? `<h2>Live demos <span class="note">run in your browser with a mock host: on-screen gesture buttons, or ↓ ↑ Enter D H</span></h2>
 <div class="demos">${DEMOS.map(([id, t, d]) => `<a class="demo" href="demos/${id}/?mock"><b>${t} →</b><span>${d}</span></a>`).join('')}</div>` : ''}
-<nav>${groups.map(([g]) => `<a href="#${slug(g)}">${GROUPS[g]}</a>`).join('')}<a href="#g-surface">Filled vs outline</a></nav>
+<nav>${groups.map(([g]) => `<a href="#${slug(g)}">${GROUPS[g]}</a>`).join('')}<a href="#g-surface">Filled vs outline</a><a href="#g-text">Text components</a></nav>
 ${groups.map(([g, figs]) => `<h2 id="${slug(g)}">${GROUPS[g]}</h2><div class="grid">${figs.join('\n')}</div>`).join('\n')}
 <h2 id="g-surface">Filled vs outline <span class="note">theme <code>surface: 'outline'</code>: ink ${pct(inkTotal(surfaces.map((s) => s.filled)))} → ${pct(inkTotal(surfaces.map((s) => s.outline)))} over these ${surfaces.length} samples</span></h2>
 <p class="lede">Every lit pixel sits between the wearer and the world. With <code>createTheme({ surface: 'outline' })</code> (or <code>outlineTheme</code>),
 components draw frames and light textures where they would paint solid blocks. Ink is the share of lit pixels; the budget is ${pct(INK_BUDGET)}.</p>
 <div class="grid">${surfaceRows.join('\n')}</div>
+<h2 id="g-text">Text components <span class="note">strings for firmware text containers: no image send (~60 ms vs ~260 ms per update on G2)</span></h2>
+<p class="lede">Shown in a monospace font here; the glasses use their own proportional firmware font. Put them in any text container with <code>g2.textArea(name).draw(key, Component, props)</code>.</p>
+<div class="texts">${TEXT_SAMPLES.map((s) => `<figure id="${s.id}"><pre class="fw">${esc(s.component.render(s.props))}</pre><figcaption><b>${esc(s.title)}</b><span><code>${s.component.name}</code></span>${s.note ? `<em>${esc(s.note)}</em>` : ''}</figcaption></figure>`).join('\n')}</div>
 </main></body></html>`
 writeFileSync(join(out, 'index.html'), html)
 
