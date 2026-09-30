@@ -3,7 +3,7 @@
 All notable changes to g2-kit. This project follows [semver](https://semver.org/); until 1.0, minor versions
 may change APIs.
 
-## Unreleased
+## 0.2.0 (2026-09-30)
 
 - Ink metric: `inkRatio(fb, rect?, min?)` (share of lit pixels) and `INK_BUDGET` (0.25) in `g2-kit/core`.
   The gallery (captions, contact sheet), `npm run bench` and a new test report ink per sample; the test fails
