@@ -14,7 +14,8 @@ may change APIs.
 - `hub-text` has a third screen: those four in text boxes, updating several times a second, over a chart tile
   that is re-sent only every 5 s.
 - New `hub-probe` example (`npm run dev:probe`, port 5192): hardware questions in one page. It measures render
-  time on the phone, swipe throughput and long-press timing (image ring or `TextHold`). Results are saved to the PC.
+  time on the phone, swipe throughput, long-press timing (image ring or `TextHold`) and a text box over an image
+  tile (H6). Results are saved to the PC.
 
 ### Measured on G2 glasses (STATUS.md has details)
 - **Images larger than 288×144 crash the app and the glasses** (a rebuild to one 576×72 image). Keep to the

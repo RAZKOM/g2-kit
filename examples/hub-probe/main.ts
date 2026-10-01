@@ -1,5 +1,5 @@
 /**
- * hub-probe: hardware questions in one page (ROADMAP H3–H5). Pick a
+ * hub-probe: hardware questions in one page (ROADMAP H3–H6). Pick a
  * probe on the phone; each says what to do on the glasses and what to record.
  * "Copy results" saves everything on the PC (examples/output/results/).
  *
@@ -7,15 +7,18 @@
  *  H3 swipes   swipe N times; counts the events that arrive, with the tile redrawn per swipe or not.
  *  H4 hold     hold on the touchpad; HoldToConfirm fills an image ring or a TextHold bar (1.5 s). Logs
  *              hold → release times and how many frames / text updates went out while held.
+ *  H6 overlay  a firmware text box over an image tile (a gauge with its number as text): does it show, and
+ *              does re-sending the image cover it?
  *
  * H2 (images over 288×144) is answered: they crash the app and the glasses (STATUS.md). Don't probe it again.
  *
- * Double-tap exits. `?probe=swipes` (render | swipes | hold) opens that probe first (sim:check uses it);
+ * Double-tap exits. `?probe=swipes` opens that probe first (render | swipes | hold | overlay; sim:check uses it);
  * `&hold=text` starts H4 with the text bar.
  */
 import { Framebuffer, defineComponent, drawText, encodePng, fillSector, font16x24, font8x12, type Rect } from 'g2-kit/core'
 import { PageBuilder, layouts } from 'g2-kit/bridge'
 import { HoldToConfirm, blankTextSkeleton } from 'g2-kit/input'
+import { Gauge } from 'g2-kit/charts'
 import { BigText, TextHold } from 'g2-kit/widgets'
 import { SAMPLES } from '../gallery/samples'
 import { start } from '../shared/phone'
@@ -44,7 +47,7 @@ const HoldRing = defineComponent<{ progress: number; label: string }>('ProbeHold
 })
 
 // ── results, shared by all probes ──
-const results: Record<string, string[]> = { H5: [], H3: [], H4: [] }
+const results: Record<string, string[]> = { H5: [], H3: [], H4: [], H6: [] }
 function record(probe: string, line: string): void {
   results[probe].push(line)
   mirror.log(`${probe}: ${line}`)
@@ -109,12 +112,13 @@ function renderSummary(): void {
   summaryEl.textContent = summaryText()
 }
 
-type Mode = 'render' | 'swipes' | 'hold'
+type Mode = 'render' | 'swipes' | 'hold' | 'overlay'
 let mode: Mode = 'render'
 const PROBES: Array<[Mode, string, () => Promise<void>]> = [
   ['render', 'H5 render', showRender],
   ['swipes', 'H3 swipes', showSwipes],
   ['hold', 'H4 hold', showHold],
+  ['overlay', 'H6 overlay', showOverlay],
 ]
 function open(m: Mode): Promise<void> {
   mode = m
@@ -261,11 +265,19 @@ let holdFrames = 0
 let holds = 0
 let releases = 0
 let textUpdates = 0
+/** Last 100 text update round trips (ms). */
+const textTimes: number[] = []
 if (g2.host.updateText) {
   const update = g2.host.updateText.bind(g2.host)
-  g2.host.updateText = (t, c) => {
+  g2.host.updateText = async (t, c) => {
     textUpdates++
-    return update(t, c)
+    const t0 = now()
+    try {
+      return await update(t, c)
+    } finally {
+      textTimes.push(now() - t0)
+      if (textTimes.length > 100) textTimes.shift()
+    }
   }
 }
 const sentWhileHeld = () =>
@@ -329,12 +341,61 @@ function onHoldEvent(type: string): void {
   }
 }
 
+// ── H6: text over an image ──
+// A gauge dial drawn once on the tile (no centre text) and a text container on top of it (later z) for the
+// value: the "hybrid" pattern, if the firmware composites text over an image. Swipes re-send the dial (arc
+// moves) to see whether an image send covers the text.
+const DIAL = { x: 144, y: 72, w: 288, h: 144 }
+const overlayPage = new PageBuilder()
+  .text(blankTextSkeleton({ x: 0, y: 0, w: 576, h: 288 }, { id: 10 }))
+  .image({ id: 1, name: 'dial', ...DIAL })
+  .text({ id: 11, name: 'value', x: DIAL.x + 94, y: DIAL.y + 64, w: 100, h: 36, content: ' ', padding: 4, border: { width: 0 } })
+  .build<'dial'>()
+let overlayTimer: ReturnType<typeof setInterval> | null = null
+let dialValue = 60
+let dialSends = 0
+
+async function showOverlay(): Promise<void> {
+  body.append(
+    para(
+      '<b>H6 text over image.</b> The dial is an image; the number in its middle is a firmware text box on top, ' +
+        'updated ~3 times a second. Swipe to move the arc (re-sends the dial image) a few times, then answer.',
+    ),
+    question('H6', 'The number over the dial', ['shows cleanly', 'shows, with a black box behind', 'not shown', 'only in one lens']),
+    question('H6', 'After a swipe re-sends the dial, the number', ['stays on top', 'vanishes until it changes', 'flickers', 'vanishes for good']),
+    question('H6', 'Number updates looked', ['smooth', 'steppy, fine', 'laggy']),
+    small('Save timings', () =>
+      record('H6', `text updates median ${ms(median(textTimes))} over the last ${textTimes.length}; dial re-sent ${dialSends} times`),
+    ),
+  )
+  await g2.show(overlayPage)
+  drawDial()
+  let n = 0
+  if (overlayTimer) clearInterval(overlayTimer)
+  overlayTimer = setInterval(() => {
+    if (mode !== 'overlay') {
+      if (overlayTimer) clearInterval(overlayTimer)
+      overlayTimer = null
+      return
+    }
+    g2.textArea({ id: 11, name: 'value' }).set('v', `${dialValue + (n++ % 7) - 3} bpm`)
+  }, 300)
+}
+
+function drawDial(): void {
+  g2.draw('dial', Gauge, { value: dialValue, min: 40, max: 180, text: '', label: 'heart rate' })
+}
+
 // ── gestures ──
 g2.on('*', (e) => {
   if (mode === 'swipes' && (e.type === 'next' || e.type === 'prev')) onSwipe(e.type)
   else if (mode === 'hold') {
     onHoldEvent(e.type)
     ring.handleEvent(e)
+  } else if (mode === 'overlay' && (e.type === 'next' || e.type === 'prev')) {
+    dialValue = Math.max(40, Math.min(180, dialValue + (e.type === 'next' ? 10 : -10)))
+    dialSends++
+    drawDial()
   }
 })
 
