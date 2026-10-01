@@ -30,15 +30,22 @@ export interface TextSpinnerProps {
   frame: number
   /** Frame set (default 'arrows'; 'line' with `glyphs: 'ascii'`). */
   style?: keyof typeof SPINNER_FRAMES
-  /** Text after the spinner, e.g. 'Syncing'. */
+  /** Text next to the spinner, e.g. 'Syncing'. */
   label?: string
+  /**
+   * Spinner after the label (default) or before it. The font is proportional and the frames differ in width,
+   * so a spinner before the label shifts the text on every frame (seen on G2 glasses); after it, only the
+   * spinner moves. Put it last on the line when you compose lines yourself, too.
+   */
+  position?: 'after' | 'before'
   glyphs?: TextGlyphs
 }
 
 export function renderTextSpinner(p: TextSpinnerProps): string {
   const frames = SPINNER_FRAMES[p.style ?? (p.glyphs === 'ascii' ? 'line' : 'arrows')]
   const f = frames[((Math.round(p.frame) % frames.length) + frames.length) % frames.length]
-  return p.label ? `${f} ${p.label}` : f
+  if (!p.label) return f
+  return p.position === 'before' ? `${f} ${p.label}` : `${p.label} ${f}`
 }
 
 /** Busy indicator as text: one text update per frame (~60 ms on G2), so it can animate several times a second. */
@@ -96,33 +103,51 @@ export interface TextSliderProps {
   min?: number
   max?: number
   label?: string
-  /** Track length in characters (default 12). */
+  /**
+   * Track length in characters. Default: one cell per `step` when that is at most 16 cells (so every swipe
+   * moves the knob), else 12.
+   */
   width?: number
+  /** Value change per swipe; sets the default `width`. */
+  step?: number
   /** ▶ before the label (▷ otherwise). */
   focused?: boolean
-  /** ◀ … ▶ around the track: swipes change the value. */
+  /** Swipes change the value; shown as set by `editStyle`. */
   editing?: boolean
+  /**
+   * How edit mode shows: 'arrows' (default) puts ◀ … ▶ around the track, which moves the track right by their
+   * width; 'knob' keeps the line still and draws the knob as ◆ instead of ●.
+   */
+  editStyle?: 'arrows' | 'knob'
   /** Value text (default: the number). */
   format?: (v: number) => string
   glyphs?: TextGlyphs
 }
 
+/** Most cells the default track gets from `step` (~20 px per cell in the G2 font). */
+const MAX_STEP_CELLS = 16
+
 export function renderTextSlider(p: TextSliderProps): string {
   const min = p.min ?? 0
   const max = p.max ?? 100
-  const width = Math.max(2, Math.round(p.width ?? 12))
+  const cells = p.step ? Math.round((max - min) / p.step) + 1 : 0
+  const width = Math.max(2, Math.round(p.width ?? (cells >= 2 && cells <= MAX_STEP_CELLS ? cells : 12)))
   const t = Math.max(0, Math.min(1, (p.value - min) / (max - min || 1)))
   const at = Math.round(t * (width - 1))
   const ascii = p.glyphs === 'ascii'
-  const [done, knob, todo] = ascii ? ['=', 'o', '-'] : ['━', '●', '─']
+  const knobEdit = p.editing && p.editStyle === 'knob'
+  const [done, knob, todo] = ascii ? ['=', knobEdit ? 'O' : 'o', '-'] : ['━', knobEdit ? '◆' : '●', '─']
   const track = `${done.repeat(at)}${knob}${todo.repeat(width - 1 - at)}`
   const value = (p.format ?? ((v: number) => String(Math.round(v * 100) / 100)))(p.value)
   const head = `${marker(p.focused || p.editing, p.glyphs)} ${p.label ? `${p.label} ` : ''}`
-  if (p.editing) return ascii ? `${head}< ${track} > ${value}` : `${head}◀ ${track} ▶ ${value}`
+  if (p.editing && !knobEdit) return ascii ? `${head}< ${track} > ${value}` : `${head}◀ ${track} ▶ ${value}`
   return ascii ? `${head}[${track}] ${value}` : `${head}${track} ${value}`
 }
 
-/** Slider as text, e.g. `▶ Volume ━━━━●─────── 40`; editing shows ◀ … ▶. Pair with FocusRing edit mode. */
+/**
+ * Slider as text, e.g. `▶ Volume ━━━━●─────── 40`; editing shows ◀ … ▶ (or a ◆ knob with
+ * `editStyle: 'knob'`). Pair with FocusRing edit mode.
+ */
 export const TextSlider = defineTextComponent<TextSliderProps>('TextSlider', renderTextSlider)
 
 export interface TextMenuProps {

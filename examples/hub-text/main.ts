@@ -57,8 +57,9 @@ async function showSync(): Promise<void> {
   await g2.show(page)
   g2.draw('tile', Kpi, { label: 'Synced today', value: 1284, format: 'compact', footnote: 'files' })
   const area = g2.textArea(page.text)
-  // One line with the spinner inline, then the bar, then a hint.
-  area.layout((p) => `${p.spin} ${p.title}\n${p.bar}\n\n${p.hint}`)
+  // One line with the spinner last (its frames differ in width: first, they would shift the title), then the
+  // bar, then a hint.
+  area.layout((p) => `${p.title} ${p.spin}\n${p.bar}\n\n${p.hint}`)
   area.set('title', 'Syncing photos').set('hint', 'tap: settings   double-tap: exit')
   let frame = 0
   let done = 0
@@ -77,7 +78,8 @@ async function showSync(): Promise<void> {
 const values = { volume: 40, brightness: 70, speed: 3 }
 let snapshot = { ...values }
 const SLIDERS = [
-  { id: 'volume', label: 'Volume', min: 0, max: 100, step: 5 },
+  // Steps of 10 on 0–100: 11 cells, so every swipe moves the knob (steps of 5 would need 21; the track caps at 16).
+  { id: 'volume', label: 'Volume', min: 0, max: 100, step: 10 },
   { id: 'brightness', label: 'Brightness', min: 0, max: 100, step: 10 },
   { id: 'speed', label: 'Speed', min: 1, max: 5, step: 1 },
 ] as const
@@ -114,7 +116,7 @@ function drawSettings(): void {
   const hint = ring.editing ? 'swipe: change   tap: keep   hold: undo' : done ? 'tap: back' : 'swipe: move   tap: edit'
   g2.textArea(settingsPage.boxes.head).set('t', `${done ? '▶' : '▷'} Done      ${hint}`)
   for (const s of SLIDERS)
-    g2.textArea(settingsPage.boxes[s.id]).draw('s', TextSlider, { label: s.label, value: values[s.id], min: s.min, max: s.max, width: 10, focused: ring.is(s.id) && !ring.editing, editing: ring.is(s.id) && ring.editing })
+    g2.textArea(settingsPage.boxes[s.id]).draw('s', TextSlider, { label: s.label, value: values[s.id], min: s.min, max: s.max, step: s.step, editStyle: 'knob', focused: ring.is(s.id) && !ring.editing, editing: ring.is(s.id) && ring.editing })
   g2.draw('tile', BarChart, { data: [{ label: 'Vol', value: values.volume }, { label: 'Bri', value: values.brightness }, { label: 'Spd', value: values.speed * 20 }], max: 100, valueLabels: false })
 }
 

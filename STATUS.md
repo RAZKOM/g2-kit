@@ -2,7 +2,7 @@
 
 What is done and how each part was verified.
 
-- **unit**: covered by `npm test` (288 tests in Node, no device).
+- **unit**: covered by `npm test` (289 tests in Node, no device).
 - **gallery**: rendered by `npm run gallery` and inspected by eye at 1:1 and 2×.
 - **simulator**: exercised in evenhub-simulator 0.9.5 (SDK 0.0.16) through its automation API
   (`npm run sim:check`), with screenshots and console logs checked.
@@ -51,10 +51,10 @@ What is done and how each part was verified.
 | `promptText` | ✓ type, DEL, max length, OK, cancel, abort, double-tap exits | | ✓ hub-picker: type, back to rows, OK commits, hold cancels | – |
 | `Keyboard`, `keyboardLayout`, `KeyboardState`, `typingCost` | ✓ groups by rows / columns / keys, shift, caps, layers, delete, max length, cost model | ✓ 6 samples (layers, symbols, columns, side, stack) | ✓ `hub-keyboard`: typing on QWERTY, all 6 presets incl. two-tile side and stacked; hub-picker types and commits | – |
 | `layouts.textWithSpan` (wide, tall) | ✓ | | ✓ via `hub-keyboard` (seamless across the two tiles) | – |
-| Text components (`TextSpinner`, `TextProgress`, `TextSlider`, `TextMenu`, `TextToggle`, `TextHold`; `TextToast`, `TextStatusLine`, `TextReadout`, `TextTicker` simulator only so far, `hub-text` live screen) | ✓ output snapshots; only characters the G2 font draws (`unsupportedTextChars`); deterministic | ✓ gallery text section | ✓ `hub-text` with Unicode glyphs (━ ─ ● ▶ ▷ ◀ ↗): spinner and bar animate inline; sliders in their own boxes with FocusRing edit mode | ✓ ASCII version in `hub-text` read well and the settings sliders took every swipe (user, 2026-09-30); the Unicode glyphs (━ ─ ● ▶ ▷ ◀ ↗) render correctly too |
+| Text components (`TextSpinner`, `TextProgress`, `TextSlider`, `TextMenu`, `TextToggle`, `TextHold`; `TextToast`, `TextStatusLine`, `TextReadout`, `TextTicker`; `hub-text` live screen, all read well on glasses) | ✓ output snapshots; only characters the G2 font draws (`unsupportedTextChars`); deterministic | ✓ gallery text section | ✓ `hub-text` with Unicode glyphs (━ ─ ● ▶ ▷ ◀ ↗): spinner and bar animate inline; sliders in their own boxes with FocusRing edit mode | ✓ ASCII version in `hub-text` read well and the settings sliders took every swipe (user, 2026-09-30); the Unicode glyphs (━ ─ ● ▶ ▷ ◀ ↗) render correctly too |
 | `TextArea` / `g2.textArea`, `layouts.textBoxes` | ✓ compose, skip unchanged, coalesce, reset on show; preset validation | | ✓ `hub-text`; non-capture box updates (`hub-bench` "text, own box") | ✓ a non-capture box updates in 60 ms, like the capture box (hub-bench) |
 | `hub-bench` send benchmark | | | ✓ runs; simulator round trip ~10 ms (no BLE, not meaningful) | open: H1 |
-| `hub-probe` (H3–H6) | | | ✓ probes run (`sim:check -- hub-probe ?probe=…`); H6: text over an image composites cleanly and stays on top after an image re-send | ✓ H3, H4, H4b, H5 answered; H6 open |
+| `hub-probe` (H3–H6) | | | ✓ probes run (`sim:check -- hub-probe ?probe=…`) | ✓ H3, H4, H4b, H5, H6 answered |
 | Render time | ✓ `npm run bench`: worst sample 0.8 ms warm on a desktop | | | phone WebView not measured; examples display it |
 
 ## Needs real glasses
@@ -85,6 +85,12 @@ On the user's G2 glasses and iPhone (iOS 18.7). Raw results: `examples/output/re
   ~350 ms frame, then the next). Hence `TextHold`.
 - **H4b, text hold bar**: the user: `TextHold` is "a million times better and feels reactive compared to
   img". (Qualitative; the text run's numbers were not saved.)
+- **H6, text over an image** (later the same day): a text box over a gauge tile shows cleanly, stays on top
+  through 44 re-sends of the dial, and updates smoothly (median 57 ms). The dial follows a swipe an image send
+  later than the number. Raw: `examples/output/results/hub-probe-2026-10-01T22-17-56.txt`.
+- **`hub-text` live screen and second-batch glyphs** (`■ ▲ │ ◆`): all read well. Feedback, fixed since: the
+  spinner before a label shifted the text every frame (the font is proportional and the arrows differ in
+  width); slider steps of 5 on a 12-cell track did not always move the knob; ◀ ▶ in edit mode move the track.
 - **H5, render time**: 98 samples, every render ≤ 1 ms and every PNG encode ≤ 1 ms in the iPhone WebView (timer
   resolution 1 ms). Well under the 10 ms target.
 

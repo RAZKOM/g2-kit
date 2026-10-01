@@ -269,11 +269,13 @@ exports[`text components (firmware text) > text-slider-editing (TextSlider) 1`] 
 
 exports[`text components (firmware text) > text-slider-focused (TextSlider) 1`] = `"▶ Volume ━━━━●─────── 35"`;
 
-exports[`text components (firmware text) > text-spinner (TextSpinner) 1`] = `"↗ Syncing"`;
+exports[`text components (firmware text) > text-slider-knob (TextSlider) 1`] = `"▶ Volume ━━━━◆────── 40"`;
 
-exports[`text components (firmware text) > text-spinner-ascii (TextSpinner) 1`] = `"/ Syncing"`;
+exports[`text components (firmware text) > text-spinner (TextSpinner) 1`] = `"Syncing ↗"`;
 
-exports[`text components (firmware text) > text-spinner-triangle (TextSpinner) 1`] = `"▶ Loading"`;
+exports[`text components (firmware text) > text-spinner-ascii (TextSpinner) 1`] = `"Syncing /"`;
+
+exports[`text components (firmware text) > text-spinner-triangle (TextSpinner) 1`] = `"Loading ▶"`;
 
 exports[`text components (firmware text) > text-status (TextStatusLine) 1`] = `"12:45 │ Steps 8 214 │ Bat 82%"`;
 

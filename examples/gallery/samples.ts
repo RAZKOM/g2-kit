@@ -374,6 +374,7 @@ export const TEXT_SAMPLES: TextSample[] = [
   ts('text-progress-ascii', 'Text progress: ASCII', W.TextProgress, { value: 0.4, label: 'Download', glyphs: 'ascii' }),
   ts('text-slider', 'Text slider', W.TextSlider, { label: 'Brightness', value: 60 }),
   ts('text-slider-focused', 'Text slider: focused', W.TextSlider, { label: 'Volume', value: 35, focused: true }),
+  ts('text-slider-knob', 'Text slider: edit mode, knob style, one cell per step', W.TextSlider, { label: 'Volume', value: 40, step: 10, editing: true, editStyle: 'knob' }, 'editStyle: knob keeps the line still while editing.'),
   ts('text-slider-editing', 'Text slider: edit mode', W.TextSlider, { label: 'Temp', value: 21, min: 16, max: 28, editing: true, format: (v: number) => `${v}°C` }),
   ts('text-menu', 'Text menu', W.TextMenu, { items: ['Resume', 'New game', 'Settings', 'Quit'], focus: 1 }, 'The "fake buttons" pattern: a menu with no image.'),
   ts('text-menu-checks', 'Text menu: checks, 3 of 6 visible', W.TextMenu, { items: ['Milk', 'Eggs', 'Bread', 'Coffee', 'Basil', 'Tomatoes'], focus: 3, checked: [true, true, false, false, true, false], visible: 3 }),

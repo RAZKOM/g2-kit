@@ -67,7 +67,7 @@ shows them, composing slots and sending only when the text changed. Inline, in t
 
 ```ts
 const status = g2.textArea(page.text)
-status.layout((p) => `${p.spin} ${p.title}\n${p.bar}`)
+status.layout((p) => `${p.title} ${p.spin}\n${p.bar}`)
 status.set('title', 'Syncing').draw('spin', TextSpinner, { frame }).draw('bar', TextProgress, { value: 0.4 })
 ```
 

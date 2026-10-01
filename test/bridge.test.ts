@@ -778,7 +778,7 @@ describe('TextArea / g2.textArea', () => {
     g2.textArea('status').draw('spin', TextSpinner, { frame: 1, label: 'Syncing', glyphs: 'ascii' })
     g2.textArea(page.boxes.volume).draw('v', TextSlider, { label: 'Volume', value: 40, focused: true, width: 6, glyphs: 'ascii' })
     await g2.settle()
-    expect(calls).toEqual(['text:status:/ Syncing', 'text:volume:> Volume [==o---] 40'])
+    expect(calls).toEqual(['text:status:Syncing /', 'text:volume:> Volume [==o---] 40'])
     expect(g2.textArea('status')).toBe(g2.textArea('status'))
     // The initial layout content counts as shown: an area set to the same text sends nothing.
     await g2.show(layouts.textWithTile({ text: 'hello' }))

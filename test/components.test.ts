@@ -294,6 +294,8 @@ describe('text components (firmware text)', () => {
   it('spinner frames wrap; progress clamps and fills by eighths; slider marks focus and edit mode', () => {
     expect([0, 1, 2, 3, 4, -1].map((frame) => W.renderTextSpinner({ frame, glyphs: 'ascii' }))).toEqual(['|', '/', '-', '\\', '|', '\\'])
     expect(W.renderTextSpinner({ frame: 2 })).toBe('→')
+    expect(W.renderTextSpinner({ frame: 2, label: 'Go' })).toBe('Go →')
+    expect(W.renderTextSpinner({ frame: 2, label: 'Go', position: 'before' })).toBe('→ Go')
     expect(W.renderTextProgress({ value: 1.5, width: 4 })).toBe('━━━━ 100%')
     expect(W.renderTextProgress({ value: -1, width: 4, valueText: false, glyphs: 'ascii' })).toBe('[----]')
     expect(W.renderTextProgress({ value: 0.5625, width: 2, blocks: true, valueText: false })).toBe('█▏')
@@ -302,6 +304,12 @@ describe('text components (firmware text)', () => {
     expect(W.renderTextSlider({ value: 100, width: 4, focused: true })).toBe('▶ ━━━● 100')
     expect(W.renderTextSlider({ value: 50, width: 5, editing: true, label: 'V' })).toBe('▶ V ◀ ━━●── ▶ 50')
     expect(W.renderTextSlider({ value: 50, width: 5, editing: true, label: 'V', glyphs: 'ascii' })).toBe('> V < ==o-- > 50')
+    // editStyle 'knob' keeps the line where it was: same characters as focused, ◆ for ●.
+    expect(W.renderTextSlider({ value: 50, width: 5, editing: true, editStyle: 'knob', label: 'V' })).toBe('▶ V ━━◆── 50')
+    expect(W.renderTextSlider({ value: 50, width: 5, editing: true, editStyle: 'knob', glyphs: 'ascii' })).toBe('> [==O--] 50')
+    // step sets the default width: one cell per step up to 16 cells, else 12.
+    expect(W.renderTextSlider({ value: 10, step: 10 })).toBe(`▷ ━●${'─'.repeat(9)} 10`)
+    expect(W.renderTextSlider({ value: 0, step: 5 })).toBe('▷ ●─────────── 0')
   })
 
   it('menu: focus marker, checks, a window that follows focus; toggle', () => {

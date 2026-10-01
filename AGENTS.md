@@ -26,7 +26,7 @@ Repo: github.com/RAZKOM/g2-kit · demo site: razkom.github.io/g2-kit · owner: R
 ## Commands
 
 ```
-npm test                 # 288 tests
+npm test                 # 289 tests
 npm run typecheck
 npm run gallery          # examples/output/ (PNGs, index.html, contact-sheet.png, surface-sheet.png; prints ink over budget)
 npm run docs:images      # regenerate docs/img/ incl. showcase.png (run sim:check first for sim-*.png)
@@ -74,6 +74,8 @@ npm run bench
 - Firmware text containers must fit their text (~27 px per line plus 2 × padding). One that overflows scrolls,
   shows a scroll bar, and if it is the capture container the firmware spends swipes on scrolling: gestures get
   lost (seen in the simulator with `textBoxes`).
+- The firmware font is proportional: anything whose width changes (spinner frames, ◀ ▶ markers) shifts what
+  follows it. Put changing glyphs last on a line, or swap same-width pairs (▶/▷, ●/◆).
 - The firmware font draws ASCII/Latin-1, arrows, box drawing, blocks and some shapes, but no emoji and not `…`
   or `•`: check strings with `unsupportedTextChars` (core). Text updates take up to 2000 characters, create /
   rebuild 1000.

@@ -5,17 +5,26 @@ may change APIs.
 
 ## Unreleased
 
+### New
 - **`TextHold`** (`g2-kit/widgets`): hold-to-confirm feedback as firmware text, `○ Hold to delete  ────────────`
   filling to `● Confirmed`. Drive it from `HoldToConfirm`. On G2 glasses an image ring managed ~2 frames a second
   while held; text updates take ~60 ms.
 - **`TextToast`** (`▲ Battery low`; kinds by shape: ▶ info, ● success, ▲ warning, ■ error; optional detail line),
   **`TextStatusLine`** (`12:45 │ Steps 8 214 │ Bat 82%`), **`TextReadout`** (`Heart rate  128 bpm  ↑ +4`) and
   **`TextTicker`** (a scrolling window over long text) in `g2-kit/widgets`.
+- `TextSlider`: `step` sets the default track width to one cell per step (up to 16), so every swipe moves the
+  knob; `editStyle: 'knob'` shows edit mode as a ◆ knob instead of ◀ … ▶, so the line doesn't move.
 - `hub-text` has a third screen: those four in text boxes, updating several times a second, over a chart tile
   that is re-sent only every 5 s.
 - New `hub-probe` example (`npm run dev:probe`, port 5192): hardware questions in one page. It measures render
   time on the phone, swipe throughput, long-press timing (image ring or `TextHold`) and a text box over an image
   tile (H6). Results are saved to the PC.
+- `sim:check` takes an optional query (`npm run sim:check -- hub-probe ?probe=hold`).
+
+### Changed
+- `TextSpinner` puts the spinner after its label by default (`Syncing ↗`): the font is proportional, so frames
+  of different widths before the label shifted it on every frame (seen on G2). `position: 'before'` for the old
+  order.
 
 ### Measured on G2 glasses (STATUS.md has details)
 - **Images larger than 288×144 crash the app and the glasses** (a rebuild to one 576×72 image). Keep to the
@@ -24,7 +33,9 @@ may change APIs.
 - `hold` arrives ~0.5 s after touch-down; an image progress ring updates ~2 times a second while held.
   `TextHold` felt far more reactive than the ring; use it for hold-to-confirm.
 - Rendering plus PNG encoding takes ≤ 1 ms per gallery sample in an iPhone WebView.
-- `sim:check` takes an optional query (`npm run sim:check -- hub-probe ?probe=hold`).
+- A firmware text box over an image tile shows cleanly and stays on top when the image is re-sent (H6), so a
+  picture drawn once can carry live numbers as text.
+- The new text components and their glyphs (`■ ▲ │ ◆`) read well on the glasses.
 
 ## 0.3.0 (2026-09-30)
 
