@@ -379,4 +379,8 @@ export const TEXT_SAMPLES: TextSample[] = [
   ts('text-menu-checks', 'Text menu: checks, 3 of 6 visible', W.TextMenu, { items: ['Milk', 'Eggs', 'Bread', 'Coffee', 'Basil', 'Tomatoes'], focus: 3, checked: [true, true, false, false, true, false], visible: 3 }),
   ts('text-toggle', 'Text toggle: on, focused', W.TextToggle, { on: true, label: 'Wi-Fi', focused: true }),
   ts('text-toggle-off', 'Text toggle: off', W.TextToggle, { on: false, label: 'Alerts' }),
+  ts('text-hold', 'Text hold-to-confirm: idle', W.TextHold, { progress: 0, label: 'Hold to delete' }, 'Drive it from HoldToConfirm; ~10 updates/s as text vs ~2 as an image.'),
+  ts('text-hold-holding', 'Text hold-to-confirm: holding', W.TextHold, { progress: 0.55, label: 'Hold to delete' }),
+  ts('text-hold-done', 'Text hold-to-confirm: done', W.TextHold, { progress: 1, done: true, doneLabel: 'Deleted' }),
+  ts('text-hold-ascii', 'Text hold-to-confirm: ASCII', W.TextHold, { progress: 0.55, label: 'Hold to delete', glyphs: 'ascii' }),
 ]

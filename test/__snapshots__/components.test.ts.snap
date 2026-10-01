@@ -230,6 +230,14 @@ exports[`outline surface > toast-error: less ink, inside its rect, PNG snapshot 
 
 exports[`outline surface > toggle-on: less ink, inside its rect, PNG snapshot 1`] = `"961ca92938a97b53"`;
 
+exports[`text components (firmware text) > text-hold (TextHold) 1`] = `"○ Hold to delete  ────────────"`;
+
+exports[`text components (firmware text) > text-hold-ascii (TextHold) 1`] = `"[~] Hold to delete  [#######-----]"`;
+
+exports[`text components (firmware text) > text-hold-done (TextHold) 1`] = `"● Deleted"`;
+
+exports[`text components (firmware text) > text-hold-holding (TextHold) 1`] = `"● Hold to delete  ━━━━━━━─────"`;
+
 exports[`text components (firmware text) > text-menu (TextMenu) 1`] = `
 "▷ Resume
 ▶ New game

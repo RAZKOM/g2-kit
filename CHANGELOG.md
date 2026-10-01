@@ -3,6 +3,23 @@
 All notable changes to g2-kit. This project follows [semver](https://semver.org/); until 1.0, minor versions
 may change APIs.
 
+## Unreleased
+
+- **`TextHold`** (`g2-kit/widgets`): hold-to-confirm feedback as firmware text, `○ Hold to delete  ────────────`
+  filling to `● Confirmed`. Drive it from `HoldToConfirm`. On G2 glasses an image ring managed ~2 frames a second
+  while held; text updates take ~60 ms.
+- New `hub-probe` example (`npm run dev:probe`, port 5192): hardware questions in one page. It measures render
+  time on the phone, swipe throughput and long-press timing (image ring or `TextHold`). Results are saved to the PC.
+
+### Measured on G2 glasses (STATUS.md has details)
+- **Images larger than 288×144 crash the app and the glasses** (a rebuild to one 576×72 image). Keep to the
+  limit; PageBuilder enforces it.
+- Fast swipes all arrive (fastest ~260 ms apart); tiles coalesce to the latest state.
+- `hold` arrives ~0.5 s after touch-down; an image progress ring updates ~2 times a second while held.
+  `TextHold` felt far more reactive than the ring; use it for hold-to-confirm.
+- Rendering plus PNG encoding takes ≤ 1 ms per gallery sample in an iPhone WebView.
+- `sim:check` takes an optional query (`npm run sim:check -- hub-probe ?probe=hold`).
+
 ## 0.3.0 (2026-09-30)
 
 ### New

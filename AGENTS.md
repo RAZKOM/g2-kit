@@ -26,12 +26,12 @@ Repo: github.com/RAZKOM/g2-kit · demo site: razkom.github.io/g2-kit · owner: R
 ## Commands
 
 ```
-npm test                 # 255 tests
+npm test                 # 280 tests
 npm run typecheck
 npm run gallery          # examples/output/ (PNGs, index.html, contact-sheet.png, surface-sheet.png; prints ink over budget)
 npm run docs:images      # regenerate docs/img/ incl. showcase.png (run sim:check first for sim-*.png)
 npm run build:site       # site/ (gallery + in-browser demos), then npm run preview:site
-npm run dev:<name>       # quickstart | dashboard | picker | game | calibrate | lens | bench | keyboard | text
+npm run dev:<name>       # quickstart | dashboard | picker | game | calibrate | lens | bench | keyboard | text | probe
 npm run sim -- <url>     # launch evenhub-simulator (npx evenhub-simulator does not resolve here)
 npm run sim:check -- hub-dashboard   # headless: replay gestures via the simulator's automation API
 npm run bench
@@ -53,6 +53,8 @@ npm run bench
 - Prefer switching views inside one layout: `G2.show()` skips identical-layout rebuilds. A rebuild to four
   full-size images once left the right lens empty on real glasses (STATUS.md).
 - One gesture should cost one tile send (~350 ms each on glasses, measured; STATUS.md). Put swipe-reactive UI on its own tile.
+- Feedback that must track a gesture live (hold progress, value readouts) goes in firmware text, not a tile: a
+  text update takes ~60 ms. On glasses, `TextHold` felt far more reactive than an image ring (STATUS.md, H4b).
 - Honesty rule: never mark anything "verified on glasses" unless the user tested it on hardware. Levels:
   unit / gallery / simulator / glasses (STATUS.md).
 - Published PNGs (docs, site) use `deflate`; tiles sent to the glasses stay uncompressed (SDK compresses).
@@ -62,7 +64,8 @@ npm run bench
 - Vite dev servers must pre-bundle the SDK (`optimizeDeps.include` in `examples/vite.shared.ts`), or the
   dynamic import can 504 and the page hangs on "Connecting…".
 - `hub-lens` must force rebuilds (`g2.show(page, { rebuild: 'always' })`), since `show()` now skips them.
-- Simulator 0.9.5 does not enforce the 288×144 image limit; hardware may. Don't trust oversized tiles.
+- Images over 288×144 crash the app and the G2 glasses (a rebuild to one 576×72 image, 2026-10-01). Never get
+  around PageBuilder's limit. Simulator 0.9.5 refuses such a rebuild instead, so it won't warn you.
 - Simulator screenshots are RGBA with level 0 transparent; `docs-images.ts` flattens them onto black.
 - awesome-lint on Windows: run `npx awesome-lint README.md` (no-arg form misreads the path).
 - Example dev servers use the example folder as Vite root: anything shared (CSS, TS) must be imported from a

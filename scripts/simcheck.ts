@@ -3,6 +3,7 @@
  * glasses screenshots and the console log.
  *
  *   npm run sim:check -- hub-dashboard
+ *   npm run sim:check -- hub-probe ?probe=hold     (a query overrides the scenario's)
  *
  * Output: examples/output/sim/<example>-<step>.png and <example>-console.txt.
  * Needs @evenrealities/evenhub-simulator (devDependency) for this platform.
@@ -71,13 +72,26 @@ const SCENARIOS: Record<string, { port: number; steps: Step[]; query?: string }>
   // Text sweep, 8 frames per run: an image progress bar, the same progress as firmware text, then in a text box of its own; the console has the numbers.
   'hub-bench': { port: 5188, query: '?sweep=text&frames=8', steps: [W(3500), S('start'), I('click'), W(6000), S('run1'), I('click'), W(1000), S('text-run'), W(5000), S('run2'), I('click'), W(4000), S('own-box')] },
   // Native list: swipes move the firmware highlight (expect no events), tap reports the index.
+  // Hardware probe: one input script for every probe (each ignores the gestures it doesn't use); pick the probe by
+  // query: ?probe=render | swipes | hold, plus &hold=text for the text bar.
+  'hub-probe': {
+    port: 5192,
+    query: '?probe=hold&hold=text',
+    steps: [
+      W(4000), S('start'), I('down'), W(150), I('down'), W(150), I('down'), W(150), I('down'), W(150), I('down'), W(1500), S('swiped'),
+      I('long_press'), W(800), S('holding'), W(1200), S('held'), I('long_press_release'), W(800), S('released'),
+    ],
+  },
   'hub-quickstart': { port: 5186, steps: [W(3500), S('start'), I('down'), W(800), S('list-moved'), I('click'), W(1500), I('up'), W(600), I('click'), W(1500), S('refreshed'), I('down'), W(500), I('down'), W(500), I('down'), W(500), I('down'), W(800), I('click'), W(1500), S('after-exit')] },
 }
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const name = process.argv[2] ?? 'hub-dashboard'
-const sc = SCENARIOS[name]
-if (!sc) throw new Error(`unknown example ${name}; have ${Object.keys(SCENARIOS).join(', ')}`)
+const found = SCENARIOS[name]
+if (!found) throw new Error(`unknown example ${name}; have ${Object.keys(SCENARIOS).join(', ')}`)
+const sc = process.argv[3] ? { ...found, query: process.argv[3] } : found
+/** Output file prefix: the example, plus the query's values when one was given on the command line. */
+const tag = process.argv[3] ? `${name}-${[...new URLSearchParams(process.argv[3]).values()].join('-').replace(/[^\w-]/g, '')}` : name
 const out = join(root, 'examples', 'output', 'sim')
 mkdirSync(out, { recursive: true })
 const API = 'http://127.0.0.1:9898/api'
@@ -123,17 +137,17 @@ for (const step of sc.steps) {
     if (!r.ok) throw new Error(`input ${step.input} failed: ${r.status}`)
   } else {
     const png = new Uint8Array(await (await fetch(`${API}/screenshot/glasses`)).arrayBuffer())
-    const file = join(out, `${name}-${step.shot}.png`)
+    const file = join(out, `${tag}-${step.shot}.png`)
     writeFileSync(file, png)
     shots.push(file)
   }
 }
 const log = (await (await fetch(`${API}/console`)).json()) as { entries: Array<{ level: string; message: string }> }
 const lines = log.entries.filter((e) => !e.message.includes('ShadowTimers')).map((e) => `${e.level}\t${e.message}`)
-writeFileSync(join(out, `${name}-console.txt`), lines.join('\n'))
+writeFileSync(join(out, `${tag}-console.txt`), lines.join('\n'))
 // The simulator's own Tauri IPC sometimes falls back to postMessage at startup; that is not an app error.
 const errors = lines.filter((l) => (l.startsWith('error') || l.includes('[uncaught]') || l.includes('[unhandledrejection]')) && !l.includes('http://ipc.localhost/'))
-console.log(`${name}: ${shots.length} screenshots, ${lines.length} console lines, ${errors.length} errors → ${out}`)
+console.log(`${tag}: ${shots.length} screenshots, ${lines.length} console lines, ${errors.length} errors → ${out}`)
 if (errors.length) console.log(errors.join('\n'))
 kill()
 process.exit(errors.length ? 1 : 0)

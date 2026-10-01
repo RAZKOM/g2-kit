@@ -1,6 +1,6 @@
 /**
  * Text components (strings for firmware text containers, see core/textComponent):
- * spinner, progress bar, slider, menu, toggle.
+ * spinner, progress bar, slider, menu, toggle, hold-to-confirm.
  *
  * Default glyphs are the box-drawing, block and shape characters the G2
  * firmware font draws (━ ─ █ ● ○ ▶ ▷ ← ↑); `glyphs: 'ascii'` falls back to
@@ -175,3 +175,33 @@ export function renderTextToggle(p: TextToggleProps): string {
 
 /** Toggle as text: `▶ Wi-Fi  ● On` / `▷ Wi-Fi  ○ Off`. */
 export const TextToggle = defineTextComponent<TextToggleProps>('TextToggle', renderTextToggle)
+
+export interface TextHoldProps {
+  /** 0–1 while held (HoldToConfirm's `onProgress`). */
+  progress: number
+  /** What holding does (default 'Hold to confirm'). */
+  label?: string
+  /** Confirmed: shows `doneLabel` instead of the bar. */
+  done?: boolean
+  doneLabel?: string
+  /** Bar length in characters (default 12). */
+  width?: number
+  glyphs?: TextGlyphs
+}
+
+export function renderTextHold(p: TextHoldProps): string {
+  const ascii = p.glyphs === 'ascii'
+  if (p.done) return `${ascii ? '[x]' : '●'} ${p.doneLabel ?? 'Confirmed'}`
+  const holding = p.progress > 0
+  // Glyphs checked on G2 glasses only (● ○ ━ ─); ◉ and the eighth blocks are blank in the simulator.
+  const mark = ascii ? (holding ? '[~]' : '[ ]') : holding ? '●' : '○'
+  const bar = renderTextProgress({ value: p.progress, width: p.width ?? 12, valueText: false, glyphs: p.glyphs })
+  return `${mark} ${p.label ?? 'Hold to confirm'}  ${bar}`
+}
+
+/**
+ * Hold-to-confirm feedback as text: `○ Hold to delete  ────────────`, filling (`●`, `━━━━━━──────`) while held, then
+ * `● Confirmed`. Drive it from `HoldToConfirm`'s `onProgress` / `onConfirm`. A text update takes ~60 ms on G2,
+ * so the bar can move ~10 times a second; an image ring managed ~2 (hub-probe H4).
+ */
+export const TextHold = defineTextComponent<TextHoldProps>('TextHold', renderTextHold)

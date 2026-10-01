@@ -2,7 +2,7 @@
 
 What is done and how each part was verified.
 
-- **unit**: covered by `npm test` (255 tests in Node, no device).
+- **unit**: covered by `npm test` (280 tests in Node, no device).
 - **gallery**: rendered by `npm run gallery` and inspected by eye at 1:1 and 2×.
 - **simulator**: exercised in evenhub-simulator 0.9.5 (SDK 0.0.16) through its automation API
   (`npm run sim:check`), with screenshots and console logs checked.
@@ -42,7 +42,7 @@ What is done and how each part was verified.
 | create → rebuild fallback after a WebView reload | ✓ | | not driven | WordLens reports |
 | Double-tap → `shutDownPageContainer(1)` | ✓ | | ✓ | – |
 | FocusRing, edit mode | ✓ | | ✓ (time picker: enter, adjust, commit) | – |
-| HoldToConfirm | ✓ (fake timers) | | not driven | open: LONG_PRESS timing |
+| HoldToConfirm | ✓ (fake timers) | | ✓ hub-probe (image ring and `TextHold`) | ✓ `hold` ~0.5 s after touch; image ring ~2 frames/s, "in steps, fine"; `TextHold` feels reactive, far better than the ring (hub-probe H4, H4b) |
 | TapConfirm, PagedList, HybridSkeleton | ✓ | | not driven | – |
 | Every chart and widget (98 gallery samples) | ✓ smoke + PNG snapshot | ✓ | components used by the examples ✓ | – |
 | Ink metric (`inkRatio`), budget test (25 %, listed exceptions) | ✓ | ✓ ink in captions, contact sheet, bench | | – |
@@ -51,21 +51,42 @@ What is done and how each part was verified.
 | `promptText` | ✓ type, DEL, max length, OK, cancel, abort, double-tap exits | | ✓ hub-picker: type, back to rows, OK commits, hold cancels | – |
 | `Keyboard`, `keyboardLayout`, `KeyboardState`, `typingCost` | ✓ groups by rows / columns / keys, shift, caps, layers, delete, max length, cost model | ✓ 6 samples (layers, symbols, columns, side, stack) | ✓ `hub-keyboard`: typing on QWERTY, all 6 presets incl. two-tile side and stacked; hub-picker types and commits | – |
 | `layouts.textWithSpan` (wide, tall) | ✓ | | ✓ via `hub-keyboard` (seamless across the two tiles) | – |
-| Text components (`TextSpinner`, `TextProgress`, `TextSlider`, `TextMenu`, `TextToggle`) | ✓ output snapshots; only characters the G2 font draws (`unsupportedTextChars`); deterministic | ✓ gallery text section | ✓ `hub-text` with Unicode glyphs (━ ─ ● ▶ ▷ ◀ ↗): spinner and bar animate inline; sliders in their own boxes with FocusRing edit mode | ✓ ASCII version in `hub-text` read well and the settings sliders took every swipe (user, 2026-09-30); the Unicode glyphs (━ ─ ● ▶ ▷ ◀ ↗) render correctly too |
+| Text components (`TextSpinner`, `TextProgress`, `TextSlider`, `TextMenu`, `TextToggle`, `TextHold`) | ✓ output snapshots; only characters the G2 font draws (`unsupportedTextChars`); deterministic | ✓ gallery text section | ✓ `hub-text` with Unicode glyphs (━ ─ ● ▶ ▷ ◀ ↗): spinner and bar animate inline; sliders in their own boxes with FocusRing edit mode | ✓ ASCII version in `hub-text` read well and the settings sliders took every swipe (user, 2026-09-30); the Unicode glyphs (━ ─ ● ▶ ▷ ◀ ↗) render correctly too |
 | `TextArea` / `g2.textArea`, `layouts.textBoxes` | ✓ compose, skip unchanged, coalesce, reset on show; preset validation | | ✓ `hub-text`; non-capture box updates (`hub-bench` "text, own box") | ✓ a non-capture box updates in 60 ms, like the capture box (hub-bench) |
 | `hub-bench` send benchmark | | | ✓ runs; simulator round trip ~10 ms (no BLE, not meaningful) | open: H1 |
+| `hub-probe` (H3–H5) | | | ✓ probes run (`sim:check -- hub-probe ?probe=…`) | ✓ H3, H4, H4b, H5 answered |
 | Render time | ✓ `npm run bench`: worst sample 0.8 ms warm on a desktop | | | phone WebView not measured; examples display it |
 
 ## Needs real glasses
 
 1. ~~Brightness levels~~: done; defaults confirmed (see DESIGN.md).
-2. Long-press timing: how soon `hold` arrives and whether `HoldToConfirm` progress looks smooth.
-3. Swipe throughput while tiles are sending (fast swipes on the carousel).
-4. Render time per tile in the phone WebView (shown on every example page).
+2. ~~Long-press timing~~: `hold` arrives ~0.5 s after touch; an image ring moves in steps; the `TextHold` text bar feels reactive (below).
+3. ~~Swipe throughput~~: swipes arrive and frames coalesce (below).
+4. ~~Render time per tile~~: ≤ 1 ms per sample on an iPhone (below).
 5. ~~Raw Gray8 / packed Gray4 image data~~: all four formats display correctly; none is faster (below).
 6. ~~Font readability~~: all four text rows on the card read comfortably.
 7. ~~Image send speed~~: measured 2026-09-30, see "Image send speed on glasses" below.
    What drives the send time was measured too (H1b, below).
+
+## Hardware probe (hub-probe, 2026-10-01)
+
+On the user's G2 glasses and iPhone (iOS 18.7). Raw results: `examples/output/results/hub-probe-2026-10-01T21-37-53.txt`.
+
+- **H2, images over 288×144: they crash the app and the glasses.** The page rebuilt to one 576×72 image (plus a
+  blank text capture container) right after a 288×144 control case; the app and the glasses crashed. The
+  simulator refuses the same rebuild (`rebuildPageContainer` returns false). Never bypass PageBuilder's limit.
+- **H3, swipes**: three runs of 20 fast swipes with a tile redrawn per swipe: 16, 19 and 20 events counted. The
+  user saw every swipe counted, so the first run is probably a miscount. Fastest gap between events ~260 ms,
+  median 320–400 ms. Frames coalesce as intended: swipes that land while a tile is sending show only the last
+  count. (Swipes in the user's "forward" direction arrived as `prev`.)
+- **H4, long press (image ring, 1.5 s)**: the user estimates `hold` arrives ~0.5 s after touch-down. While held,
+  the ring asked for 29 redraws and 3 tiles went out (~2 per second): "in steps, fine". Letting go "sometimes
+  late". Shortest hold → release: 350 ms. The user's reading: the delay is built in (hold event, then one
+  ~350 ms frame, then the next). Hence `TextHold`.
+- **H4b, text hold bar**: the user: `TextHold` is "a million times better and feels reactive compared to
+  img". (Qualitative; the text run's numbers were not saved.)
+- **H5, render time**: 98 samples, every render ≤ 1 ms and every PNG encode ≤ 1 ms in the iPhone WebView (timer
+  resolution 1 ms). Well under the 10 ms target.
 
 ## Image send speed on glasses (H1, 2026-09-30)
 
