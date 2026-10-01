@@ -2,7 +2,7 @@
 
 What is done and how each part was verified.
 
-- **unit**: covered by `npm test` (280 tests in Node, no device).
+- **unit**: covered by `npm test` (288 tests in Node, no device).
 - **gallery**: rendered by `npm run gallery` and inspected by eye at 1:1 and 2×.
 - **simulator**: exercised in evenhub-simulator 0.9.5 (SDK 0.0.16) through its automation API
   (`npm run sim:check`), with screenshots and console logs checked.
@@ -51,7 +51,7 @@ What is done and how each part was verified.
 | `promptText` | ✓ type, DEL, max length, OK, cancel, abort, double-tap exits | | ✓ hub-picker: type, back to rows, OK commits, hold cancels | – |
 | `Keyboard`, `keyboardLayout`, `KeyboardState`, `typingCost` | ✓ groups by rows / columns / keys, shift, caps, layers, delete, max length, cost model | ✓ 6 samples (layers, symbols, columns, side, stack) | ✓ `hub-keyboard`: typing on QWERTY, all 6 presets incl. two-tile side and stacked; hub-picker types and commits | – |
 | `layouts.textWithSpan` (wide, tall) | ✓ | | ✓ via `hub-keyboard` (seamless across the two tiles) | – |
-| Text components (`TextSpinner`, `TextProgress`, `TextSlider`, `TextMenu`, `TextToggle`, `TextHold`) | ✓ output snapshots; only characters the G2 font draws (`unsupportedTextChars`); deterministic | ✓ gallery text section | ✓ `hub-text` with Unicode glyphs (━ ─ ● ▶ ▷ ◀ ↗): spinner and bar animate inline; sliders in their own boxes with FocusRing edit mode | ✓ ASCII version in `hub-text` read well and the settings sliders took every swipe (user, 2026-09-30); the Unicode glyphs (━ ─ ● ▶ ▷ ◀ ↗) render correctly too |
+| Text components (`TextSpinner`, `TextProgress`, `TextSlider`, `TextMenu`, `TextToggle`, `TextHold`; `TextToast`, `TextStatusLine`, `TextReadout`, `TextTicker` simulator only so far, `hub-text` live screen) | ✓ output snapshots; only characters the G2 font draws (`unsupportedTextChars`); deterministic | ✓ gallery text section | ✓ `hub-text` with Unicode glyphs (━ ─ ● ▶ ▷ ◀ ↗): spinner and bar animate inline; sliders in their own boxes with FocusRing edit mode | ✓ ASCII version in `hub-text` read well and the settings sliders took every swipe (user, 2026-09-30); the Unicode glyphs (━ ─ ● ▶ ▷ ◀ ↗) render correctly too |
 | `TextArea` / `g2.textArea`, `layouts.textBoxes` | ✓ compose, skip unchanged, coalesce, reset on show; preset validation | | ✓ `hub-text`; non-capture box updates (`hub-bench` "text, own box") | ✓ a non-capture box updates in 60 ms, like the capture box (hub-bench) |
 | `hub-bench` send benchmark | | | ✓ runs; simulator round trip ~10 ms (no BLE, not meaningful) | open: H1 |
 | `hub-probe` (H3–H5) | | | ✓ probes run (`sim:check -- hub-probe ?probe=…`) | ✓ H3, H4, H4b, H5 answered |

@@ -259,6 +259,10 @@ exports[`text components (firmware text) > text-progress-blocks (TextProgress) 1
 
 exports[`text components (firmware text) > text-progress-count (TextProgress) 1`] = `"Reps ━━━━━━━─── 7/10"`;
 
+exports[`text components (firmware text) > text-readout (TextReadout) 1`] = `"Heart rate  128 bpm  ↑ +4"`;
+
+exports[`text components (firmware text) > text-readout-focused (TextReadout) 1`] = `"▶ Pace  5.25 min/km  ↓ -0.10"`;
+
 exports[`text components (firmware text) > text-slider (TextSlider) 1`] = `"▷ Brightness ━━━━━━━●──── 60"`;
 
 exports[`text components (firmware text) > text-slider-editing (TextSlider) 1`] = `"▶ Temp ◀ ━━━━━●────── ▶ 21°C"`;
@@ -270,6 +274,19 @@ exports[`text components (firmware text) > text-spinner (TextSpinner) 1`] = `"�
 exports[`text components (firmware text) > text-spinner-ascii (TextSpinner) 1`] = `"/ Syncing"`;
 
 exports[`text components (firmware text) > text-spinner-triangle (TextSpinner) 1`] = `"▶ Loading"`;
+
+exports[`text components (firmware text) > text-status (TextStatusLine) 1`] = `"12:45 │ Steps 8 214 │ Bat 82%"`;
+
+exports[`text components (firmware text) > text-ticker (TextTicker) 1`] = `"p in 5 min, room 4B. Then: desig"`;
+
+exports[`text components (firmware text) > text-toast (TextToast) 1`] = `"▲ Battery low"`;
+
+exports[`text components (firmware text) > text-toast-ascii (TextToast) 1`] = `"[+] Saved"`;
+
+exports[`text components (firmware text) > text-toast-detail (TextToast) 1`] = `
+"■ Sync failed
+   Tap to retry"
+`;
 
 exports[`text components (firmware text) > text-toggle (TextToggle) 1`] = `"▶ Wi-Fi  ● On"`;
 

@@ -383,4 +383,11 @@ export const TEXT_SAMPLES: TextSample[] = [
   ts('text-hold-holding', 'Text hold-to-confirm: holding', W.TextHold, { progress: 0.55, label: 'Hold to delete' }),
   ts('text-hold-done', 'Text hold-to-confirm: done', W.TextHold, { progress: 1, done: true, doneLabel: 'Deleted' }),
   ts('text-hold-ascii', 'Text hold-to-confirm: ASCII', W.TextHold, { progress: 0.55, label: 'Hold to delete', glyphs: 'ascii' }),
+  ts('text-toast', 'Text toast: warning', W.TextToast, { message: 'Battery low', kind: 'warning' }, 'Kinds by shape: ▶ info, ● success, ▲ warning, ■ error.'),
+  ts('text-toast-detail', 'Text toast: error with detail', W.TextToast, { message: 'Sync failed', kind: 'error', detail: 'Tap to retry' }),
+  ts('text-toast-ascii', 'Text toast: ASCII', W.TextToast, { message: 'Saved', kind: 'success', glyphs: 'ascii' }),
+  ts('text-status', 'Text status line', W.TextStatusLine, { items: ['12:45', { label: 'Steps', value: '8 214' }, { label: 'Bat', value: '82%' }] }),
+  ts('text-readout', 'Text readout with delta', W.TextReadout, { label: 'Heart rate', value: 128, unit: 'bpm', delta: 4 }, 'Live values as text; pair with a tile drawn once.'),
+  ts('text-readout-focused', 'Text readout: decimals, focused', W.TextReadout, { label: 'Pace', value: 5.25, unit: 'min/km', decimals: 2, delta: -0.1, focused: true }),
+  ts('text-ticker', 'Text ticker', W.TextTicker, { text: 'Next: Standup in 5 min, room 4B. Then: design review at 11:00.', offset: 12, width: 32 }, 'A window that moves one character per update.'),
 ]

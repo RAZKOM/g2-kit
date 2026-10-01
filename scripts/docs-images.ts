@@ -83,6 +83,7 @@ const SIM: Record<string, string> = {
   'sim-keyboard-side.png': 'hub-keyboard-side.png',
   'sim-text-inline.png': 'hub-text-sync.png',
   'sim-text-sliders.png': 'hub-text-editing.png',
+  'sim-text-live.png': 'hub-text-live-later.png',
   'sim-game.png': 'hub-game-later.png',
   'sim-calibration.png': 'hub-calibrate-card.png',
 }

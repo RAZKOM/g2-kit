@@ -1,6 +1,6 @@
 /**
  * Text components (strings for firmware text containers, see core/textComponent):
- * spinner, progress bar, slider, menu, toggle, hold-to-confirm.
+ * spinner, progress bar, slider, menu, toggle, hold-to-confirm, toast, status line, readout, ticker.
  *
  * Default glyphs are the box-drawing, block and shape characters the G2
  * firmware font draws (━ ─ █ ● ○ ▶ ▷ ← ↑); `glyphs: 'ascii'` falls back to
@@ -205,3 +205,103 @@ export function renderTextHold(p: TextHoldProps): string {
  * so the bar can move ~10 times a second; an image ring managed ~2 (hub-probe H4).
  */
 export const TextHold = defineTextComponent<TextHoldProps>('TextHold', renderTextHold)
+
+export type TextToastKind = 'info' | 'success' | 'warning' | 'error'
+
+/** One shape per kind, so the kind reads without colour: ▶ info, ● success, ▲ warning, ■ error. */
+const TOAST_MARK: Record<TextToastKind, { unicode: string; ascii: string }> = {
+  info: { unicode: '▶', ascii: '[i]' },
+  success: { unicode: '●', ascii: '[+]' },
+  warning: { unicode: '▲', ascii: '[!]' },
+  error: { unicode: '■', ascii: '[x]' },
+}
+
+export interface TextToastProps {
+  message: string
+  kind?: TextToastKind
+  /** Second line, e.g. what to do next. */
+  detail?: string
+  glyphs?: TextGlyphs
+}
+
+export function renderTextToast(p: TextToastProps): string {
+  const mark = TOAST_MARK[p.kind ?? 'info'][p.glyphs === 'ascii' ? 'ascii' : 'unicode']
+  return p.detail ? `${mark} ${p.message}\n   ${p.detail}` : `${mark} ${p.message}`
+}
+
+/** Notification as text: `▲ Battery low` (kinds by shape: ▶ info, ● success, ▲ warning, ■ error). Give it a box sized to its lines. */
+export const TextToast = defineTextComponent<TextToastProps>('TextToast', renderTextToast)
+
+export type TextStatusItem = string | { label: string; value: string | number }
+
+export interface TextStatusLineProps {
+  items: readonly TextStatusItem[]
+  /** Between items (default ' │ ', ASCII ' | '). */
+  separator?: string
+  glyphs?: TextGlyphs
+}
+
+export function renderTextStatusLine(p: TextStatusLineProps): string {
+  const sep = p.separator ?? (p.glyphs === 'ascii' ? ' | ' : ' │ ')
+  return p.items.map((it) => (typeof it === 'string' ? it : `${it.label} ${it.value}`)).join(sep)
+}
+
+/** Status bar as one line of text: `12:45 │ Steps 8 214 │ Bat 82%`. The font is proportional, so items don't line up in columns. */
+export const TextStatusLine = defineTextComponent<TextStatusLineProps>('TextStatusLine', renderTextStatusLine)
+
+export interface TextReadoutProps {
+  value: number | string
+  label?: string
+  unit?: string
+  /** Decimals for a numeric value (default: as given). */
+  decimals?: number
+  /** Change since the last reading: shown signed with an arrow (↑ ↓ →). */
+  delta?: number
+  /** ▶ before the label (▷ otherwise), for readouts in a FocusRing. */
+  focused?: boolean
+  glyphs?: TextGlyphs
+}
+
+export function renderTextReadout(p: TextReadoutProps): string {
+  const ascii = p.glyphs === 'ascii'
+  const value = typeof p.value === 'number' && p.decimals !== undefined ? p.value.toFixed(p.decimals) : String(p.value)
+  let out = `${p.label ? `${p.label}  ` : ''}${value}${p.unit ? ` ${p.unit}` : ''}`
+  if (p.delta !== undefined) {
+    const d = p.decimals !== undefined ? Math.abs(p.delta).toFixed(p.decimals) : String(Math.abs(p.delta))
+    const arrow = p.delta > 0 ? (ascii ? '^' : '↑') : p.delta < 0 ? (ascii ? 'v' : '↓') : ascii ? '=' : '→'
+    out += `  ${arrow} ${p.delta > 0 ? '+' : p.delta < 0 ? '-' : '±'}${d}`
+  }
+  return p.focused === undefined ? out : `${marker(p.focused, p.glyphs)} ${out}`
+}
+
+/** Live value as text: `Heart rate  128 bpm  ↑ +4`. Cheap to update (~60 ms), e.g. over a tile drawn once. */
+export const TextReadout = defineTextComponent<TextReadoutProps>('TextReadout', renderTextReadout)
+
+export interface TextTickerProps {
+  text: string
+  /** Scroll position in characters; increase it by one per update (wraps). */
+  offset: number
+  /** Characters shown (default 40). */
+  width?: number
+  /** Between the end of the text and its start again (default '   ◆   ', ASCII '   *   '). */
+  gap?: string
+}
+
+export function renderTextTicker(p: TextTickerProps): string {
+  const width = Math.max(1, Math.round(p.width ?? 40))
+  const chars = [...p.text]
+  if (chars.length <= width) return p.text
+  const loop = [...chars, ...[...(p.gap ?? '   ◆   ')]]
+  const n = loop.length
+  const start = ((Math.round(p.offset) % n) + n) % n
+  let out = ''
+  for (let i = 0; i < width; i++) out += loop[(start + i) % n]
+  return out
+}
+
+/**
+ * Scrolling text: a window of `width` characters that moves by `offset`. Text that fits is shown still. One
+ * update per step (~60 ms on G2); 3–5 steps a second reads well. The font is proportional, so the line's width
+ * changes a little as it scrolls.
+ */
+export const TextTicker = defineTextComponent<TextTickerProps>('TextTicker', renderTextTicker)

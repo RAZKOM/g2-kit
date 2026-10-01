@@ -26,7 +26,7 @@ Repo: github.com/RAZKOM/g2-kit · demo site: razkom.github.io/g2-kit · owner: R
 ## Commands
 
 ```
-npm test                 # 280 tests
+npm test                 # 288 tests
 npm run typecheck
 npm run gallery          # examples/output/ (PNGs, index.html, contact-sheet.png, surface-sheet.png; prints ink over budget)
 npm run docs:images      # regenerate docs/img/ incl. showcase.png (run sim:check first for sim-*.png)

@@ -8,6 +8,11 @@ may change APIs.
 - **`TextHold`** (`g2-kit/widgets`): hold-to-confirm feedback as firmware text, `○ Hold to delete  ────────────`
   filling to `● Confirmed`. Drive it from `HoldToConfirm`. On G2 glasses an image ring managed ~2 frames a second
   while held; text updates take ~60 ms.
+- **`TextToast`** (`▲ Battery low`; kinds by shape: ▶ info, ● success, ▲ warning, ■ error; optional detail line),
+  **`TextStatusLine`** (`12:45 │ Steps 8 214 │ Bat 82%`), **`TextReadout`** (`Heart rate  128 bpm  ↑ +4`) and
+  **`TextTicker`** (a scrolling window over long text) in `g2-kit/widgets`.
+- `hub-text` has a third screen: those four in text boxes, updating several times a second, over a chart tile
+  that is re-sent only every 5 s.
 - New `hub-probe` example (`npm run dev:probe`, port 5192): hardware questions in one page. It measures render
   time on the phone, swipe throughput and long-press timing (image ring or `TextHold`). Results are saved to the PC.
 

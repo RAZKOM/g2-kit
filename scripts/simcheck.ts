@@ -52,13 +52,13 @@ const SCENARIOS: Record<string, { port: number; steps: Step[]; query?: string }>
     ],
   },
   // Text components: the sync screen animates (two shots 1 s apart), tap → settings, edit volume (+2 steps),
-  // keep it, move to Done, back to sync.
+  // keep it, move to Done, on to the live screen (two shots 3 s apart), tap back to sync.
   'hub-text': {
     port: 5191,
     steps: [
       W(3500), S('sync'), W(1000), S('sync-later'), I('click'), W(2500), S('settings'),
       I('click'), W(600), I('down'), W(500), I('down'), W(800), S('editing'), I('click'), W(800), S('kept'),
-      I('down'), W(500), I('down'), W(500), I('down'), W(800), S('on-done'), I('click'), W(2500), S('back-to-sync'),
+      I('down'), W(500), I('down'), W(500), I('down'), W(800), S('on-done'), I('click'), W(2500), S('live'), W(3000), S('live-later'), I('click'), W(2500), S('back-to-sync'),
     ],
   },
   'hub-game': {

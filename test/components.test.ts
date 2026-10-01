@@ -312,4 +312,19 @@ describe('text components (firmware text)', () => {
     expect(W.renderTextToggle({ on: true, label: 'Wi-Fi', focused: true })).toBe('▶ Wi-Fi  ● On')
     expect(W.renderTextToggle({ on: false, glyphs: 'ascii' })).toBe('  [ ] Off')
   })
+
+  it('hold, toast, status line, readout, ticker', () => {
+    expect(W.renderTextHold({ progress: 0, label: 'Go', width: 4 })).toBe('○ Go  ────')
+    expect(W.renderTextHold({ progress: 0.5, label: 'Go', width: 4, glyphs: 'ascii' })).toBe('[~] Go  [##--]')
+    expect(W.renderTextHold({ progress: 1, done: true })).toBe('● Confirmed')
+    expect(W.renderTextToast({ message: 'Hi' })).toBe('▶ Hi')
+    expect(W.renderTextToast({ message: 'No', kind: 'error', detail: 'Retry', glyphs: 'ascii' })).toBe('[x] No\n   Retry')
+    expect(W.renderTextStatusLine({ items: ['a', { label: 'b', value: 1 }], glyphs: 'ascii' })).toBe('a | b 1')
+    expect(W.renderTextReadout({ value: 3, delta: 0 })).toBe('3  → ±0')
+    expect(W.renderTextReadout({ value: 1.234, decimals: 1, delta: -0.25, glyphs: 'ascii' })).toBe('1.2  v -0.3')
+    expect(W.renderTextReadout({ value: 'OK', label: 'Link', focused: false })).toBe('▷ Link  OK')
+    expect(W.renderTextTicker({ text: 'short', offset: 3, width: 10 })).toBe('short')
+    // 'abcdef' + gap '|' loops every 7 characters, negative offsets included.
+    expect([0, 5, 7, -1].map((offset) => W.renderTextTicker({ text: 'abcdef', offset, width: 4, gap: '|' }))).toEqual(['abcd', 'f|ab', 'abcd', '|abc'])
+  })
 })

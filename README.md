@@ -20,7 +20,7 @@ example apps running in your browser (on-screen gesture buttons stand in for the
 | **Input controls** (14) | `g2-kit/widgets` | `Keyboard` (QWERTY / QWERTZ / AZERTY / ABC, configurable, see below) · `Carousel` · `Button` · `ButtonRow` · `Toggle` · `SegmentedControl` · `Slider` · `Roller` · `TimePicker` · `DatePicker` · `Checklist` · `StatusKeyboard` · `GridKeyboard` (ABC / T9) · `Rating` |
 | **Text, feedback & chrome** (14) | `g2-kit/widgets` | `BigText` · `ProgressBar` · `Toast` · `Modal` · `Tabs` · `PaginationDots` · `ScrollIndicator` · `StatusBar` · `HudFrame` · `Ticker` · `Table` · `Card` · `Badge` · `Spinner` |
 | **Data faces** (5) | `g2-kit/widgets` | `AnalogClock` · `TimerRing` · `CompassStrip` · `TurnArrow` · `WeatherGlyph` |
-| **Text components** (6) | `g2-kit/widgets` | `TextSpinner` · `TextProgress` · `TextSlider` · `TextMenu` · `TextToggle` · `TextHold`: strings for firmware text containers, no image send (see below) |
+| **Text components** (10) | `g2-kit/widgets` | `TextSpinner` · `TextProgress` · `TextSlider` · `TextMenu` · `TextToggle` · `TextHold` · `TextToast` · `TextStatusLine` · `TextReadout` · `TextTicker`: strings for firmware text containers, no image send (see below) |
 | **Game kit** (4) | `g2-kit/widgets` | `GridBoard` (word games, Sudoku, 2048, tic-tac-toe) · `ScoreHud` · `Dice` · `HealthBar`, plus `SpriteSheet` / `drawSprite` |
 | **Icons** (56) | `g2-kit/icons` | Vector icons for 8 / 12 / 16 px, incl. 10 weather conditions |
 | **Layouts** (9) | `g2-kit/bridge` | `textBoxes` · `twoTilesWithList` · `twoTilesWithControl` · `dashboardQuad` · `heroSidebar` · `fullScreen` · `menuPage` · `textWithTile` · `textWithSpan` |
@@ -75,7 +75,10 @@ Or one per container, e.g. a settings page of sliders with `layouts.textBoxes`. 
 fits (~27 px per line plus padding): an overflowing box scrolls, and the capture box then eats swipes.
 
 The firmware font has no grey levels or sizes and is proportional, but it draws box drawing, blocks and shapes, so
-the components look drawn: `Download ━━━━━━━━──────────── 40%`, `▶ Volume ━━━━●─────── 40`, `▶ Wi-Fi  ● On`.
+the components look drawn: `Download ━━━━━━━━──────────── 40%`, `▶ Volume ━━━━●─────── 40`, `▶ Wi-Fi  ● On`,
+`▲ Battery low`, `Heart rate  128 bpm  ↑ +4`. For live values over a picture, draw the picture on a tile once
+and put the numbers in a text box: each update then costs ~60 ms instead of a tile send. For hold-to-confirm,
+`TextHold` felt far more reactive on the glasses than an image ring.
 `glyphs: 'ascii'` falls back to `[####----]`. `unsupportedTextChars(text)` lists characters the glasses can't draw
 (emoji, `…`, `•`), and `g2.textArea` warns about them. Try it with `npm run dev:text`.
 
@@ -88,6 +91,8 @@ the components look drawn: `Download ━━━━━━━━──────�
 | ![](docs/img/sim-time-picker.png) | ![](docs/img/sim-keyboard.png) | ![](docs/img/sim-game.png) |
 | **Text components inline (no image sends)** | **A text slider per text box** | **Keyboard, symbols beside (2 tiles)** |
 | ![](docs/img/sim-text-inline.png) | ![](docs/img/sim-text-sliders.png) | ![](docs/img/sim-keyboard-side.png) |
+| **Live text boxes over a slow chart tile** | | |
+| ![](docs/img/sim-text-live.png) | | |
 
 ## The idea: skeleton input + image UI
 
@@ -151,7 +156,7 @@ No quantisation, framebuffer, PNG or send-locking code: `g2.draw` renders, diffs
 | `g2-kit/bridge` | `connect()` / `G2` (incl. `g2.modal()` to hand gestures to a prompt), `ImageQueue` (serial, coalescing, rebuild-aware, typed errors), `PageBuilder` (validated layouts), 9 `layouts` presets, `g2.textArea()`, event normaliser, retained `Surface`. The SDK is a peer dependency, imported only inside `connect()`. |
 | `g2-kit/input` | Skeleton presets, `PagedList` (> 20 items through a native list), `HybridSkeleton`, `FocusRing` with edit mode, `HoldToConfirm`, `TapConfirm`, `promptText` (`const name = await promptText(g2, { label: 'Name' })`: keyboard page, resolves the text or null). |
 | `g2-kit/charts` | Bar, line, sparkline, KPI, gauge, grouped/stacked bars, pie/donut, progress rings, heatmap, calendar heatmap, funnel, bullet, timeline, legend; waffle, scatter, histogram, box plot, candlestick. |
-| `g2-kit/widgets` | Configurable keyboard (`keyboardLayout`, `KeyboardState`, `typingCost`); text components (`TextSpinner`, `TextProgress`, `TextSlider`, `TextMenu`, `TextToggle`, `TextHold`); carousel, buttons, toggle, segmented, slider, roller, time/date pickers, checklist, status and grid keyboards, progress, big text, toast, modal, tabs, dots, scroll indicator, status bar, HUD frame, ticker, clock, timer ring, compass, turn arrow, grid board, score HUD; table, card, badge, spinner, weather glyph, rating, dice, health bar, sprite sheets. |
+| `g2-kit/widgets` | Configurable keyboard (`keyboardLayout`, `KeyboardState`, `typingCost`); text components (`TextSpinner`, `TextProgress`, `TextSlider`, `TextMenu`, `TextToggle`, `TextHold`, `TextToast`, `TextStatusLine`, `TextReadout`, `TextTicker`); carousel, buttons, toggle, segmented, slider, roller, time/date pickers, checklist, status and grid keyboards, progress, big text, toast, modal, tabs, dots, scroll indicator, status bar, HUD frame, ticker, clock, timer ring, compass, turn arrow, grid board, score HUD; table, card, badge, spinner, weather glyph, rating, dice, health bar, sprite sheets. |
 | `g2-kit/icons` | 56 vector icons tuned for 8, 12 and 16 px, incl. 10 weather conditions. |
 
 Every component has the same contract and is a pure function of its props:
