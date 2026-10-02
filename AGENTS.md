@@ -77,7 +77,7 @@ npm run bench
   also scrolled a little and bounced back on every swipe: keep swipe-heavy screens on a blank skeleton and put
   text in non-capture boxes.
 - Fullwidth characters (`Ｑ` … `Ｚ`, `［ ］`, ideographic space `　`) are monospaced in the firmware font: 20 px
-  per character from x = 0 (padding 0), lines 27 px apart (simulator; glasses: ROADMAP H7). Text containers
+  per character from x = 0 (padding 0), lines 27 px apart (simulator, and lined up on G2 glasses: ROADMAP H7). Text containers
   can't move: an update changes content (and whole-box brightness) only.
 - The firmware font is proportional: anything whose width changes (spinner frames, ◀ ▶ markers) shifts what
   follows it. Put changing glyphs last on a line, or swap same-width pairs (▶/▷, ●/◆).
