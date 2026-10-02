@@ -261,3 +261,54 @@ export function textBoxes<K extends string>(
   if (o.tile) b.image({ id: 1, name: 'tile', x: Math.round((CANVAS_W - o.tile.w) / 2), y: CANVAS_H - o.tile.h, w: o.tile.w, h: o.tile.h })
   return { ...withMenu(b, o).build<'tile'>(), boxes }
 }
+
+/**
+ * 10. Text keyboard: typed text above a keyboard made of firmware text on the G2 text grid, over key frames
+ * drawn on a two-tile span (see `TextKeyboard`, `TextKeyboardFrames`). Swipes and taps go to a blank skeleton
+ * under everything: a capture box holding text scrolls and bounces on every swipe on G2. `lines` is the
+ * keyboard's height in lines (`grid.lines`, at most 5); the keyboard box sits at the bottom, centred, padding 0.
+ * ```
+ * +-------------------------------------+
+ * | text: typed text, hints             |
+ * |   ［ｑ］ｗ　ｅ　ｒ　ｔ　ｙ …           |  keyboard text (keys box)
+ * | s0 (frames)      | s1 (frames)      |  span, y 144–288
+ * +-------------------------------------+
+ * ```
+ * `origin` is where the keys box starts, relative to `span` (the `TextKeyboardFrames` prop).
+ */
+export function textKeyboard(
+  o: PresetOptions & { lines: number; cols?: number; text?: string; padding?: number; textColor?: number },
+): SpanPage<'s0' | 's1'> & { text: { id: number; name: string }; keys: { id: number; name: string }; origin: { x: number; y: number } } {
+  const cols = o.cols ?? 28
+  const grid = { cell: 20, line: 27 }
+  // Frames reach 2 px above a line's glyphs; they must stay on the span (y >= 144).
+  const maxLines = Math.floor((CANVAS_H - 6 - TH) / grid.line)
+  if (o.lines < 1 || o.lines > maxLines) throw new RangeError(`a text keyboard of ${o.lines} lines does not fit; 1–${maxLines}`)
+  if (cols * grid.cell > CANVAS_W) throw new RangeError(`${cols} cells are ${cols * grid.cell} px; ${CANVAS_W} px fit`)
+  const keys = { x: Math.round((CANVAS_W - cols * grid.cell) / 2), y: CANVAS_H - 6 - o.lines * grid.line, w: cols * grid.cell, h: 6 + o.lines * grid.line }
+  const span = { x: 0, y: TH, w: CANVAS_W, h: TH }
+  const b = new PageBuilder()
+    .text(blankTextSkeleton({ x: 0, y: 0, w: CANVAS_W, h: CANVAS_H }, { id: SKELETON_ID }))
+    .image({ id: 1, name: 's0', x: 0, y: TH, w: TW, h: TH })
+    .image({ id: 2, name: 's1', x: TW, y: TH, w: TW, h: TH })
+    .text({
+      id: SKELETON_ID + 1,
+      name: 'text',
+      x: 0,
+      y: 0,
+      w: CANVAS_W,
+      h: keys.y,
+      content: o.text ?? ' ',
+      border: { width: 0 },
+      padding: o.padding ?? 8,
+      ...(o.textColor !== undefined ? { textColor: o.textColor } : {}),
+    })
+    .text({ id: SKELETON_ID + 2, name: 'keys', ...keys, content: ' ', border: { width: 0 }, padding: 0 })
+  return {
+    ...withMenu(b, o).build<'s0' | 's1'>(),
+    span,
+    text: { id: SKELETON_ID + 1, name: 'text' },
+    keys: { id: SKELETON_ID + 2, name: 'keys' },
+    origin: { x: keys.x - span.x, y: keys.y - span.y },
+  }
+}

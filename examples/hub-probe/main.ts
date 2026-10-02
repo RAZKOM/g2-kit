@@ -392,7 +392,8 @@ function drawDial(): void {
 // are fullwidth letters, brackets and the ideographic space one width (a monospaced grid in a proportional
 // font)? What are the line pitch and the left edge? The answers decide whether a text layer can line up with
 // a drawn keyboard.
-const FONT_LINES = [
+// `&lines=a|b|c` replaces the test lines (up to 6), e.g. to measure glyph widths against the grid.
+const FONT_LINES = new URLSearchParams(location.search).get('lines')?.split('|').slice(0, 6) ?? [
   'ＱＷＥＲＴＹＵＩＯＰ',
   '　Ｑ　［Ｗ］　Ｅ　　Ｒ',
   '［Ｑ］［Ｗ］［Ｅ］',

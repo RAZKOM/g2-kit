@@ -164,6 +164,8 @@ exports[`every gallery sample: smoke + PNG snapshot > tabs (Tabs, P1) 1`] = `"6b
 
 exports[`every gallery sample: smoke + PNG snapshot > tabs-boxed (Tabs, P1) 1`] = `"eb89cc65819e4bdf"`;
 
+exports[`every gallery sample: smoke + PNG snapshot > text-keyboard-frames (TextKeyboardFrames, P1) 1`] = `"d8c0c6ddd4760a33"`;
+
 exports[`every gallery sample: smoke + PNG snapshot > ticker (Ticker, P1) 1`] = `"fbb84fb4cf748ef6"`;
 
 exports[`every gallery sample: smoke + PNG snapshot > time-picker (TimePicker, P1) 1`] = `"44b4a3d74dfe1832"`;
@@ -237,6 +239,20 @@ exports[`text components (firmware text) > text-hold-ascii (TextHold) 1`] = `"[~
 exports[`text components (firmware text) > text-hold-done (TextHold) 1`] = `"● Deleted"`;
 
 exports[`text components (firmware text) > text-hold-holding (TextHold) 1`] = `"● Hold to delete  ━━━━━━━─────"`;
+
+exports[`text components (firmware text) > text-keyboard (TextKeyboard) 1`] = `
+"　　　　Ｑ　Ｗ　Ｅ　Ｒ　Ｔ　Ｙ　Ｕ　Ｉ　Ｏ　Ｐ　
+　　　　　Ａ　Ｓ　Ｄ［Ｆ］Ｇ　Ｈ　Ｊ　Ｋ　Ｌ　　
+　　　　　　　Ｚ　Ｘ　Ｃ　Ｖ　Ｂ　Ｎ　Ｍ　　　　
+　　　　　　▲　？１２３　＿＿＿　◀　ＯＫ　　　"
+`;
+
+exports[`text components (firmware text) > text-keyboard-row (TextKeyboard) 1`] = `
+"　　　［ｑ　ｗ　ｅ　ｒ　ｔ　ｙ　ｕ　ｉ　ｏ　ｐ］
+　　　　　ａ　ｓ　ｄ　ｆ　ｇ　ｈ　ｊ　ｋ　ｌ　　
+　　　　　　　ｚ　ｘ　ｃ　ｖ　ｂ　ｎ　ｍ　　　　
+　　　　　　△　？１２３　＿＿＿　◀　ＯＫ　　　"
+`;
 
 exports[`text components (firmware text) > text-menu (TextMenu) 1`] = `
 "▷ Resume

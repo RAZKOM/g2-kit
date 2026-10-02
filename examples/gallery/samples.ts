@@ -5,6 +5,7 @@
 import type { Component, Size, TextComponent } from '../../src/core/index.js'
 import * as C from '../../src/charts/index.js'
 import * as W from '../../src/widgets/index.js'
+import { layouts } from '../../src/bridge/index.js'
 
 export interface Sample {
   id: string
@@ -16,6 +17,10 @@ export interface Sample {
   size?: Size
   note?: string
 }
+
+/** The default QWERTY keyboard on the text grid, as `promptText` shows it. */
+const TEXT_KB = W.textKeyboardGrid(W.keyboardLayout())
+const TEXT_KB_PAGE = layouts.textKeyboard({ lines: TEXT_KB.lines })
 
 const s = <P,>(id: string, title: string, group: Sample['group'], priority: Sample['priority'], component: Component<P>, props: P, size?: Size, note?: string): Sample => ({
   id,
@@ -250,6 +255,7 @@ export const SAMPLES: Sample[] = [
   }),
   s('grid-keyboard', 'ABC grid keyboard', 'controls', 'P1', W.GridKeyboard, { row: 1, col: 3, text: 'HELLO WOR' }),
   s('grid-keyboard-rows', 'T9 keyboard: row focus', 'controls', 'P1', W.GridKeyboard, { rows: W.T9_ROWS, row: 2, col: -1 }),
+  s('text-keyboard-frames', 'Text keyboard: key frames (the image under TextKeyboard)', 'controls', 'P1', W.TextKeyboardFrames, { grid: TEXT_KB, origin: TEXT_KB_PAGE.origin }, { w: 576, h: 144 }, 'Drawn once; the letters and focus are firmware text on top.'),
   s('keyboard', 'Keyboard: QWERTY, choosing a row', 'controls', 'P1', W.Keyboard, { layout: W.keyboardLayout(), group: 1 }),
   s('keyboard-key', 'Keyboard: key focus, shift once', 'controls', 'P1', W.Keyboard, { layout: W.keyboardLayout(), group: 0, key: 4, shift: 'once' }),
   s('keyboard-symbols', 'Keyboard: symbols layer', 'controls', 'P1', W.Keyboard, { layout: W.keyboardLayout(), view: 1, group: 3, key: 1 }),
@@ -365,6 +371,8 @@ export interface TextSample {
 const ts = <P,>(id: string, title: string, component: TextComponent<P>, props: P, note?: string): TextSample => ({ id, title, component, props, note })
 
 export const TEXT_SAMPLES: TextSample[] = [
+  ts('text-keyboard', 'Text keyboard: key focus, shift once', W.TextKeyboard, { grid: TEXT_KB, group: 1, key: 3, shift: 'once' }, 'Fullwidth text on the G2 grid over TextKeyboardFrames; a focus move is one text update.'),
+  ts('text-keyboard-row', 'Text keyboard: choosing a row', W.TextKeyboard, { grid: TEXT_KB, group: 0 }),
   ts('text-spinner', 'Text spinner: arrows', W.TextSpinner, { frame: 1, label: 'Syncing' }, 'Frames ↑ ↗ → ↘ ↓ ↙ ← ↖; one text update per frame.'),
   ts('text-spinner-triangle', 'Text spinner: triangle', W.TextSpinner, { frame: 1, style: 'triangle', label: 'Loading' }),
   ts('text-spinner-ascii', 'Text spinner: ASCII', W.TextSpinner, { frame: 1, glyphs: 'ascii', label: 'Syncing' }),

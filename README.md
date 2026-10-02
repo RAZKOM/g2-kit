@@ -20,10 +20,10 @@ example apps running in your browser (on-screen gesture buttons stand in for the
 | **Input controls** (14) | `g2-kit/widgets` | `Keyboard` (QWERTY / QWERTZ / AZERTY / ABC, configurable, see below) · `Carousel` · `Button` · `ButtonRow` · `Toggle` · `SegmentedControl` · `Slider` · `Roller` · `TimePicker` · `DatePicker` · `Checklist` · `StatusKeyboard` · `GridKeyboard` (ABC / T9) · `Rating` |
 | **Text, feedback & chrome** (14) | `g2-kit/widgets` | `BigText` · `ProgressBar` · `Toast` · `Modal` · `Tabs` · `PaginationDots` · `ScrollIndicator` · `StatusBar` · `HudFrame` · `Ticker` · `Table` · `Card` · `Badge` · `Spinner` |
 | **Data faces** (5) | `g2-kit/widgets` | `AnalogClock` · `TimerRing` · `CompassStrip` · `TurnArrow` · `WeatherGlyph` |
-| **Text components** (10) | `g2-kit/widgets` | `TextSpinner` · `TextProgress` · `TextSlider` · `TextMenu` · `TextToggle` · `TextHold` · `TextToast` · `TextStatusLine` · `TextReadout` · `TextTicker`: strings for firmware text containers, no image send (see below) |
+| **Text components** (11) | `g2-kit/widgets` | `TextSpinner` · `TextProgress` · `TextSlider` · `TextMenu` · `TextToggle` · `TextHold` · `TextToast` · `TextStatusLine` · `TextReadout` · `TextTicker` · `TextKeyboard` (+ `TextKeyboardFrames`): strings for firmware text containers, no image send (see below) |
 | **Game kit** (4) | `g2-kit/widgets` | `GridBoard` (word games, Sudoku, 2048, tic-tac-toe) · `ScoreHud` · `Dice` · `HealthBar`, plus `SpriteSheet` / `drawSprite` |
 | **Icons** (56) | `g2-kit/icons` | Vector icons for 8 / 12 / 16 px, incl. 10 weather conditions |
-| **Layouts** (9) | `g2-kit/bridge` | `textBoxes` · `twoTilesWithList` · `twoTilesWithControl` · `dashboardQuad` · `heroSidebar` · `fullScreen` · `menuPage` · `textWithTile` · `textWithSpan` |
+| **Layouts** (10) | `g2-kit/bridge` | `textBoxes` · `twoTilesWithList` · `twoTilesWithControl` · `dashboardQuad` · `heroSidebar` · `fullScreen` · `menuPage` · `textWithTile` · `textWithSpan` · `textKeyboard` |
 | **Input** | `g2-kit/input` | `blankTextSkeleton` · `listSkeleton` · `PagedList` · `HybridSkeleton` · `FocusRing` (with edit mode) · `TapConfirm` · `HoldToConfirm` · `promptText` (one-call text entry) |
 
 Previews use the brightness curve measured in evenhub-simulator 0.9.5, which matched G2 glasses by eye.
@@ -59,6 +59,14 @@ const text = await promptText(g2, { keyboard: { letters: 'azerty', panels: 'side
 rows ≈ 5.1 gestures per character, columns ≈ 5.5, one line of keys ≈ 9.4; ABC rows ≈ 4.8. `KeyboardState` is the
 headless state machine if you draw your own page. Try every option with `npm run dev:keyboard`.
 
+`promptText` shows a **text keyboard** by default: the keys are firmware text on the G2 text grid, over key frames
+drawn once as an image, so moving the focus is a ~60 ms text update instead of a ~350 ms image send (on the
+glasses it feels instant). The firmware font is proportional, but fullwidth characters (`Ｑ`, `ｑ`, `１`, `［`,
+the ideographic space) and some shapes are all 20 px wide on 27 px lines (`TEXT_GRID`, `toFullwidth` in core),
+so text can line up with drawings. Focus swaps the spacers around a key for `［ ］`: nothing on the line moves.
+Layouts wider than the grid (symbols beside the letters) fall back to the drawn `Keyboard`; `style: 'drawn'`
+asks for it. `TextKeyboard`, `TextKeyboardFrames` and `layouts.textKeyboard` build your own.
+
 ### Text components
 
 A firmware text update took ~60 ms on G2 glasses vs ~260 ms for an image send (STATUS.md), so readouts that
@@ -87,7 +95,7 @@ and put the numbers in a text box: each update then costs ~60 ms instead of a ti
 | Dashboard: swipe moves focus | Tap: one chart across 4 tiles | Carousel typing |
 |---|---|---|
 | ![](docs/img/sim-dashboard.png) | ![](docs/img/sim-detail.png) | ![](docs/img/sim-carousel.png) |
-| **Time picker in edit mode** | **Keyboard tile + firmware text** | **Tic-tac-toe** |
+| **Time picker in edit mode** | **Text keyboard: text over drawn key frames** | **Tic-tac-toe** |
 | ![](docs/img/sim-time-picker.png) | ![](docs/img/sim-keyboard.png) | ![](docs/img/sim-game.png) |
 | **Text components inline (no image sends)** | **A text slider per text box** | **Keyboard, symbols beside (2 tiles)** |
 | ![](docs/img/sim-text-inline.png) | ![](docs/img/sim-text-sliders.png) | ![](docs/img/sim-keyboard-side.png) |

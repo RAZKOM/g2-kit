@@ -1,6 +1,10 @@
 /**
  * One-call text entry. `promptText` rebuilds to a page with a firmware text
  * container that shows what has been typed (updates cost no image send) and a
+ * keyboard. By default that is a text keyboard (`layouts.textKeyboard`): the
+ * keys are firmware text over key frames drawn once, so moving the focus is a
+ * ~60 ms text update instead of a ~350 ms image send. Layouts too wide for the
+ * text grid (symbols beside the letters) and `style: 'drawn'` use the drawn
  * `Keyboard`: one tile (`layouts.textWithTile`), or two tiles
  * (`layouts.textWithSpan`) when the symbols sit beside or below the letters.
  * While it runs, `g2.modal` gives it the gestures; double-tap still reaches
@@ -12,8 +16,9 @@
  */
 import type { G2Event } from '../bridge/events.js'
 import type { G2 } from '../bridge/g2.js'
-import { textWithSpan, textWithTile } from '../bridge/layouts.js'
+import { textKeyboard, textWithSpan, textWithTile } from '../bridge/layouts.js'
 import { Keyboard, KeyboardState, keyboardLayout, type KeyboardLayout, type KeyboardOptions } from '../widgets/keyboard.js'
+import { TextKeyboardFrames, renderTextKeyboard, textKeyboardGrid, type TextKeyboardGrid } from '../widgets/textKeyboard.js'
 
 export interface PromptTextOptions {
   /** Starting text (default ''). */
@@ -26,7 +31,12 @@ export interface PromptTextOptions {
   keyboard?: KeyboardLayout | KeyboardOptions
   /** Gesture hints under the text (default true). */
   hints?: boolean
-  /** Keyboard at the bottom (default) or top; for a tall keyboard, left (default) or right. */
+  /**
+   * 'text' (default): keys as firmware text over drawn frames, focus moves without image sends; falls back
+   * to 'drawn' when the layout does not fit the text grid (28 cells, 5 lines). 'drawn': the `Keyboard` image.
+   */
+  style?: 'text' | 'drawn'
+  /** Drawn keyboard: at the bottom (default) or top; for a tall keyboard, left (default) or right. */
   keyboardAt?: 'top' | 'bottom' | 'left' | 'right'
   /** Resolve with null when aborted (e.g. a timeout). */
   signal?: AbortSignal
@@ -46,10 +56,20 @@ export function promptText(g2: G2, opts: PromptTextOptions = {}): Promise<string
   const layout = opts.keyboard && isLayout(opts.keyboard) ? opts.keyboard : keyboardLayout(opts.keyboard)
   const kb = new KeyboardState(layout, { text: opts.value, maxLength: opts.maxLength ?? 60 })
   const at = opts.keyboardAt
+  let grid: TextKeyboardGrid | null = null
+  if (opts.style !== 'drawn') {
+    try {
+      grid = textKeyboardGrid(layout, { maxLines: 5 })
+    } catch {
+      grid = null // too wide or tall for the text grid: draw it instead
+    }
+  }
+  const textPage = grid ? textKeyboard({ lines: grid.lines, text: content() }) : null
   const page =
-    layout.panels === 'layers'
+    textPage ??
+    (layout.panels === 'layers'
       ? textWithTile({ text: content(), tileAt: at === 'top' ? 'top' : 'bottom' })
-      : textWithSpan({ span: layout.panels === 'side' ? 'wide' : 'tall', spanAt: at, text: content() })
+      : textWithSpan({ span: layout.panels === 'side' ? 'wide' : 'tall', spanAt: at, text: content() }))
 
   function content(): string {
     const line = `${opts.label ? `${opts.label}: ` : '> '}${kb.text}_`
@@ -64,7 +84,12 @@ export function promptText(g2: G2, opts: PromptTextOptions = {}): Promise<string
     return `${line}\n\n${hint}`
   }
   const drawKeys = () => {
-    if ('span' in page) g2.drawSpan(page.span, Keyboard, kb.props)
+    if (textPage && grid) {
+      // Focus and case: one text update. Frames: re-sent only when their pixels change (view, shift lock).
+      const { view, group, key, shift } = kb.props
+      g2.textArea(textPage.keys).set('k', renderTextKeyboard({ grid, view, group, key, shift }))
+      g2.drawSpan(textPage.span, TextKeyboardFrames, { grid, view, shift, origin: textPage.origin })
+    } else if ('span' in page) g2.drawSpan(page.span, Keyboard, kb.props)
     else g2.draw(page.tiles.tile, Keyboard, kb.props)
   }
   let shown = content()

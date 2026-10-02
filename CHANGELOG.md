@@ -6,6 +6,17 @@ may change APIs.
 ## Unreleased
 
 ### New
+- **Text keyboard, now `promptText`'s default.** Keys are firmware text on the G2 text grid over key frames drawn
+  once; a focus move is one ~60 ms text update, no image send ("this keyboard is amazing", on G2 glasses).
+  `textKeyboardGrid(layout)` places any layered `keyboardLayout` (QWERTY, QWERTZ, AZERTY, ABC, digit row, column
+  scans, custom labels) on the grid; `TextKeyboard` (text component) and `TextKeyboardFrames` (the image) draw it;
+  `layouts.textKeyboard` is the page (blank capture skeleton, typed-text box, keys box, two frame tiles).
+  Action keys: △ ▲ ■ shift, □ ■ caps, ？１２３ / ａｂｃ, ＿＿＿ space, ◀ delete, ＯＫ, ＥＳＣ. Too wide for the
+  grid (symbols beside the letters) falls back to the drawn `Keyboard`; `style: 'drawn'` asks for it.
+- **Text grid** (core): `TEXT_GRID` (20 px cells, 27 px lines), `GRID_SPACE`, `GRID_SHAPES`, `isGridChar`,
+  `toFullwidth`. Fullwidth ASCII, the ideographic space and ⇒ ▲ △ ▶ ▷ ◀ ◁ ▼ ▽ ● ○ ◎ ◆ ◇ ■ □ ★ ※ ┃ measured at
+  20 px; arrows are not (← → 17 px, ↑ ↓ ↗ 14 px).
+- `hub-probe` H7 (`?probe=font`, `&lines=` to measure your own glyphs).
 - **`TextHold`** (`g2-kit/widgets`): hold-to-confirm feedback as firmware text, `○ Hold to delete  ────────────`
   filling to `● Confirmed`. Drive it from `HoldToConfirm`. On G2 glasses an image ring managed ~2 frames a second
   while held; text updates take ~60 ms.
@@ -22,6 +33,7 @@ may change APIs.
 - `sim:check` takes an optional query (`npm run sim:check -- hub-probe ?probe=hold`).
 
 ### Changed
+- `promptText` uses the text keyboard unless the layout doesn't fit the grid or `style: 'drawn'` is set.
 - `TextSpinner` puts the spinner after its label by default (`Syncing ↗`): the font is proportional, so frames
   of different widths before the label shifted it on every frame (seen on G2). `position: 'before'` for the old
   order.

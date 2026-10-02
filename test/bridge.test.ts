@@ -669,9 +669,39 @@ describe('promptText', () => {
   // Rows: [a b c] [d e f] [space delete submit].
   const tiny = { letters: ['abc', 'def'], symbols: false, actions: ['space', 'delete', 'submit'] } as const
 
-  it('rebuilds to text + one tile, types into the text container, resolves the text on submit', async () => {
+  it('text keyboard (default): focus moves are text updates only, the frames are drawn once', async () => {
     const { g2, calls, flush, send } = await setup()
     const result = promptText(g2, { value: 'a', label: 'Name', keyboard: tiny })
+    await flush()
+    // Skeleton, two frame tiles, the typed-text box and the keys box; the frames go out once.
+    expect(calls[0]).toBe('rebuild:5')
+    expect(calls.filter((c) => c.startsWith('img:')).sort()).toEqual(['img:s0', 'img:s1'])
+    const keys = (cs: string[]) => cs.filter((c) => c.startsWith('text:keys:')).map((c) => c.slice('text:keys:'.length))
+    expect(keys(calls).at(-1)!.split('\n')[0]).toMatch(/［ａ　ｂ　ｃ］/) // row 0 chosen
+    calls.length = 0
+    // Row 1, open it (d), next key (e), type it: no image sends at all.
+    await send(next, tap, next)
+    expect(calls.filter((c) => c.startsWith('img:'))).toEqual([])
+    expect(keys(calls).at(-1)!.split('\n')[1]).toContain('［ｅ］')
+    await send(tap)
+    expect(calls.filter((c) => c.startsWith('text:text:')).at(-1)).toContain('Name: ae_')
+    await send(next, tap, next, next, tap)
+    await expect(result).resolves.toBe('ae')
+    expect(g2.hasModal).toBe(false)
+  })
+
+  it('text keyboard falls back to the drawn one when the layout is too wide', async () => {
+    const { g2, calls, flush, send } = await setup()
+    const result = promptText(g2, { keyboard: { panels: 'side' } })
+    await flush()
+    expect(calls[0]).toBe('rebuild:3') // textWithSpan
+    await send(hold)
+    await expect(result).resolves.toBeNull()
+  })
+
+  it('rebuilds to text + one tile, types into the text container, resolves the text on submit', async () => {
+    const { g2, calls, flush, send } = await setup()
+    const result = promptText(g2, { value: 'a', label: 'Name', keyboard: tiny, style: 'drawn' })
     await flush()
     expect(calls).toEqual(['rebuild:2', 'img:tile'])
     calls.length = 0
@@ -688,7 +718,7 @@ describe('promptText', () => {
 
   it('delete stays on its key, maxLength caps typing, space types a space', async () => {
     const { g2, calls, flush, send } = await setup()
-    const result = promptText(g2, { value: 'abc', maxLength: 3, hints: false, keyboard: tiny })
+    const result = promptText(g2, { value: 'abc', maxLength: 3, hints: false, keyboard: tiny, style: 'drawn' })
     await flush()
     await send(tap, tap) // row 0, key a: already at maxLength
     expect(texts(calls)).toEqual([])
