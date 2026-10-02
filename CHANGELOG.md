@@ -3,7 +3,7 @@
 All notable changes to g2-kit. This project follows [semver](https://semver.org/); until 1.0, minor versions
 may change APIs.
 
-## Unreleased
+## 0.4.0 (2026-10-01)
 
 ### New
 - **Text keyboard, now `promptText`'s default.** Keys are firmware text on the G2 text grid over key frames drawn

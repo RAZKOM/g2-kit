@@ -1,4 +1,4 @@
-# STATUS (v0.1.0)
+# STATUS (v0.4.0)
 
 What is done and how each part was verified.
 
