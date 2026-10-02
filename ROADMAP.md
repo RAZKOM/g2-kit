@@ -2,7 +2,7 @@
 
 Prioritised work after 0.3.0. Each item says how to verify it. Hardware items need the user's G2 glasses;
 prepare the example, then ask the user to run it (`npm run dev:<name>` + `npx evenhub qr --port <port>`).
-H3–H6 are in `hub-probe` (`npm run dev:probe`, port 5192): one page, results saved to the PC.
+H3–H7 are in `hub-probe` (`npm run dev:probe`, port 5192): one page, results saved to the PC.
 
 ## 1. Hardware verification (open questions)
 
@@ -20,6 +20,7 @@ H3–H6 are in `hub-probe` (`npm run dev:probe`, port 5192): one page, results s
 | H5 | ~~Phone render time per tile (target < 10 ms)~~ | **Answered 2026-10-01** (hub-probe H5, iPhone, iOS 18.7): every gallery sample renders in ≤ 1 ms and PNG-encodes in ≤ 1 ms (WebKit's timer resolution is 1 ms). Rendering is not a bottleneck. |
 | H4b | ~~Does a text hold bar (`TextHold`) feel better than the image ring?~~ | **Answered 2026-10-01: yes, by far.** The user: "a million times better and feels reactive compared to img". No numbers saved for the text run. |
 | H6 | ~~Does a firmware text box draw over an image tile, and stay on top when the image is re-sent?~~ | **Answered 2026-10-01: yes.** Shows cleanly, stays on top through 44 dial re-sends, smooth updates (median 57 ms). The dial lags the number by an image send, as expected. Hybrid components can overlap. |
+| H7 | Do the glasses use the simulator's font metrics? In evenhub-simulator 0.9.5, fullwidth characters (`Ｑ`, `［`, `］`, ideographic space) all advance 20 px from x = 0, lines are 27 px apart: a monospaced grid, so text can line up with drawn frames. Decides a text keyboard over a dim image (focus as `［ ］`, ~60 ms per move, no tile sends). Note: a text box can't move (`TextContainerUpgrade` has no position), only its content changes. | `hub-probe` H7 (`?probe=font`): grid test lines plus a QWERTY keyboard whose letters are text over key frames drawn on two tiles; swipes move the focus. Simulator: every letter centred in its frame. |
 | H6 | ~~Raw `gray4` / `gray8` image formats on hardware~~ | **Answered 2026-09-30:** png, png4, gray8 and gray4 all display correctly; none sends faster. Keep `png`. |
 | H7 | One-lens-after-rebuild issue (STATUS.md): if it recurs, run hub-lens S9/S10 before restarting the glasses. | User reports; update STATUS.md. |
 

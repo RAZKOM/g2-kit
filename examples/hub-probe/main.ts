@@ -15,7 +15,7 @@
  * Double-tap exits. `?probe=swipes` opens that probe first (render | swipes | hold | overlay; sim:check uses it);
  * `&hold=text` starts H4 with the text bar.
  */
-import { Framebuffer, defineComponent, drawText, encodePng, fillSector, font16x24, font8x12, type Rect } from 'g2-kit/core'
+import { Framebuffer, defineComponent, drawText, encodePng, fillSector, font16x24, font8x12, strokeRect, type Rect } from 'g2-kit/core'
 import { PageBuilder, layouts } from 'g2-kit/bridge'
 import { HoldToConfirm, blankTextSkeleton } from 'g2-kit/input'
 import { Gauge } from 'g2-kit/charts'
@@ -47,7 +47,7 @@ const HoldRing = defineComponent<{ progress: number; label: string }>('ProbeHold
 })
 
 // ── results, shared by all probes ──
-const results: Record<string, string[]> = { H5: [], H3: [], H4: [], H6: [] }
+const results: Record<string, string[]> = { H5: [], H3: [], H4: [], H6: [], H7: [] }
 function record(probe: string, line: string): void {
   results[probe].push(line)
   mirror.log(`${probe}: ${line}`)
@@ -112,13 +112,14 @@ function renderSummary(): void {
   summaryEl.textContent = summaryText()
 }
 
-type Mode = 'render' | 'swipes' | 'hold' | 'overlay'
+type Mode = 'render' | 'swipes' | 'hold' | 'overlay' | 'font'
 let mode: Mode = 'render'
 const PROBES: Array<[Mode, string, () => Promise<void>]> = [
   ['render', 'H5 render', showRender],
   ['swipes', 'H3 swipes', showSwipes],
   ['hold', 'H4 hold', showHold],
   ['overlay', 'H6 overlay', showOverlay],
+  ['font', 'H7 font', showFont],
 ]
 function open(m: Mode): Promise<void> {
   mode = m
@@ -386,12 +387,94 @@ function drawDial(): void {
   g2.draw('dial', Gauge, { value: dialValue, min: 40, max: 180, text: '', label: 'heart rate' })
 }
 
+// ── H7: firmware font metrics ──
+// Test lines in one full-screen text box (no padding, no border). A screenshot shows where each glyph lands:
+// are fullwidth letters, brackets and the ideographic space one width (a monospaced grid in a proportional
+// font)? What are the line pitch and the left edge? The answers decide whether a text layer can line up with
+// a drawn keyboard.
+const FONT_LINES = [
+  'ＱＷＥＲＴＹＵＩＯＰ',
+  '　Ｑ　［Ｗ］　Ｅ　　Ｒ',
+  '［Ｑ］［Ｗ］［Ｅ］',
+  'Ｑ　Ｗ　Ｅ　Ｒ　Ｔ　Ｙ',
+  'QWERTYUIOP iiiii WWWWW',
+  '',
+]
+/**
+ * Measured in evenhub-simulator 0.9.5 (padding 0): fullwidth characters, brackets and the ideographic space
+ * all advance 20 px from x = 0; lines are 27 px apart, a fullwidth glyph's middle 16 px below the line top.
+ */
+const CELL = 20
+const LINE = 27
+const MID = 16
+/** Keyboard rows on lines 6–8; each row starts this many cells in, two cells per key. */
+const KB_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'].map((keys, r) => ({ keys, line: FONT_LINES.length + r, indent: r }))
+const fullwidth = (ch: string) => String.fromCharCode(ch.charCodeAt(0) - 0x21 + 0xff01)
+
+/** The keyboard as text: `　Ｑ　Ｗ…`, with ［ ］ in the gaps around the focused key (same width: nothing moves). */
+function keyboardText(focusRow: number, focusKey: number): string {
+  return KB_ROWS.map(({ keys, indent }, r) => {
+    const cells = Array.from({ length: indent + keys.length * 2 + 1 }, () => '　')
+    ;[...keys].forEach((k, i) => (cells[indent + 2 * i + 1] = fullwidth(k)))
+    if (r === focusRow) {
+      cells[indent + 2 * focusKey] = '［'
+      cells[indent + 2 * focusKey + 2] = '］'
+    }
+    return cells.join('')
+  }).join('\n')
+}
+
+/** Dim key frames on the same grid, drawn once across the two bottom tiles. */
+const KeyFrames = defineComponent<Record<string, never>>('ProbeKeyFrames', { w: 576, h: 144 }, (fb: Framebuffer, r: Rect) => {
+  for (const { keys, line, indent } of KB_ROWS)
+    for (let i = 0; i < keys.length; i++) {
+      const cx = (indent + 2 * i + 1) * CELL + CELL / 2
+      const cy = line * LINE + MID - 144
+      strokeRect(fb, r.x + cx - 17, r.y + cy - 13, 34, 26, 4)
+    }
+})
+
+const fontPage = new PageBuilder()
+  .image({ id: 1, name: 'kbL', x: 0, y: 144, w: 288, h: 144 })
+  .image({ id: 2, name: 'kbR', x: 288, y: 144, w: 288, h: 144 })
+  .text({ id: 10, name: 'font', x: 0, y: 0, w: 576, h: 288, content: ' ', capture: true, padding: 0, border: { width: 0 } })
+  .build()
+let kbFocus = 0
+
+function drawFontText(): void {
+  let n = kbFocus
+  let row = 0
+  while (n >= KB_ROWS[row].keys.length) n -= KB_ROWS[row++].keys.length
+  g2.textArea('font').set('t', [...FONT_LINES, keyboardText(row, n)].join('\n'))
+}
+
+async function showFont(): Promise<void> {
+  body.append(
+    para(
+      '<b>H7 font.</b> Lines 1–4: fullwidth letters, brackets and gaps should line up in columns. Below: a keyboard ' +
+        'whose letters are text, over dim key frames drawn as an image. Swipe to move the ［ ］ focus (text only). ' +
+        'Does each letter sit in the middle of its frame, on the left and the right side?',
+    ),
+    question('H7', 'Fullwidth columns (lines 1–4) line up', ['exactly', 'roughly', 'no']),
+    question('H7', 'Letters sit in their key frames', ['centred everywhere', 'off a little', 'drift off to the right', 'way off']),
+    question('H7', 'Moving the focus', ['instant, nothing shifts', 'fast, but letters shift', 'slow']),
+    small('Save timings', () => record('H7', `text updates median ${ms(median(textTimes))} over the last ${textTimes.length}`)),
+  )
+  await g2.show(fontPage)
+  g2.drawSpan({ x: 0, y: 144, w: 576, h: 144 }, KeyFrames, {})
+  drawFontText()
+}
+
 // ── gestures ──
 g2.on('*', (e) => {
   if (mode === 'swipes' && (e.type === 'next' || e.type === 'prev')) onSwipe(e.type)
   else if (mode === 'hold') {
     onHoldEvent(e.type)
     ring.handleEvent(e)
+  } else if (mode === 'font' && (e.type === 'next' || e.type === 'prev')) {
+    const total = KB_ROWS.reduce((a, r) => a + r.keys.length, 0)
+    kbFocus = (kbFocus + (e.type === 'next' ? 1 : -1) + total) % total
+    drawFontText()
   } else if (mode === 'overlay' && (e.type === 'next' || e.type === 'prev')) {
     dialValue = Math.max(40, Math.min(180, dialValue + (e.type === 'next' ? 10 : -10)))
     dialSends++

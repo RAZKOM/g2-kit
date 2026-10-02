@@ -74,6 +74,9 @@ npm run bench
 - Firmware text containers must fit their text (~27 px per line plus 2 × padding). One that overflows scrolls,
   shows a scroll bar, and if it is the capture container the firmware spends swipes on scrolling: gestures get
   lost (seen in the simulator with `textBoxes`).
+- Fullwidth characters (`Ｑ` … `Ｚ`, `［ ］`, ideographic space `　`) are monospaced in the firmware font: 20 px
+  per character from x = 0 (padding 0), lines 27 px apart (simulator; glasses: ROADMAP H7). Text containers
+  can't move: an update changes content (and whole-box brightness) only.
 - The firmware font is proportional: anything whose width changes (spinner frames, ◀ ▶ markers) shifts what
   follows it. Put changing glyphs last on a line, or swap same-width pairs (▶/▷, ●/◆).
 - The firmware font draws ASCII/Latin-1, arrows, box drawing, blocks and some shapes, but no emoji and not `…`

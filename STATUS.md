@@ -54,7 +54,7 @@ What is done and how each part was verified.
 | Text components (`TextSpinner`, `TextProgress`, `TextSlider`, `TextMenu`, `TextToggle`, `TextHold`; `TextToast`, `TextStatusLine`, `TextReadout`, `TextTicker`; `hub-text` live screen, all read well on glasses) | ✓ output snapshots; only characters the G2 font draws (`unsupportedTextChars`); deterministic | ✓ gallery text section | ✓ `hub-text` with Unicode glyphs (━ ─ ● ▶ ▷ ◀ ↗): spinner and bar animate inline; sliders in their own boxes with FocusRing edit mode | ✓ ASCII version in `hub-text` read well and the settings sliders took every swipe (user, 2026-09-30); the Unicode glyphs (━ ─ ● ▶ ▷ ◀ ↗) render correctly too |
 | `TextArea` / `g2.textArea`, `layouts.textBoxes` | ✓ compose, skip unchanged, coalesce, reset on show; preset validation | | ✓ `hub-text`; non-capture box updates (`hub-bench` "text, own box") | ✓ a non-capture box updates in 60 ms, like the capture box (hub-bench) |
 | `hub-bench` send benchmark | | | ✓ runs; simulator round trip ~10 ms (no BLE, not meaningful) | open: H1 |
-| `hub-probe` (H3–H6) | | | ✓ probes run (`sim:check -- hub-probe ?probe=…`) | ✓ H3, H4, H4b, H5, H6 answered |
+| `hub-probe` (H3–H7) | | | ✓ probes run (`sim:check -- hub-probe ?probe=…`); H7: fullwidth text is a 20 × 27 px grid and lines up with drawn key frames | ✓ H3, H4, H4b, H5, H6 answered; H7 open |
 | Render time | ✓ `npm run bench`: worst sample 0.8 ms warm on a desktop | | | phone WebView not measured; examples display it |
 
 ## Needs real glasses
