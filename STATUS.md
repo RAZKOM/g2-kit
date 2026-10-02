@@ -91,6 +91,9 @@ On the user's G2 glasses and iPhone (iOS 18.7). Raw results: `examples/output/re
 - **`hub-text` live screen and second-batch glyphs** (`■ ▲ │ ◆`): all read well. Feedback, fixed since: the
   spinner before a label shifted the text every frame (the font is proportional and the arrows differ in
   width); slider steps of 5 on a 12-cell track did not always move the knob; ◀ ▶ in edit mode move the track.
+- **H7, text keyboard over key frames** (first try): the letters looked aligned with their frames, but swiping
+  made the text scroll and bounce back. The keyboard text was in the capture box; it now sits in its own
+  non-capture box over a blank skeleton (retest pending).
 - **H5, render time**: 98 samples, every render ≤ 1 ms and every PNG encode ≤ 1 ms in the iPhone WebView (timer
   resolution 1 ms). Well under the 10 ms target.
 

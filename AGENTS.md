@@ -73,7 +73,9 @@ npm run bench
 - `examples/shared/phone.ts` wraps `g2.show`; keep passing its options through (`rebuild: 'always'`).
 - Firmware text containers must fit their text (~27 px per line plus 2 × padding). One that overflows scrolls,
   shows a scroll bar, and if it is the capture container the firmware spends swipes on scrolling: gestures get
-  lost (seen in the simulator with `textBoxes`).
+  lost (seen in the simulator with `textBoxes`). On G2 glasses a capture box full of text (9 lines in 288 px)
+  also scrolled a little and bounced back on every swipe: keep swipe-heavy screens on a blank skeleton and put
+  text in non-capture boxes.
 - Fullwidth characters (`Ｑ` … `Ｚ`, `［ ］`, ideographic space `　`) are monospaced in the firmware font: 20 px
   per character from x = 0 (padding 0), lines 27 px apart (simulator; glasses: ROADMAP H7). Text containers
   can't move: an update changes content (and whole-box brightness) only.

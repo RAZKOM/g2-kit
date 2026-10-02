@@ -398,7 +398,6 @@ const FONT_LINES = [
   '［Ｑ］［Ｗ］［Ｅ］',
   'Ｑ　Ｗ　Ｅ　Ｒ　Ｔ　Ｙ',
   'QWERTYUIOP iiiii WWWWW',
-  '',
 ]
 /**
  * Measured in evenhub-simulator 0.9.5 (padding 0): fullwidth characters, brackets and the ideographic space
@@ -407,8 +406,8 @@ const FONT_LINES = [
 const CELL = 20
 const LINE = 27
 const MID = 16
-/** Keyboard rows on lines 6–8; each row starts this many cells in, two cells per key. */
-const KB_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'].map((keys, r) => ({ keys, line: FONT_LINES.length + r, indent: r }))
+/** Keyboard rows on lines 6–8 (the same place as before the split into boxes); each row starts `indent` cells in, two cells per key. */
+const KB_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'].map((keys, r) => ({ keys, line: 6 + r, indent: r }))
 const fullwidth = (ch: string) => String.fromCharCode(ch.charCodeAt(0) - 0x21 + 0xff01)
 
 /** The keyboard as text: `　Ｑ　Ｗ…`, with ［ ］ in the gaps around the focused key (same width: nothing moves). */
@@ -434,10 +433,16 @@ const KeyFrames = defineComponent<Record<string, never>>('ProbeKeyFrames', { w: 
     }
 })
 
+// Swipes go to a blank skeleton, not to a box with text: on G2 glasses a capture box full of text scrolled a
+// little and bounced back on every swipe. The test lines and the keyboard sit in boxes of their own, each
+// starting on a line boundary so the grid holds; a focus move updates only the 3-line keyboard box.
+const KB_Y = KB_ROWS[0].line * LINE
 const fontPage = new PageBuilder()
+  .text(blankTextSkeleton({ x: 0, y: 0, w: 576, h: 288 }, { id: 9 }))
   .image({ id: 1, name: 'kbL', x: 0, y: 144, w: 288, h: 144 })
   .image({ id: 2, name: 'kbR', x: 288, y: 144, w: 288, h: 144 })
-  .text({ id: 10, name: 'font', x: 0, y: 0, w: 576, h: 288, content: ' ', capture: true, padding: 0, border: { width: 0 } })
+  .text({ id: 10, name: 'lines', x: 0, y: 0, w: 576, h: KB_Y, content: FONT_LINES.join('\n'), padding: 0, border: { width: 0 } })
+  .text({ id: 11, name: 'kb', x: 0, y: KB_Y, w: 576, h: 288 - KB_Y, content: keyboardText(0, 0), padding: 0, border: { width: 0 } })
   .build()
 let kbFocus = 0
 
@@ -445,7 +450,7 @@ function drawFontText(): void {
   let n = kbFocus
   let row = 0
   while (n >= KB_ROWS[row].keys.length) n -= KB_ROWS[row++].keys.length
-  g2.textArea('font').set('t', [...FONT_LINES, keyboardText(row, n)].join('\n'))
+  g2.textArea('kb').set('t', keyboardText(row, n))
 }
 
 async function showFont(): Promise<void> {
@@ -458,6 +463,7 @@ async function showFont(): Promise<void> {
     question('H7', 'Fullwidth columns (lines 1–4) line up', ['exactly', 'roughly', 'no']),
     question('H7', 'Letters sit in their key frames', ['centred everywhere', 'off a little', 'drift off to the right', 'way off']),
     question('H7', 'Moving the focus', ['instant, nothing shifts', 'fast, but letters shift', 'slow']),
+    question('H7', 'Text bounces when swiping', ['no', 'yes']),
     small('Save timings', () => record('H7', `text updates median ${ms(median(textTimes))} over the last ${textTimes.length}`)),
   )
   await g2.show(fontPage)
